@@ -3,9 +3,18 @@ import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
-  <h1>HELLO TSALITS SABILA</h1>
+  <div>
+    <SEOChecker />
+  </div>
 </template>
 
-<style scoped>
+<script>
+import SEOChecker from './components/SEOChecker.vue';
 
-</style>
+export default {
+  components: {
+    SEOChecker
+  }
+};
+</script>
+
