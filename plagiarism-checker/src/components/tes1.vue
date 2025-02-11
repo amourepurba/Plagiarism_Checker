@@ -21,15 +21,19 @@
               </li>
             </ul>
             <form class="d-flex" role="login">
-              <button class="btn btn-outline-success d-flex align-items-center" type="submit">
+              <!-- <button class="btn btn-outline-success d-flex align-items-center" type="submit">
                 Login
-                <i class="fa-solid fa-arrow-right-to-bracket" style="color: #000000; margin: 5px;"></i>              </button>
+                <i class="fa-solid fa-arrow-right-to-bracket" style="color: #000000; margin: 5px;"></i>              
+              </button> -->
+              <router-link v-if="!isAuthenticated" to="/auth">
+                <button class="btn btn-outline-success d-flex align-items-center" >Login</button>
+              </router-link>
             </form>
           </div>
         </div>
       </nav>
     </header>
-
+    
     <!-- Input Section -->
     <div class="main-content">
       <h1>Plagiarism Checker</h1>
@@ -160,8 +164,10 @@
         <input type="text" class="contact-input" placeholder="Your Name" required>
         <input type="email" class="contact-input" placeholder="Your Email" required>
         <textarea class="contact-textarea" placeholder="Your Message" required></textarea>
+        <div class="button-container">
         <button type="submit" class="contact-button">Send Message</button>
-      </form>
+      </div>
+     </form>
     </div>
 
       <!-- footer section -->
@@ -638,7 +644,7 @@ h2 {
 .container-use {
   width: 100%;
   text-align: center;
-  padding: 40px;
+  padding: 120px;
   background-color: #f9f9f9;
 }
 
@@ -729,12 +735,18 @@ p {
   resize: none;
 }
 
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 175px;
+}
+
 .contact-button {
   background-color: #18A0FB;
   color: white;
   width: 20%;
   padding: 10px;
-  font-size: 18px;
+  font-size: 15px;
   border: none;
   border-radius: 8px;
   cursor: pointer;

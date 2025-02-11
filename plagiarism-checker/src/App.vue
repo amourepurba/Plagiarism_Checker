@@ -1,12 +1,15 @@
-<script setup>
-import Tes1 from './components/tes1.vue'; 
-</script>
-
 <template>
-  <div>
-    <Tes1 /> 
+  <div id="app">
+    <!-- Router View untuk menampilkan halaman Home atau Login -->
+    <router-view></router-view>
   </div>
 </template>
+
+<script>
+export default {
+  name: 'App',
+};
+</script>
 
 <style scoped>
 div {
