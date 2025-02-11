@@ -32,7 +32,6 @@
 
     <!-- Input Section -->
     <div class="main-content">
-      <h1>Plagiarism Checker</h1>
       <div class="container-option mt-4 text-center">
         <ul class="nav nav-pills d-inline-flex align-items-center justify-content-center mb-3 gap-2">
           <li class="nav-item">
@@ -130,6 +129,7 @@
   
 
   <!-- How To Use Section -->
+  <!-- <div class="container-use"> -->
     <div class="container-use text-center">
       <h1 class="title">How to Use Plagiarism Checker</h1>
       <div class="row-use align-items-start">
@@ -147,22 +147,7 @@
         </div>
       </div>
     </div>
-
-
-    <!-- Contact Us Section -->
-    <div class="contact-us-container">
-      <div class="contact-text">
-        <h1 class="contact-title">Contact Us</h1>
-        <p class="contact-description">Have questions or need help? Reach out to us!</p>
-      </div>
-      
-      <form class="contact-form">
-        <input type="text" class="contact-input" placeholder="Your Name" required>
-        <input type="email" class="contact-input" placeholder="Your Email" required>
-        <textarea class="contact-textarea" placeholder="Your Message" required></textarea>
-        <button type="submit" class="contact-button">Send Message</button>
-      </form>
-    </div>
+  <!-- </div> -->
 
       <!-- footer section -->
       <footer class="footer">
@@ -219,6 +204,7 @@
               <h4 class="footer-title">Company</h4>
               <div class="footer-links">
                 <a href="#">About cmlabs</a>
+                <a href="#">Contact Us</a>
                 <a href="#">Career</a>
                 <a href="#">Press Release</a>
                 <a href="#">Whistleblower Protection</a>
@@ -398,12 +384,6 @@ export default {
   /* grid-template-columns: 1fr 1fr;
   align-items: center;
   justify-content: center; */
-}
-
-h1 {
-  text-align: center;
-  padding: 10px;
-  font-weight: bold;
 }
 
 .container-option {
@@ -645,19 +625,20 @@ h2 {
 .title {
   font-size: 34px;
   font-weight: bold;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 }
 
 .row-use {
-  display: grid;
-  grid-template-columns: auto auto auto;
-  gap: 100px;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  /* flex-direction: column; */
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .row-use .col {
-  /* flex: 1 1 calc(33.333% - 20px);  */
+  flex: 1 1 calc(33.333% - 20px); 
   background: white;
   padding: 20px;
   border-radius: 10px;
@@ -679,81 +660,6 @@ p {
   color: #333;
 }
 
-
-/* Contact Us Style */
-.contact-us-container {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  height: 50vh;
-  min-width: 100%;
-  margin: 50px auto;
-  padding: 20px;
-  background-color: #ffffff;
-}
-
-.contact-text {
-  text-align: center;
-}
-
-.contact-title {
-  font-size: 48px;
-  font-weight: bold;
-  margin-bottom: 1px;
-  padding: 1px;
-}
-
-.contact-description {
-  font-size: 16px;
-  color: #555;
-}
-
-.contact-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.contact-input, .contact-textarea {
-  width: 80%;
-  padding: 7px;
-  border: 2px solid #ccc;
-  border-radius: 8px;
-  font-size: 16px;
-}
-
-.contact-textarea {
-  height: 120px;
-  resize: none;
-}
-
-.contact-button {
-  background-color: #18A0FB;
-  color: white;
-  width: 20%;
-  padding: 10px;
-  font-size: 18px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.contact-button:hover {
-  background-color: #1167c2;
-}
-
-@media (max-width: 600px) {
-  .contact-us-container {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-  .contact-text {
-    text-align: center;
-  }
-}
 
 
 .footer {
