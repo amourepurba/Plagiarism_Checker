@@ -7,26 +7,31 @@
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
-          <img src="../assets/logo-blue.png" alt="cmlabs logo" class="logo" />
+
+          <!-- Logo -->
+          <router-link  v-if="!isAuthenticated" to="/seo">
+            <img src="../assets/logo-blue.png" alt="cmlabs logo" class="logo" />
+          </router-link>
+
+          <!-- Menu -->
           <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
               <li class="nav-item">
-                <a class="nav-link active" href="#">Plagiarism Checker</a>
+                <a class="nav-link active" href="#plagiarism-checker">Plagiarism Checker</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#">How To Use</a>
+                <a class="nav-link active" aria-current="page" href="#how-to-use">How To Use</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link active" aria-disabled="true">Contact Us</a>
+                <a class="nav-link active" aria-disabled="true" href="#contact-us">Contact Us</a>
               </li>
             </ul>
+
+            <!-- Login -->
             <form class="d-flex" role="login">
-              <!-- <button class="btn btn-outline-success d-flex align-items-center" type="submit">
-                Login
-                <i class="fa-solid fa-arrow-right-to-bracket" style="color: #000000; margin: 5px;"></i>              
-              </button> -->
-              <router-link v-if="!isAuthenticated" to="/auth">
-                <button class="btn btn-outline-success d-flex align-items-center" >Login</button>
+              <router-link v-if="!isAuthenticated" to="/auth" class="btn btn-outline-success d-flex align-items-center" type="submit" >
+                <button class="btn btn-outline-success d-flex align-items-center" >Login
+                  <i class="fa-solid fa-arrow-right-to-bracket" style="color: #18a0fb; padding-left: 5px;"></i>                </button>
               </router-link>
             </form>
           </div>
@@ -35,7 +40,7 @@
     </header>
     
     <!-- Input Section -->
-    <div class="main-content">
+    <div class="main-content" id="plagiarism-checker">
       <h1>Plagiarism Checker</h1>
       <div class="container-option mt-4 text-center">
         <ul class="nav nav-pills d-inline-flex align-items-center justify-content-center mb-3 gap-2">
@@ -134,7 +139,7 @@
   
 
   <!-- How To Use Section -->
-    <div class="container-use text-center">
+    <div class="container-use text-center" id="how-to-use" ref="howToUseSection" :class="{ 'visible': isVisible, 'hidden': !isVisible }" >
       <h1 class="title">How to Use Plagiarism Checker</h1>
       <div class="row-use align-items-start">
         <div class="col">
@@ -154,21 +159,32 @@
 
 
     <!-- Contact Us Section -->
-    <div class="contact-us-container">
-      <div class="contact-text">
-        <h1 class="contact-title">Contact Us</h1>
-        <p class="contact-description">Have questions or need help? Reach out to us!</p>
-      </div>
-      
-      <form class="contact-form">
-        <input type="text" class="contact-input" placeholder="Your Name" required>
-        <input type="email" class="contact-input" placeholder="Your Email" required>
-        <textarea class="contact-textarea" placeholder="Your Message" required></textarea>
-        <div class="button-container">
+    <div 
+    class="contact-us-container" id="contact-us" :class="{ 'visible': isVisible }" ref="contactSection">
+    <div class="contact-text">
+      <h1 class="contact-title">Contact Us</h1>
+      <p class="contact-description">Have questions or need help? Reach out to us!</p>
+    </div>
+
+    <!-- Notifikasi -->
+    <div v-if="notification.message" :class="['notification', notification.type]">
+          {{ notification.message }}
+    </div>
+
+    <form 
+      class="contact-form" 
+      :class="{ 'shake': isShaking}"
+      @submit.prevent="validateForm"
+    >
+      <input type="text" class="contact-input" v-model="name" placeholder="Your Name" :class="{'error-border': showError.name}">
+      <input type="email" class="contact-input" v-model="email" placeholder="Your Email" :class="{'error-border': showError.email}">
+      <textarea class="contact-textarea" v-model="message" placeholder="Your Message" :class="{'error-border': showError.message}"></textarea>
+      <div class="button-container">
         <button type="submit" class="contact-button">Send Message</button>
       </div>
-     </form>
-    </div>
+    </form>
+  </div>
+
 
       <!-- footer section -->
       <footer class="footer">
@@ -189,10 +205,8 @@
             <div class="supervene-section">
               <h4 class="footer-title">SUPERVENE SEARCH ODYSSEY</h4>
               <div class="contact-address">
-                <p>cmlabs Jakarta</p>
-                <p>Jl. Pluit Kencana Raya No.63, Pluit,</p>
-                <p>Penjaringan, Jakarta Utara,</p>
-                <p>DKI Jakarta, 14450, Indonesia</p>
+                <p>cmlabs Jakarta Jl. Pluit Kencana Raya No.63, Pluit,</p>
+                <p>Penjaringan, Jakarta Utara, DKI Jakarta, 14450, Indonesia</p>
                 <p class="phone-number">(+62) 21-666-04470</p>
               </div>
             </div>
@@ -254,7 +268,9 @@
 
 
 <script>
-export default {
+import { ref, onMounted, onUnmounted } from 'vue';
+
+export default {  
   data() {
     return {
       activeTab: 'text',
@@ -268,6 +284,7 @@ export default {
       sources: [],
     };
   },
+
   watch: {
     activeTab() {
       this.errorMessage = '';
@@ -275,6 +292,7 @@ export default {
       this.showOutput = false; // Pastikan output disembunyikan saat tab berubah
     }
   },
+
   methods: {
     validateInput() {
       if (this.activeTab === 'text' && this.inputValue.trim() === '') {
@@ -292,6 +310,7 @@ export default {
       this.errorMessage = '';
       return true;
     },
+
     checkAction() {
       if (!this.validateInput()) {
         return;
@@ -309,6 +328,7 @@ export default {
       this.showOutput = true;
       console.log("Output ditampilkan:", this.showOutput);
     },
+
     handleFileUpload(event) {
       const file = event.target.files[0];
       if (file) {
@@ -323,9 +343,84 @@ export default {
         this.errorMessage = '';
       }
     }
-  }
+  },
+
+  setup() {
+    const isVisible = ref(false);
+    const isShaking = ref(false);
+    const contactSection = ref(null);
+    const howToUseSection = ref(null);
+    const name = ref('');
+    const email = ref('');
+    const message = ref('');
+    const notification = ref({ message: "", type: "" });
+    const showError = ref({ name: false, email: false, message: false });
+    let observer;
+
+    const validateForm = () => {
+      let hasError = false;
+      showError.value = { name: false, email: false, message: false };
+
+      if (!name.value.trim()) {
+        showError.value.name = true;
+        hasError = true;
+      }
+      if (!email.value.trim()) {
+        showError.value.email = true;
+        hasError = true;
+      }
+      if (!message.value.trim()) {
+        showError.value.message = true;
+        hasError = true;
+      }
+
+      if (hasError) {
+        isShaking.value = true;
+        notification.value = { message: "Please fill out all fields!", type: "error" };
+        setTimeout(() => { isShaking.value = false; }, 500);
+      } else {
+        notification.value = { message: "Message sent successfully!", type: "success" };
+        name.value = "";
+        email.value = "";
+        message.value = "";
+
+        setTimeout(() => {
+          notification.value = { message: "", type: "" };
+        }, 3000);
+      }
+    };
+
+    onMounted(() => {
+      isVisible.value = true;
+
+      observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.target === contactSection.value || entry.target === howToUseSection.value) {
+            isVisible.value = entry.isIntersecting;
+          }
+        });
+      }, { threshold: 0.2 });
+
+      if (contactSection.value) {
+        observer.observe(contactSection.value);
+      }
+      if (howToUseSection.value) {
+        observer.observe(howToUseSection.value);
+      }
+    });
+
+    onUnmounted(() => {
+      if (observer) {
+        if (contactSection.value) observer.unobserve(contactSection.value);
+        if (howToUseSection.value) observer.unobserve(howToUseSection.value);
+      }
+    });
+
+    return { isVisible, isShaking, contactSection, howToUseSection, name, email, message, showError, validateForm, notification };
+  }, 
 };
 </script>
+
 
 
 
@@ -336,6 +431,7 @@ export default {
 }
 
 .container {
+  font-family: "Poppins", serif;
   width: 100%;
   max-width: 100%;
   margin: 0;
@@ -346,6 +442,7 @@ export default {
   align-items: center;
   background-color: #ffffff;
   gap: 9px;
+  animation: fadeIn 1s ease-out;
 }
 
 .header {
@@ -361,35 +458,50 @@ export default {
   padding: 20px;
 }
 
+.navbar .navbar-nav {
+  padding-left: 150px;
+}
+
 .navbar .nav-link {
   color: #000000 !important;
-  font-weight: 500;
-  /* transition: 0.3s; */
+  font-weight: 700;
   margin-left: 9px;
-  font-size: 16px;
+  font-size: 20px;
+  transition: transform 0.3s ease, color 0.3s ease;
 }
 
 .navbar .nav-link:hover {
   text-decoration: underline;
   cursor: pointer;
+  transform: translateY(-3px);
+  color: #18A0FB !important;
+}
+
+.navbar .d-flex {
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.navbar .d-flex:hover {
+  transform: translateX(3px);
 }
 
 .navbar .btn-outline-success {
-  color: #000000;
+  color: #18A0FB;
   background-color: transparent;
   border: none;
   padding: 0;
   font-weight: 700;
+  font-size: 20px;
 }
 
 .navbar .btn-outline-success:hover {
   cursor: pointer;
-  text-decoration: underline;
+  background-color: #ffffff;
 }
 
 .navbar img {
-  width: 15%;
-  margin-right: 25px;
+  width: 30%;
+  margin-left: 15px;
 }
 
 
@@ -429,17 +541,20 @@ h1 {
   color: #353535;
   background-color: #eaeaea;
   border: none;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .tab-button.active {
   background-color: #18A0FB;
   color: white;
+  transform: scale(1.05);
 }
 
 .tab-button:hover {
   transition: background-color 0.3s, color 0.3s;
   background-color: #1167c2;
   color: white;
+  transform: scale(1.05);
 }
 
 /* Dropdown Styles */
@@ -491,7 +606,7 @@ h1 {
 
 .input-file {
   width: 70%;
-  height: auto; 
+  height: auto;
 }
 
 .input-url {
@@ -506,15 +621,17 @@ h1 {
   margin-bottom: 10px;
   border: 2px solid #ccc;
   border-radius: 25px;
-  transition: border-color 0.3s;
   font-size: 16px;
   height: 100%; 
+  transition: border-color 0.3s ease, box-shadow 0.3s ease; 
 }
 
 .input-field:focus {
   border-color: #007bff;
   outline: none;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  /* box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); */
+  transform: scale(1.02);
+  box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
 }
 
 textarea.input-field {
@@ -548,6 +665,7 @@ textarea.input-field {
   position: relative; /* Memastikan tombol berada di atas elemen lain */
   z-index: 10; /* Menjadikan tombol di atas elemen lain jika ada overlap */
   pointer-events: auto; /* Memastikan tombol bisa diklik */
+  transition: background-color 0.3s ease, transform 0.3s ease;
   /* margin-top: 10px; */
   /* width: 100%; */
   /* max-width: 200px;
@@ -556,7 +674,7 @@ textarea.input-field {
 
 .btn-check:hover {
   background-color: #1167c2;
-  transition: background-color 0.3s, color 0.3s;
+  transform: scale(1.05);
 }
 
 
@@ -567,16 +685,20 @@ textarea.input-field {
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-  max-width: 600px;
-  font-family: 'Arial', sans-serif;
-  min-height: 200px; /* Beri ruang minimum untuk output */
+  max-width: 700px;
+  min-height: 200px; /* ruang minimum untuk output */
   margin-top: 10px;
   clear: both;
+  /* opacity: 0; */
+  /* transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease; */
 }
 
 .output-container.show {
   display: block; /* Tampilkan saat output ada */
   flex-grow: 1; /* Output akan mengisi ruang yang tersedia */
+  /* opacity: 1;
+  transform: translateY(0); */
 }
 
 h2 {
@@ -646,10 +768,24 @@ h2 {
   text-align: center;
   padding: 120px;
   background-color: #f9f9f9;
+  opacity: 0;
+  transform: scale(0.8) rotateY(-10deg);
+  transition: opacity 0.7s ease, transform 0.7s ease;
 }
 
+.container-use.visible {
+  opacity: 1;
+  transform: scale(1) rotateY(0);
+}
+
+/* Efek saat keluar dari layar */
+/* .container-use.hidden {
+  opacity: 0;
+  transform: scale(0.7) rotateY(10deg);
+} */
+
 .title {
-  font-size: 34px;
+  font-size: 40px;
   font-weight: bold;
   margin-bottom: 40px;
 }
@@ -672,6 +808,13 @@ h2 {
   text-align: center;
   /* max-width: 30%; */
   min-width: 250px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.row-use .col:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  /* transform: scale(1.05); */
 }
 
 h3 {
@@ -682,9 +825,32 @@ h3 {
 
 p {
   font-size: 16px;
-  color: #333;
+  color: #333333;
 }
 
+
+/* Notifikasi */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  z-index: 1000;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.notification.success {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.notification.error {
+  background-color: #E74C3C;
+  color: white;
+}
 
 /* Contact Us Style */
 .contact-us-container {
@@ -698,14 +864,45 @@ p {
   margin: 50px auto;
   padding: 20px;
   background-color: #ffffff;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+}
+
+.contact-us-container.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* .contact-us-container.hidden {
+  opacity: 0;
+  transform: translateY(50px);
+} */
+
+.shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  50% { transform: translateX(10px); }
+  75% { transform: translateX(-10px); }
+}
+
+.error-border {
+  border: 2px solid red !important;
+  transition: border 0.3s ease-in-out;
 }
 
 .contact-text {
   text-align: center;
+  margin-bottom: 70px;
+  /* animation: slide-top 0.7s ease-in-out alternate-reverse backwards; */
 }
 
 .contact-title {
-  font-size: 48px;
+  font-size: 50px;
   font-weight: bold;
   margin-bottom: 1px;
   padding: 1px;
@@ -720,6 +917,7 @@ p {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  /* animation: slide-bottom 0.7s ease-out alternate-reverse both; */
 }
 
 .contact-input, .contact-textarea {
@@ -750,11 +948,12 @@ p {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .contact-button:hover {
   background-color: #1167c2;
+  transform: scale(1.05);
 }
 
 @media (max-width: 600px) {
@@ -790,8 +989,8 @@ p {
 .footer-column:first-child {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-right: 40px;
+  gap: 10px;
+  margin-right: 20px;
 }
 
 .language-list {
@@ -808,17 +1007,18 @@ p {
   border-radius: 10px;
   font-size: 12px;
   text-align: center;
-  transition: all 0.3s;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .language-btn:hover {
   background: #18A0FB;
   color: white;
+  transform: scale(1.05);
 }
 
 .supervene-section {
   margin-top: 20px;
-  margin-right: 10px;
+  margin-right: 5px;
 }
 
 /* Column 2: Solutions & Information */
@@ -854,8 +1054,8 @@ p {
 
 .footer-subtitle {
   color: #5f5f5f;
-  font-size: 14px;
-  margin: 15px 0;
+  font-size: 10px;
+  margin: 10px 0;
   line-height: 1.4;
   text-align: left; /* Align to left */
 }
@@ -874,14 +1074,20 @@ p {
   font-size: 14px;
   transition: color 0.3s;
   text-align: left; /* Align to left */
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #18A0FB;
+  transform: translateX(5px);
 }
 
 .contact-address {
   color: #5f5f5f;
-  font-size: 14px;
+  font-size: 123px;
   line-height: 1;
   font-weight: 500;
-  text-align: left; /* Align to left */
+  text-align: left;
 }
 
 .phone-number {
@@ -904,5 +1110,50 @@ p {
   text-align: left; /* Align to left */
 }
 
+
+/* Animasi Fade-In pada Halaman */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes slide-top {
+  0% {
+    -webkit-transform: translateY(0);
+            transform: translateY(0);
+  }
+  100% {
+    -webkit-transform: translateY(-100px);
+            transform: translateY(-100px);
+  }
+}
+
+@keyframes slide-bottom {
+  0% {
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+  }
+  100% {
+    -webkit-transform: translateY(100px);
+    transform: translateY(100px);
+  }
+}
+
+
+/* @-webkit-keyframes slide-bottom {
+  0% {
+    -webkit-transform: translateY(0);
+            transform: translateY(0);
+  }
+  100% {
+    -webkit-transform: translateY(100px);
+            transform: translateY(100px);
+  }
+}  */
 
 </style>
