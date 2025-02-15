@@ -9,7 +9,7 @@
           </button>
 
           <!-- Logo -->
-          <router-link  v-if="!isAuthenticated" to="/seo">
+          <router-link v-if="!isAuthenticated" to="/seo">
             <img src="../assets/logo-blue.png" alt="cmlabs logo" class="logo" />
           </router-link>
 
@@ -29,10 +29,11 @@
 
             <!-- Login -->
             <form class="d-flex" role="login">
-              <router-link v-if="!isAuthenticated" to="/auth" class="btn btn-outline-success d-flex align-items-center" type="submit" >
-                <button class="btn btn-outline-success d-flex align-items-center" >Login
-                  <i class="fa-solid fa-arrow-right-to-bracket" style="color: #18a0fb; padding-left: 5px;"></i>                </button>
+              <router-link v-if="!isAuthenticated" to="/auth" class="btn btn-outline-success">
+                Login
+                <i class="fa-solid fa-arrow-right-to-bracket" style="color: #18a0fb; padding-left: 5px;"></i>
               </router-link>
+
             </form>
           </div>
         </div>
@@ -85,19 +86,24 @@
               placeholder="Enter your text here..."
             ></textarea>
             <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-            <button class="btn btn-check mt-2" @click="checkAction">Check Plagiarism</button>
+            <button class="btn btn-check mt-2" @click="checkAction" :disabled="isLoading">
+              <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              <span v-else>Check Plagiarism</span>
+            </button>
           </div>
 
           <!-- Tab File -->
           <div v-else-if="activeTab === 'file'" class="input-box input-file">
-            <!-- Jika belum diklik, tampilkan input file; setelah diklik tampilkan textarea -->
+            <!-- Jika sudah diklik dan output tersedia, tampilkan textarea hasil processed text -->
             <template v-if="showOutput">
               <textarea
-                v-model="inputValue"
+                v-model="processedText"
                 class="form-control input-field output-textarea"
                 rows="6"
+                readonly
               ></textarea>
             </template>
+            <!-- Jika belum, tampilkan input file -->
             <template v-else>
               <input
                 type="file"
@@ -107,19 +113,24 @@
               />
             </template>
             <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-            <button class="btn btn-check mt-2" @click="checkAction">Check Plagiarism</button>
+            <button class="btn btn-check mt-2" @click="checkAction" :disabled="isLoading">
+              <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              <span v-else>Check Plagiarism</span>
+            </button>
           </div>
 
           <!-- Tab URL -->
-          <div v-else-if="activeTab === 'url'" :class="['input-box', 'input-url', { 'show-output': showOutput }]">
-            <!-- Jika belum diklik, tampilkan input URL; setelah diklik tampilkan textarea -->
+          <div v-else-if="activeTab === 'url'" class="input-box input-url">
+            <!-- Jika sudah diklik dan output tersedia, tampilkan textarea hasil processed text -->
             <template v-if="showOutput">
               <textarea
-                v-model="inputValue"
+                v-model="processedText"
                 class="form-control input-field output-textarea"
                 rows="6"
+                readonly
               ></textarea>
             </template>
+            <!-- Jika belum, tampilkan input URL -->
             <template v-else>
               <input
                 v-model="inputValue"
@@ -130,13 +141,21 @@
               />
             </template>
             <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-            <button class="btn btn-check mt-2" @click="checkAction">Check Plagiarism</button>
+            <button class="btn btn-check mt-2" @click="checkAction" :disabled="isLoading">
+              <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              <span v-else>Check Plagiarism</span>
+            </button>
           </div>
         </div>
 
+        <!-- Animasi Loading -->
+         <div v-if="isLoading" class="loading-container">
+          <div class="spinner"></div>
+          <p>Checking for plagiarism...</p>
+         </div>
 
         <!-- Output Section -->
-        <div v-if="showOutput" class="output-container">
+        <div v-if="showOutput" class="output-container" ref="resultSection">
           <h2>Result</h2>
           <div class="row">
             <!-- Left Column: Scores -->
@@ -175,9 +194,8 @@
       </div>
     </div>
 
-
-  <!-- How To Use Section -->
-    <div class="container-use text-center" id="how-to-use" ref="howToUseSection" :class="{ 'visible': isVisible, 'hidden': !isVisible }" >
+    <!-- How To Use Section -->
+    <div class="container-use text-center" id="how-to-use" ref="howToUseSection" :class="{ 'visible': isVisible, 'hidden': !isVisible }">
       <h1 class="title">How to Use Plagiarism Checker</h1>
       <div class="row-use align-items-start">
         <div class="col">
@@ -195,110 +213,105 @@
       </div>
     </div>
 
-
     <!-- Contact Us Section -->
-    <div 
-    class="contact-us-container" id="contact-us" :class="{ 'visible': isVisible }" ref="contactSection">
-    <div class="contact-text">
-      <h1 class="contact-title">Contact Us</h1>
-      <p class="contact-description">Have questions or need help? Reach out to us!</p>
-    </div>
-
-    <!-- Notifikasi -->
-    <div v-if="notification.message" :class="['notification', notification.type]">
-          {{ notification.message }}
-    </div>
-
-    <form class="contact-form" :class="{ 'shake': isShaking}" @submit.prevent="validateForm">
-      <input type="text" class="contact-input" v-model="name" placeholder="Your Name" :class="{'error-border': showError.name}">
-      <input type="email" class="contact-input" v-model="email" placeholder="Your Email" :class="{'error-border': showError.email}">
-      <textarea class="contact-textarea" v-model="message" placeholder="Your Message" :class="{'error-border': showError.message}"></textarea>
-      <div class="button-container">
-        <button type="submit" class="contact-button">Send Message</button>
+    <div class="contact-us-container" id="contact-us" :class="{ 'visible': isVisible }" ref="contactSection">
+      <div class="contact-text">
+        <h1 class="contact-title">Contact Us</h1>
+        <p class="contact-description">Have questions or need help? Reach out to us!</p>
       </div>
-    </form>
-  </div>
 
+      <!-- Notifikasi -->
+      <div v-if="notification.message" :class="['notification', notification.type]">
+        {{ notification.message }}
+      </div>
 
-      <!-- footer section -->
-      <footer class="footer">
-        <div class="footer-content">
-          <!-- Column 1: Languages & Supervene -->
-          <div class="footer-column">
-            <div class="language-section">
-              <div class="language-list">
-                <button class="language-btn">English</button>
-                <button class="language-btn">Indonesian</button>
-                <button class="language-btn">Turkish</button>
-                <button class="language-btn">Singapore</button>
-                <button class="language-btn">Thailand</button>
-                <button class="language-btn">Español</button>
-              </div>
-            </div>
+      <form class="contact-form" :class="{ 'shake': isShaking }" @submit.prevent="validateForm">
+        <input type="text" class="contact-input" v-model="name" placeholder="Your Name" :class="{'error-border': showError.name}">
+        <input type="email" class="contact-input" v-model="email" placeholder="Your Email" :class="{'error-border': showError.email}">
+        <textarea class="contact-textarea" v-model="message" placeholder="Your Message" :class="{'error-border': showError.message}"></textarea>
+        <div class="button-container">
+          <button type="submit" class="contact-button">Send Message</button>
+        </div>
+      </form>
+    </div>
 
-            <div class="supervene-section">
-              <h4 class="footer-title">SUPERVENE SEARCH ODYSSEY</h4>
-              <div class="contact-address">
-                <p>cmlabs Jakarta Jl. Pluit Kencana Raya No.63, Pluit, Penjaringan, Jakarta Utara, DKI Jakarta, 14450, Indonesia</p>
-                <p class="phone-number">(+62) 21-666-04470</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Column 2: Solutions & Information -->
-          <div class="footer-column">
-            <div class="solutions-section">
-              <h4 class="footer-title">Solutions</h4>
-              <div class="footer-links">
-                <a href="#">SEO Services</a>
-                <a href="#">SEO Writing</a>
-                <a href="#">Media Buying</a>
-              </div>
-            </div>
-
-            <div class="information-section">
-              <h4 class="footer-title">Information</h4>
-              <div class="footer-links">
-                <a href="#">Notification Center</a>
-                <a href="#">Client's Testimony</a>
-                <a href="#">FAQ of cmlabs Services</a>
-              </div>
+    <!-- Footer Section -->
+    <footer class="footer">
+      <div class="footer-content">
+        <!-- Column 1: Languages & Supervene -->
+        <div class="footer-column">
+          <div class="language-section">
+            <div class="language-list">
+              <button class="language-btn">English</button>
+              <button class="language-btn">Indonesian</button>
+              <button class="language-btn">Turkish</button>
+              <button class="language-btn">Singapore</button>
+              <button class="language-btn">Thailand</button>
+              <button class="language-btn">Español</button>
             </div>
           </div>
 
-          <!-- Column 3: Company -->
-          <div class="footer-column">
-            <div class="company-section">
-              <h4 class="footer-title">Company</h4>
-              <div class="footer-links">
-                <a href="#">About cmlabs</a>
-                <a href="#">Career</a>
-                <a href="#">Press Release</a>
-                <a href="#">Whistleblower Protection</a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Column 4: Cost-Effective Fees -->
-          <div class="footer-column">
-            <div class="partnership-section">
-              <h4 class="footer-title">COST-EFECTIVE FEES, UP TO 5%</h4>
-              <h4 class="footer-subtitle">WE ARE OPEN TO PARTNERSHIP WITH VARIOUS NICHES</h4>
-              <div class="partnership-list">
-                <a href="#">Franchise Organizations</a>
-                <a href="#">Educational Institutions</a>
-                <a href="#">Professional Services Firms</a>
-                <a href="#">Startup Incubators / Accelerators</a>
-                <a href="#">...and 34 more</a>
-              </div>
+          <div class="supervene-section">
+            <h4 class="footer-title">SUPERVENE SEARCH ODYSSEY</h4>
+            <div class="contact-address">
+              <p>cmlabs Jakarta Jl. Pluit Kencana Raya No.63, Pluit, Penjaringan, Jakarta Utara, DKI Jakarta, 14450, Indonesia</p>
+              <p class="phone-number">(+62) 21-666-04470</p>
             </div>
           </div>
         </div>
-      </footer>
+
+        <!-- Column 2: Solutions & Information -->
+        <div class="footer-column">
+          <div class="solutions-section">
+            <h4 class="footer-title">Solutions</h4>
+            <div class="footer-links">
+              <a href="#">SEO Services</a>
+              <a href="#">SEO Writing</a>
+              <a href="#">Media Buying</a>
+            </div>
+          </div>
+
+          <div class="information-section">
+            <h4 class="footer-title">Information</h4>
+            <div class="footer-links">
+              <a href="#">Notification Center</a>
+              <a href="#">Client's Testimony</a>
+              <a href="#">FAQ of cmlabs Services</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 3: Company -->
+        <div class="footer-column">
+          <div class="company-section">
+            <h4 class="footer-title">Company</h4>
+            <div class="footer-links">
+              <a href="#">About cmlabs</a>
+              <a href="#">Career</a>
+              <a href="#">Press Release</a>
+              <a href="#">Whistleblower Protection</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 4: Cost-Effective Fees -->
+        <div class="footer-column">
+          <div class="partnership-section">
+            <h4 class="footer-title">COST-EFECTIVE FEES, UP TO 5%</h4>
+            <h4 class="footer-subtitle">WE ARE OPEN TO PARTNERSHIP WITH VARIOUS NICHES</h4>
+            <div class="partnership-list">
+              <a href="#">Franchise Organizations</a>
+              <a href="#">Educational Institutions</a>
+              <a href="#">Professional Services Firms</a>
+              <a href="#">Startup Incubators / Accelerators</a>
+              <a href="#">...and 34 more</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
-
-
 
 <script>
 import { ref, onMounted, onUnmounted } from 'vue';
@@ -306,6 +319,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 export default {  
   data() {
     return {
+      isLoading: false, // Menyimpan status loading
       activeTab: 'text',
       inputValue: '',
       file: null, // Menyimpan file yang diunggah
@@ -316,6 +330,8 @@ export default {
       readabilityScore: 0,
       topKeywords: [],
       sources: [],
+      processedText: ''  // Menyimpan teks yang telah diproses dari API
+      
     };
   },
 
@@ -324,6 +340,7 @@ export default {
       // Reset state saat tab berganti
       this.errorMessage = '';
       this.inputValue = '';
+      this.processedText = '';
       this.showOutput = false;
       this.file = null;
     }
@@ -347,83 +364,94 @@ export default {
       return true;
     },
 
-    performPlagiarismCheck(text) {
-      // Logika dummy pengecekan plagiasi (ganti dengan API asli jika perlu)
-      console.log("Melakukan pengecekan plagiasi untuk teks:", text);
-      this.similarityScore = Math.floor(Math.random() * 100);
-      this.uniqueScore = Math.floor(Math.random() * 100);
-      this.readabilityScore = Math.floor(Math.random() * 100);
-      this.topKeywords = text.split(/\s+/).slice(0, 5);
-      this.sources = [
-        "https://example.com/article1",
-        "https://example.com/article2",
-        "https://example.com/article3",
-      ];
-      this.showOutput = true;
-      console.log("Output ditampilkan:", this.showOutput);
-    },
-
+    // Fungsi checkAction yang terintegrasi dengan API Flask
     checkAction() {
       if (!this.validateInput()) {
         return;
       }
+
+      this.isLoading = true;  // Mulai loading
+      this.showOutput = false;
+      this.errorMessage = ""; // Reset error
+
       console.log("Tombol Check diklik!");
-      
+      const apiUrl = "http://localhost:5001/analyze"; 
+
+      let requestOptions = {};
+
       if (this.activeTab === 'text') {
-          // Untuk input teks langsung cek
-          this.performPlagiarismCheck(this.inputValue);
-      } 
-      else if (this.activeTab === 'file') {
-          // Untuk file, baca isi file dan kemudian cek
-          const reader = new FileReader();
-          reader.onload = (e) => {
-              const content = e.target.result;
-              // Setelah membaca, tampilkan isi file dalam textarea (inputValue di-update)
-              this.inputValue = content;
-              this.performPlagiarismCheck(content);
-          };
-          reader.onerror = () => {
-              this.errorMessage = 'Terjadi kesalahan saat membaca file';
-          };
-          reader.readAsText(this.file);
-      } 
-      else if (this.activeTab === 'url') {
-          // Untuk URL, ambil konten menggunakan fetch
-          fetch(this.inputValue)
-            .then(response => {
-              if (!response.ok) {
-                throw new Error('Respons jaringan tidak berhasil');
-              }
-              return response.text();
-            })
-            .then(data => {
-              // Setelah mengambil konten, tampilkan dalam textarea (inputValue di-update)
-              this.inputValue = data;
-              this.performPlagiarismCheck(data);
-            })
-            .catch(error => {
-              console.error('Error fetching URL content:', error);
-              this.errorMessage = 'Terjadi kesalahan saat mengambil konten URL';
-            });
+        requestOptions = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input_type: 'text', text: this.inputValue })
+        };
+      } else if (this.activeTab === 'url') {
+        requestOptions = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input_type: 'url', url: this.inputValue })
+        };
+      } else if (this.activeTab === 'file') {
+        const formData = new FormData();
+        formData.append("file", this.file);
+        formData.append("input_type", "file");
+        requestOptions = { method: 'POST', body: formData };
       }
+
+      fetch(apiUrl, requestOptions)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            this.errorMessage = data.error;
+          } else {
+            this.similarityScore = data.duplication_score;
+            this.uniqueScore = data.uniqueness_score;
+            this.readabilityScore = data.readability_score;
+            this.topKeywords = Object.keys(data.top_keywords);
+            this.sources = data.plagiarized_sites.map(item => item.url);
+            this.processedText = data.processed_text || '';
+            this.showOutput = true;
+            
+            // Setelah DOM terupdate, scroll ke bagian hasil
+            this.$nextTick(() => {
+              if (this.$refs.resultSection) {
+                this.$refs.resultSection.scrollIntoView({ behavior: "smooth" });
+              }
+            });
+          }
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          this.errorMessage = "Terjadi kesalahan saat melakukan analisis.";
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
     },
+
 
     handleFileUpload(event) {
       const file = event.target.files[0];
-      if (file) {
-        const allowedExtensions = ['pdf', 'doc', 'docx'];
-        const fileExtension = file.name.split('.').pop().toLowerCase();
-        if (!allowedExtensions.includes(fileExtension)) {
-          this.errorMessage = 'Format file tidak valid!';
-          this.inputValue = '';
-          this.file = null;
-          return;
-        }
-        // Simpan file untuk diproses nantinya
-        this.file = file;
-        this.errorMessage = '';
+      if (!file) return;
+
+      const allowedExtensions = ['pdf', 'doc', 'docx'];
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+      if (!allowedExtensions.includes(fileExtension)) {
+        this.errorMessage = 'Format file tidak valid!';
+        this.file = null;
+        return;
       }
+
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        this.errorMessage = 'Ukuran file terlalu besar! Maksimal 5MB.';
+        this.file = null;
+        return;
+      }
+
+      this.file = file;
+      this.errorMessage = '';
     },
+
 
     changeLanguage(event) {
       const selectedLang = event.target.value;
@@ -511,6 +539,26 @@ export default {
 
 
 <style scoped>
+
+.loading-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
 * {
   box-sizing: border-box;

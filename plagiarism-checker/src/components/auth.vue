@@ -206,7 +206,7 @@ export default {
 
         localStorage.setItem('token', loginResponse.data.token);
         alert('Login dengan Google berhasil!');
-        this.$router.push('/dashboard');
+        this.$router.push('/');
       } catch (error) {
         console.error(error);
         alert('Login dengan Google gagal.');
