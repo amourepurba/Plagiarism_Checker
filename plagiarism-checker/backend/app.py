@@ -23,7 +23,14 @@ app = Flask(__name__)
 CORS(app)
 
 nltk.download('stopwords')
-STOPWORDS = set(stopwords.words('english'))
+STOPWORDS_LANGUAGES = {
+    'english': set(stopwords.words('english')),
+    'indonesian': set(stopwords.words('indonesian')),
+    'turkish': set(stopwords.words('turkish')),
+    'spanish': set(stopwords.words('spanish')),
+    'french': set(stopwords.words('french')),
+    'german': set(stopwords.words('german'))
+}
 
 DATAFORSEO_API_KEY = "am9obkBleGFtcGxl"
 DATAFORSEO_BASE_URL = "https://api.dataforseo.com/v3"
@@ -46,7 +53,7 @@ def fetch_serp_dataforseo_async(keyword):
             return {"error": "Gagal mendapatkan task ID"}
         
         url_get = f"{DATAFORSEO_BASE_URL}/serp/google/organic/task_get/{task_id}"
-        for _ in range(10):  # Coba ambil hasil selama 10 kali percobaan
+        for _ in range(10):
             response = requests.get(url_get, headers=headers)
             result = response.json()
             if result.get("status_code") == 20000:
@@ -87,9 +94,10 @@ def calculate_readability_score(text):
     except Exception:
         return 0
 
-def calculate_top_keywords(text):
+def calculate_top_keywords(text, language='english'):
     words = re.findall(r'\b\w+\b', text.lower())
-    filtered_words = [word for word in words if word not in STOPWORDS and len(word) > 3]
+    stopwords_set = STOPWORDS_LANGUAGES.get(language, STOPWORDS_LANGUAGES['english'])
+    filtered_words = [word for word in words if word not in stopwords_set and len(word) > 3]
     if not filtered_words:
         return {}
     total_words = len(filtered_words)
@@ -104,7 +112,7 @@ def calculate_uniqueness_score(text, similar_sites):
 
 def detect_plagiarism(text, similar_sites):
     plagiarized_sites = []
-    sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
+    sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)\s', text)
     for sentence in sentences:
         for site in similar_sites:
             similarity = SequenceMatcher(None, sentence, site.get("snippet", "")).ratio()
@@ -114,18 +122,20 @@ def detect_plagiarism(text, similar_sites):
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
+    data = request.get_json()
+    language = data.get('language', 'english').lower()
+    
     if 'file' in request.files:
         file = request.files['file']
         text = extract_text_from_file(file)
     else:
-        data = request.get_json()
         text = data.get('text', '') if data.get('input_type') == 'text' else extract_text_from_url(data.get('url', ''))
     
     if not text or not text.strip():
         return jsonify({"error": "Konten kosong"}), 400
     
     readability_score = calculate_readability_score(text)
-    top_keywords = calculate_top_keywords(text)
+    top_keywords = calculate_top_keywords(text, language)
     serp_result = fetch_serp_dataforseo_async(text[:100])
     similar_sites = serp_result.get("tasks", [{}])[0].get("result", []) if "tasks" in serp_result else []
     uniqueness_score = calculate_uniqueness_score(text, similar_sites)

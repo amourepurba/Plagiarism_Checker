@@ -33,7 +33,6 @@
                 Login
                 <i class="fa-solid fa-arrow-right-to-bracket" style="color: #18a0fb; padding-left: 5px;"></i>
               </router-link>
-
             </form>
           </div>
         </div>
@@ -63,13 +62,13 @@
           <!-- Dropdown untuk Bahasa -->
           <li class="nav-item">
             <div class="dropdown-container">
-              <select class="form-control dropdown" @change="changeLanguage($event)">
-                <option value="id">Indonesia</option>
-                <option value="en">English</option>
-                <option value="tr">Turkish</option>
-                <option value="th">Thailand</option>
-                <option value="es">Español</option>
-                <option value="sg">Singapore</option>
+              <select class="form-control dropdown" v-model="selectedLanguage">
+                <option value="indonesian">Indonesia</option>
+                <option value="english">English</option>
+                <option value="turkish">Turkish</option>
+                <option value="spanish">Spanish</option>
+                <option value="french">French</option>
+                <option value="german">German</option>
               </select>
             </div>
           </li>
@@ -94,7 +93,6 @@
 
           <!-- Tab File -->
           <div v-else-if="activeTab === 'file'" class="input-box input-file">
-            <!-- Jika sudah diklik dan output tersedia, tampilkan textarea hasil processed text -->
             <template v-if="showOutput">
               <textarea
                 v-model="processedText"
@@ -103,7 +101,6 @@
                 readonly
               ></textarea>
             </template>
-            <!-- Jika belum, tampilkan input file -->
             <template v-else>
               <input
                 type="file"
@@ -121,7 +118,6 @@
 
           <!-- Tab URL -->
           <div v-else-if="activeTab === 'url'" class="input-box input-url">
-            <!-- Jika sudah diklik dan output tersedia, tampilkan textarea hasil processed text -->
             <template v-if="showOutput">
               <textarea
                 v-model="processedText"
@@ -130,7 +126,6 @@
                 readonly
               ></textarea>
             </template>
-            <!-- Jika belum, tampilkan input URL -->
             <template v-else>
               <input
                 v-model="inputValue"
@@ -149,10 +144,10 @@
         </div>
 
         <!-- Animasi Loading -->
-         <div v-if="isLoading" class="loading-container">
+        <div v-if="isLoading" class="loading-container">
           <div class="spinner"></div>
           <p>Checking for plagiarism...</p>
-         </div>
+        </div>
 
         <!-- Output Section -->
         <div v-if="showOutput" class="output-container" ref="resultSection">
@@ -204,7 +199,7 @@
         </div>
         <div class="col">
           <h3>2</h3>
-          <p><strong>Provide details</strong><br> Paste your text, url, or upload a file in PDF, DOC, or DOCX format.</p>
+          <p><strong>Provide details</strong><br> Paste your text, URL, or upload a file in PDF, DOC, or DOCX format.</p>
         </div>
         <div class="col">
           <h3>3</h3>
@@ -316,13 +311,13 @@
 <script>
 import { ref, onMounted, onUnmounted } from 'vue';
 
-export default {  
+export default {
   data() {
     return {
-      isLoading: false, // Menyimpan status loading
+      isLoading: false,
       activeTab: 'text',
       inputValue: '',
-      file: null, // Menyimpan file yang diunggah
+      file: null,
       showOutput: false,
       errorMessage: '',
       similarityScore: 0,
@@ -330,22 +325,9 @@ export default {
       readabilityScore: 0,
       topKeywords: [],
       sources: [],
-      processedText: ''  // Menyimpan teks yang telah diproses dari API
-      
+      processedText: ''
     };
   },
-
-  watch: {
-    activeTab() {
-      // Reset state saat tab berganti
-      this.errorMessage = '';
-      this.inputValue = '';
-      this.processedText = '';
-      this.showOutput = false;
-      this.file = null;
-    }
-  },
-
   methods: {
     validateInput() {
       if (this.activeTab === 'text' && this.inputValue.trim() === '') {
@@ -364,37 +346,42 @@ export default {
       return true;
     },
 
-    // Fungsi checkAction yang terintegrasi dengan API Flask
     checkAction() {
-      if (!this.validateInput()) {
-        return;
-      }
+      if (!this.validateInput()) return;
 
-      this.isLoading = true;  // Mulai loading
+      this.isLoading = true;
       this.showOutput = false;
-      this.errorMessage = ""; // Reset error
+      this.errorMessage = "";
 
-      console.log("Tombol Check diklik!");
-      const apiUrl = "http://localhost:5001/analyze"; 
-
+      const apiUrl = "http://localhost:5001/analyze";
       let requestOptions = {};
 
+      // Sertakan parameter 'language' berdasarkan pilihan dropdown (selectedLanguage)
       if (this.activeTab === 'text') {
         requestOptions = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ input_type: 'text', text: this.inputValue })
+          body: JSON.stringify({ 
+            input_type: 'text', 
+            text: this.inputValue,
+            language: this.selectedLanguage 
+          })
         };
       } else if (this.activeTab === 'url') {
         requestOptions = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ input_type: 'url', url: this.inputValue })
+          body: JSON.stringify({ 
+            input_type: 'url', 
+            url: this.inputValue,
+            language: this.selectedLanguage 
+          })
         };
       } else if (this.activeTab === 'file') {
         const formData = new FormData();
         formData.append("file", this.file);
         formData.append("input_type", "file");
+        formData.append("language", this.selectedLanguage);
         requestOptions = { method: 'POST', body: formData };
       }
 
@@ -411,8 +398,6 @@ export default {
             this.sources = data.plagiarized_sites.map(item => item.url);
             this.processedText = data.processed_text || '';
             this.showOutput = true;
-            
-            // Setelah DOM terupdate, scroll ke bagian hasil
             this.$nextTick(() => {
               if (this.$refs.resultSection) {
                 this.$refs.resultSection.scrollIntoView({ behavior: "smooth" });
@@ -429,7 +414,6 @@ export default {
         });
     },
 
-
     handleFileUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -442,7 +426,7 @@ export default {
         return;
       }
 
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
         this.errorMessage = 'Ukuran file terlalu besar! Maksimal 5MB.';
         this.file = null;
         return;
@@ -452,15 +436,16 @@ export default {
       this.errorMessage = '';
     },
 
-
     changeLanguage(event) {
-      const selectedLang = event.target.value;
-      console.log('Bahasa diubah ke:', selectedLang);
-      // Implementasikan logika perubahan bahasa jika diperlukan
+      // Fungsi ini sudah tidak wajib lagi karena kita menggunakan v-model,
+      // tetapi tetap dapat digunakan untuk logging atau logika tambahan.
+      console.log('Bahasa diubah ke:', this.selectedLanguage);
     }
   },
 
+  // Gabungkan properti setup untuk mengelola state global (misal: bahasa, form contact, dsb)
   setup() {
+    const selectedLanguage = ref('english'); // Default sesuai dengan backend
     const isVisible = ref(false);
     const isShaking = ref(false);
     const contactSection = ref(null);
@@ -498,7 +483,6 @@ export default {
         name.value = "";
         email.value = "";
         message.value = "";
-
         setTimeout(() => {
           notification.value = { message: "", type: "" };
         }, 3000);
@@ -507,7 +491,6 @@ export default {
 
     onMounted(() => {
       isVisible.value = true;
-
       observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
           if (entry.target === contactSection.value || entry.target === howToUseSection.value) {
@@ -515,7 +498,6 @@ export default {
           }
         });
       }, { threshold: 0.2 });
-
       if (contactSection.value) {
         observer.observe(contactSection.value);
       }
@@ -531,10 +513,23 @@ export default {
       }
     });
 
-    return { isVisible, isShaking, contactSection, howToUseSection, name, email, message, showError, validateForm, notification };
-  }, 
+    return {
+      selectedLanguage,
+      isVisible,
+      isShaking,
+      contactSection,
+      howToUseSection,
+      name,
+      email,
+      message,
+      notification,
+      showError,
+      validateForm
+    };
+  }
 };
 </script>
+
 
 
 
@@ -693,7 +688,12 @@ h1 {
 
 /* Dropdown Styles */
 .dropdown-container {
-  margin: 0;
+  margin: 10px;
+}
+
+.form-control {
+  padding: 5px;
+  font-size: 16px;
 }
 
 .dropdown {
