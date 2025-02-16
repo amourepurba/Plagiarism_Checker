@@ -214,7 +214,7 @@
     </div>
 
     <!-- Contact Us Section -->
-    <div class="contact-us-container" id="contact-us" :class="{ 'visible': isVisible }" ref="contactSection">
+    <div class="contact-us-container" id="contact-us" ref="contactSection" :class="{ 'visible': isVisible }">
       <div class="contact-text">
         <h1 class="contact-title">Contact Us</h1>
         <p class="contact-description">Have questions or need help? Reach out to us!</p>
@@ -463,8 +463,8 @@ export default {
   setup() {
     const isVisible = ref(false);
     const isShaking = ref(false);
-    const contactSection = ref(null);
     const howToUseSection = ref(null);
+    const contactSection = ref(null);
     const name = ref('');
     const email = ref('');
     const message = ref('');
@@ -523,6 +523,8 @@ export default {
         observer.observe(howToUseSection.value);
       }
     });
+
+
 
     onUnmounted(() => {
       if (observer) {
@@ -941,8 +943,13 @@ h2 {
   padding: 120px;
   background-color: #f9f9f9;
   opacity: 0;
-  transform: scale(0.8) rotateY(-10deg);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.container-use.appear {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .container-use.visible {
@@ -1024,6 +1031,9 @@ p {
   color: white;
 }
 
+
+
+
 /* Contact Us Style */
 .contact-us-container {
   display: grid;
@@ -1037,8 +1047,13 @@ p {
   padding: 20px;
   background-color: #ffffff;
   opacity: 0;
-  transform: translateY(50px);
-  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.contact-us-container.appear {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .contact-us-container.visible {
@@ -1418,6 +1433,55 @@ p {
     max-width: 500px;
     margin: 10px auto;
   }
+
+/* Pastikan container input URL menggunakan layout kolom */
+.input-box.input-url {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
+  box-sizing: border-box;
+}
+
+/* Output Textarea: gunakan lebar penuh container dan biarkan tinggi menyesuaikan */
+/* .input-box.input-url .output-textarea { */
+  /* width: 100% !important;   Memastikan textarea tidak melebihi lebar container */
+  /* max-width: 100%;
+  height: auto;
+  min-height: 400px !important;
+  resize: vertical;
+  box-sizing: border-box;
+  margin-bottom: 20px; /* Jarak antara textarea dan tombol */
+  /* padding: 15px;
+  border: 2px solid #007bff;
+  border-radius: 25px;
+  font-size: 15px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+} */ 
+
+/* Tombol Check ditempatkan tepat di bawah textarea */
+/* .input-box.input-url .btn-check {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 200px;
+  align-self: center;
+} */
+
+/* Output analisis (misal: skor, keyword, dll.) selalu muncul di bawah input */
+/* .output-container {
+  clear: both;
+  margin-top: 300px;
+  width: 100%;
+  max-width: 550px;
+  padding: 25px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+} */
+
+ 
   
   .input-field {
     width: 100%;
@@ -1434,14 +1498,18 @@ p {
   }
   
   .output-container {
+    clear: both;
+    margin-top: 50px;
+    position: relative;
+    bottom: 1;
+    z-index: 1;
     width: 100%;
     max-width: 550px;
-    /* margin: 10px auto 0; */
     padding: 25px;
   }
   
   .output-textarea {
-    width: 120%;
+    width: 100%;
     height: auto;
     min-height: 400px !important;
   }
@@ -1588,6 +1656,8 @@ p {
   
 }
 
+
+/* 
 @media screen and (max-width: 481px) {
   .navbar .nav-link {
     font-size: 14px;
@@ -1634,6 +1704,6 @@ p {
     height: auto;
     padding: 20px;
   }
-}
+} */
 
 </style>
