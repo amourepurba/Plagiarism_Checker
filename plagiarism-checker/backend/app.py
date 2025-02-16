@@ -51,11 +51,26 @@ def fetch_serp_dataforseo_async(keyword):
             result = response.json()
             if result.get("status_code") == 20000:
                 return result
-            time.sleep(5)  # Tunggu 5 detik sebelum mencoba lagi
+            time.sleep(5)
         return {"error": "Gagal mendapatkan hasil dari DataForSEO"}
     except Exception as e:
         logger.error(f"Error fetching SERP data async: {e}")
         return {"error": str(e)}
+
+def extract_text_from_file(file):
+    try:
+        if file.filename.endswith('.pdf'):
+            reader = PyPDF2.PdfReader(file)
+            return "\n".join(page.extract_text() or "" for page in reader.pages)
+        elif file.filename.endswith('.docx'):
+            doc = docx.Document(file)
+            return "\n".join(para.text for para in doc.paragraphs)
+        elif file.filename.endswith('.doc') and textract:
+            return textract.process(file, extension='doc').decode('utf-8')
+    except Exception as e:
+        logger.error(f"Error extracting text from {file.filename}: {e}")
+        return None
+    return None
 
 def extract_text_from_url(url):
     try:
@@ -64,34 +79,6 @@ def extract_text_from_url(url):
         soup = BeautifulSoup(response.content, "html.parser")
         return soup.get_text(separator=' ', strip=True)
     except requests.RequestException:
-        return None
-
-def extract_text_from_pdf(file_stream):
-    try:
-        reader = PyPDF2.PdfReader(file_stream)
-        return "\n".join(page.extract_text() or "" for page in reader.pages)
-    except Exception as e:
-        logger.error(f"Error extracting PDF: {e}")
-        return None
-
-def extract_text_from_docx(file_stream):
-    try:
-        doc = docx.Document(file_stream)
-        return "\n".join(para.text for para in doc.paragraphs)
-    except Exception as e:
-        logger.error(f"Error extracting DOCX: {e}")
-        return None
-
-def extract_text_from_doc(file_stream):
-    if textract:
-        try:
-            file_stream.seek(0)
-            return textract.process(file_stream, extension='doc').decode('utf-8')
-        except Exception as e:
-            logger.error(f"Error extracting DOC: {e}")
-            return None
-    else:
-        logger.error("Library textract tidak terinstal")
         return None
 
 def calculate_readability_score(text):
@@ -127,8 +114,13 @@ def detect_plagiarism(text, similar_sites):
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    data = request.get_json()
-    text = data.get('text', '') if data.get('input_type') == 'text' else extract_text_from_url(data.get('url', ''))
+    if 'file' in request.files:
+        file = request.files['file']
+        text = extract_text_from_file(file)
+    else:
+        data = request.get_json()
+        text = data.get('text', '') if data.get('input_type') == 'text' else extract_text_from_url(data.get('url', ''))
+    
     if not text or not text.strip():
         return jsonify({"error": "Konten kosong"}), 400
     
