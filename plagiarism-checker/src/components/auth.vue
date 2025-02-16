@@ -313,7 +313,7 @@ form {
   border: none; 
   outline: none; 
   font-size: 16px; 
-  color: #3333; 
+  color: #000000; 
   font-weight: 500; 
 }
 
