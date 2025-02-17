@@ -356,7 +356,7 @@ export default {
       const apiUrl = "http://localhost:5001/analyze";
       let requestOptions = {};
 
-      // Sertakan parameter 'language' berdasarkan pilihan dropdown (selectedLanguage)
+      // Sertakan parameter 'language' sesuai pilihan dropdown
       if (this.activeTab === 'text') {
         requestOptions = {
           method: 'POST',
@@ -378,6 +378,7 @@ export default {
           })
         };
       } else if (this.activeTab === 'file') {
+        // Backend untuk file belum diimplementasikan
         const formData = new FormData();
         formData.append("file", this.file);
         formData.append("input_type", "file");
@@ -391,10 +392,14 @@ export default {
           if (data.error) {
             this.errorMessage = data.error;
           } else {
-            this.similarityScore = data.duplication_score;
+            // Karena backend mengembalikan uniqueness_score, kita hitung skor plagiasi sebagai inversenya.
             this.uniqueScore = data.uniqueness_score;
+            this.similarityScore = 100 - data.uniqueness_score; // Skor plagiasi
             this.readabilityScore = data.readability_score;
-            this.topKeywords = Object.keys(data.top_keywords);
+            // Menampilkan keyword beserta persentase (jika diinginkan)
+            this.topKeywords = Object.entries(data.top_keywords).map(
+              ([word, percentage]) => `${word} (${percentage.toFixed(2)}%)`
+            );
             this.sources = data.plagiarized_sites.map(item => item.url);
             this.processedText = data.processed_text || '';
             this.showOutput = true;
@@ -437,13 +442,10 @@ export default {
     },
 
     changeLanguage(event) {
-      // Fungsi ini sudah tidak wajib lagi karena kita menggunakan v-model,
-      // tetapi tetap dapat digunakan untuk logging atau logika tambahan.
       console.log('Bahasa diubah ke:', this.selectedLanguage);
     }
   },
 
-  // Gabungkan properti setup untuk mengelola state global (misal: bahasa, form contact, dsb)
   setup() {
     const selectedLanguage = ref('english'); // Default sesuai dengan backend
     const isVisible = ref(false);
@@ -506,8 +508,6 @@ export default {
       }
     });
 
-
-
     onUnmounted(() => {
       if (observer) {
         if (contactSection.value) observer.unobserve(contactSection.value);
@@ -531,6 +531,7 @@ export default {
   }
 };
 </script>
+
 
 
 
