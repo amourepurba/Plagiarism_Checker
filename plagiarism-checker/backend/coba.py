@@ -24,7 +24,14 @@ app = Flask(__name__)
 CORS(app)
 
 nltk.download('stopwords')
-STOPWORDS = set(stopwords.words('english'))
+STOPWORDS_LANGUAGES = {
+    'english': set(stopwords.words('english')),
+    'indonesian': set(stopwords.words('indonesian')),
+    'turkish': set(stopwords.words('turkish')),
+    'spanish': set(stopwords.words('spanish')),
+    'french': set(stopwords.words('french')),
+    'german': set(stopwords.words('german'))
+}
 
 # DataForSEO Credentials
 DATAFORSEO_EMAIL = "email_anda@example.com"
