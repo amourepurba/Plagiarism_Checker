@@ -237,12 +237,12 @@
         <div class="footer-column">
           <div class="language-section">
             <div class="language-list">
-              <button class="language-btn">English</button>
               <button class="language-btn">Indonesian</button>
+              <button class="language-btn">English</button>
               <button class="language-btn">Turkish</button>
-              <button class="language-btn">Singapore</button>
-              <button class="language-btn">Thailand</button>
-              <button class="language-btn">Español</button>
+              <button class="language-btn">Spanish</button>
+              <button class="language-btn">French</button>
+              <button class="language-btn">German</button>
             </div>
           </div>
 
@@ -740,7 +740,30 @@ h1 {
 }
 
 .input-box.input-url {
-  margin-bottom: 130px;
+  /* margin-bottom: 130px; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 700px;
+  margin: 10px auto;
+  box-sizing: border-box;
+}
+
+.input-box.input-url .input-field {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* Tombol Check Plagiarism */
+.input-box.input-url .btn-check {
+  width: auto;
+  font-weight: 500; 
+  min-width: 150px; 
+  padding: 10px 30px; 
+  font-size: 16px; 
+  white-space: nowrap; 
+  margin-top: 10px;
 }
 
 .input-text {
@@ -753,10 +776,10 @@ h1 {
   height: auto;
 }
 
-.input-url {
+/* .input-url {
   width: 80%;
   height: 70px; 
-}
+} */
 
 
 
@@ -785,7 +808,48 @@ textarea.input-field {
   resize: vertical;
   min-height: 150px;
   max-height: 400px;
+  padding-right: 15px;
 }
+
+textarea::-webkit-scrollbar {
+  width: 10px; /* Lebar scrollbar */
+}
+
+textarea::-webkit-scrollbar-track {
+  /* background: #f1f1f1;  */
+  /* border-radius: 10px; Border radius track scrollbar */
+  margin: 14px 4px;
+}
+
+textarea::-webkit-scrollbar-thumb {
+  background: #888; /* Warna thumb scrollbar */
+  border-radius: 10px; /* Border radius thumb scrollbar */
+  border: 2px solid transparent; /* Tambahkan border transparan */
+  background-clip: content-box;
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+  background: #007bff; /* Warna thumb scrollbar saat dihover */
+  border: 1px solid #f1f1f1;
+}
+
+/* textarea.input-field {
+  width: 100%;
+  padding: 15px;
+  margin-bottom: 10px;
+  border: 2px solid #ccc;
+  border-radius: 25px;
+  font-size: 16px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  resize: vertical; /* Memungkinkan resize vertikal */
+/* }
+
+textarea.input-field:focus {
+  border-color: #007bff;
+  outline: none;
+  transform: scale(1.02);
+  box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
+} */ 
 
 .error-text {
   color: red;
@@ -813,10 +877,6 @@ textarea.input-field {
   z-index: 10; /* Menjadikan tombol di atas elemen lain jika ada overlap */
   pointer-events: auto; /* Memastikan tombol bisa diklik */
   transition: background-color 0.3s ease, transform 0.3s ease;
-  /* margin-top: 10px; */
-  /* width: 100%; */
-  /* max-width: 200px;
-  text-align: center; */
 }
 
 .btn-check:hover {
@@ -825,13 +885,25 @@ textarea.input-field {
 }
 
 
-/* Style khusus untuk output box (textarea untuk file dan URL setelah check) */
+/* Output Section */
+.output-container {
+  width: 100%;
+  max-width: 700px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  clear: both;
+}
+
 .output-textarea {
-  width: 210%;
-  height: 500px;
+  width: 100%;
+  height: auto;
+  min-height: 150px;
   resize: vertical;
   box-sizing: border-box;
-  margin-bottom: 20px; /* Jarak agar tidak menutupi konten lain */
+  margin-bottom: 20px;
   padding: 15px;
   border: 2px solid #007bff;
   border-radius: 25px;
@@ -845,6 +917,27 @@ textarea.input-field {
   transform: scale(1.02);
   box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
 }
+
+/* Style khusus untuk output box (textarea untuk file dan URL setelah check) */
+/* .output-textarea {
+  width: 210%;
+  height: 500px;
+  resize: vertical;
+  box-sizing: border-box;
+  margin-bottom: 20px; Jarak agar tidak menutupi konten lain */
+  /* padding: 15px;
+  border: 2px solid #007bff;
+  border-radius: 25px;
+  font-size: 15px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.output-textarea:focus {
+  border-color: #007bff;
+  outline: none;
+  transform: scale(1.02);
+  box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
+} */
 
 .input-url.show-output {
   height: auto !important;
@@ -1346,7 +1439,9 @@ p {
 
 
 /* RESPONSIVE STYLES */
-@media screen and (max-width: 1024px) {
+/* Mobile Devices (max-width: 767px) */
+@media (max-width: 767px) {
+  /* Navbar */
   .navbar .container-fluid {
     display: flex;
     flex-wrap: wrap;
@@ -1362,8 +1457,8 @@ p {
     max-width: 150px; 
   }
 
-  /* Bagian collapse (nav links) berada di sebelah kiri */
-  .navbar .collapse {
+   /* Bagian collapse (nav links) berada di sebelah kiri */
+   .navbar .collapse {
     order: 0;
     width: 100%;
     padding: 0;
@@ -1385,7 +1480,7 @@ p {
     margin: 0;
     margin-top: 10px;
   }
-
+  
   .navbar .nav-item {
     margin: 5px 0; 
   }
@@ -1397,16 +1492,8 @@ p {
     font-size: 16px; 
   }
 
-  /* Form login juga berada di dalam collapse, tampil di bawah nav links, rata kiri */
-  /* .navbar form.d-flex {
-    order: 1;
-    width: 100%;
-    display: flex;
-    justify-content: flex-start;
-    margin-top: 10px;
-    padding-left: 0;
-  } */
 
+  /* Main Content & Input Section */
   .main-content {
     padding: 10px;
   }
@@ -1434,55 +1521,528 @@ p {
     margin: 10px auto;
   }
 
-/* Pastikan container input URL menggunakan layout kolom */
-.input-box.input-url {
+  .input-box.input-url {
+    margin-bottom: 20px;
+  }
+
+  .output-container {
+    margin-top: 20px;
+  }
+
+  .output-textarea {
+    min-height: 200px;
+  }
+
+
+
+   /* Pastikan container input URL menggunakan layout kolom */
+   /*.input-box.input-url {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
+    /*box-sizing: border-box;
+  }*/
+
+
+  .input-field {
+    width: 100%;
+    font-size: 14px;
+    padding: 12px;
+  }
+  
+  .btn-check {
+    width: 100%;
+    max-width: 200px;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  
+  /* .output-container {
+    clear: both;
+    margin-top: 50px;
+    position: relative;
+    bottom: 1;
+    z-index: 1;
+    width: 100%;
+    max-width: 550px;
+    padding: 25px;
+  } */
+  
+  /* .output-textarea {
+    width: 100%;
+    height: auto;
+    min-height: 400px !important;
+  } */
+
+  .container-use {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px; /* sesuaikan padding jika perlu */
+  }
+
+  /* Atur grid row-use agar hanya satu kolom, sehingga semua kolom tertata secara vertikal */
+  .row-use {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center; /* pastikan setiap kolom terpusat secara horizontal */
+    gap: 20px;
+    width: 100%;
+  }
+
+  /* Setiap kolom akan mengisi sebagian besar lebar layar, misalnya 90% */
+  .row-use .col {
+    width: 90%;
+    max-width: 400px; /* atau sesuaikan sesuai desain */
+    margin: 0 auto;
+  }
+
+  /* Sesuaikan ukuran heading dan paragraf jika perlu */
+  .row-use .col h3 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .row-use .col p {
+    font-size: 16px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .contact-us-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 80px;
+    height: auto;
+  }
+
+  /* Contact Us */
+  .contact-text {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .contact-form {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-bottom: 60px; 
+    box-sizing: border-box;
+    border: 1px solid transparent; 
+  }
+
+  .contact-form input,
+  .contact-form textarea {
+    width: 100%;
+  }
+
+  .button-container {
+    position: absolute;
+    bottom: 5px;
+    /* right: 1; */
+    left: 0;
+    /* z-index: 10; */
+  }
+
+  .contact-button {
+    padding: 10px 30px !important; 
+    font-size: 16px;
+    white-space: wrap;   
+    min-width: 180px;
+    box-sizing: border-box;
+  }
+
+  .footer-container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
   width: 100%;
-  max-width: 500px;
-  margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
-  box-sizing: border-box;
+  padding: 20px 10px;
+  }
+
+  .footer-language {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .footer-menu {
+    width: 100%;
+  }
+
+  .footer-item {
+    width: 100%;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+  }
+
+  .footer-title {
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 10px;
+    display: block;
+    width: 100%;
+    text-align: left;
+  }
+
+  .footer-content {
+    padding: 10px;
+  }
 }
 
-/* Output Textarea: gunakan lebar penuh container dan biarkan tinggi menyesuaikan */
-/* .input-box.input-url .output-textarea { */
-  /* width: 100% !important;   Memastikan textarea tidak melebihi lebar container */
-  /* max-width: 100%;
-  height: auto;
-  min-height: 400px !important;
-  resize: vertical;
-  box-sizing: border-box;
-  margin-bottom: 20px; /* Jarak antara textarea dan tombol */
-  /* padding: 15px;
-  border: 2px solid #007bff;
-  border-radius: 25px;
-  font-size: 15px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-} */ 
 
-/* Tombol Check ditempatkan tepat di bawah textarea */
-/* .input-box.input-url .btn-check {
-  margin-top: 20px;
-  width: 100%;
-  max-width: 200px;
-  align-self: center;
-} */
 
-/* Output analisis (misal: skor, keyword, dll.) selalu muncul di bawah input */
-/* .output-container {
-  clear: both;
-  margin-top: 300px;
-  width: 100%;
-  max-width: 550px;
-  padding: 25px;
-  box-sizing: border-box;
-  position: relative;
-  z-index: 1;
-} */
 
- 
+/* Tablet Devices (min-width: 768px and max-width: 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  /* Navbar */
+  .navbar .container-fluid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Logo */
+  .navbar img.logo {
+    order: 2;
+    margin-left: auto;
+    width: auto;
+    max-width: 150px; 
+  }
+
+   /* Bagian collapse (nav links) berada di sebelah kiri */
+   .navbar .collapse {
+    order: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
   
+  /* Ketika collapse aktif (memiliki kelas .show), tampilkan sebagai flex dan agar menu muncul secara vertikal di sebelah kiri */
+  .navbar .collapse.show {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .navbar .navbar-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    margin-top: 10px;
+  }
+  
+  .navbar .nav-item {
+    margin: 5px 0; 
+  }
+  
+  .navbar .nav-link {
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    font-size: 16px; 
+  }
+
+
+  /* Main Content & Input Section */
+  .main-content {
+    padding: 10px;
+  }
+  
+  .container-option {
+    padding: 0 10px;
+  }
+  
+  .input-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .container-option ul.nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  
+  .input-box {
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto;
+  }
+
+
+   /* Pastikan container input URL menggunakan layout kolom */
+   .input-box.input-url {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
+    box-sizing: border-box;
+    margin-bottom: 30px;
+  }
+
+  .output-container {
+    margin-top: 30px;
+  }
+
+  .output-textarea {
+    min-height: 250px;
+  }
+
+
+  .input-field {
+    width: 100%;
+    font-size: 14px;
+    padding: 12px;
+  }
+  
+  .btn-check {
+    width: 100%;
+    max-width: 200px;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  
+  /* .output-container {
+    clear: both;
+    margin-top: 50px;
+    position: relative;
+    bottom: 1;
+    z-index: 1;
+    width: 100%;
+    max-width: 550px;
+    padding: 25px;
+  }
+  
+  .output-textarea {
+    width: 100%;
+    height: auto;
+    min-height: 400px !important;
+  } */
+
+  .container-use {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px; /* sesuaikan padding jika perlu */
+  }
+
+  /* Atur grid row-use agar hanya satu kolom, sehingga semua kolom tertata secara vertikal */
+  .row-use {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center; /* pastikan setiap kolom terpusat secara horizontal */
+    gap: 20px;
+    width: 100%;
+  }
+
+  /* Setiap kolom akan mengisi sebagian besar lebar layar, misalnya 90% */
+  .row-use .col {
+    width: 90%;
+    max-width: 400px; /* atau sesuaikan sesuai desain */
+    margin: 0 auto;
+  }
+
+  /* Sesuaikan ukuran heading dan paragraf jika perlu */
+  .row-use .col h3 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .row-use .col p {
+    font-size: 16px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .contact-us-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 80px;
+    height: auto;
+  }
+
+  /* Contact Us */
+  .contact-text {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .contact-form {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-bottom: 60px; 
+    box-sizing: border-box;
+    border: 1px solid transparent; 
+  }
+
+  .contact-form input,
+  .contact-form textarea {
+    width: 100%;
+  }
+
+  .button-container {
+    position: absolute;
+    bottom: 5px;
+    /* right: 1; */
+    left: 0;
+    /* z-index: 10; */
+  }
+
+  .contact-button {
+    padding: 10px 30px !important; 
+    font-size: 16px;
+    white-space: wrap;   
+    min-width: 180px;
+    box-sizing: border-box;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  /* Hilangkan padding kiri untuk kolom 2 dan 3 agar tampilan lebih rapi */
+  .footer-column:nth-child(2),
+  .footer-column:nth-child(3) {
+    padding-left: 0;
+  }
+  /* Sesuaikan margin dan padding untuk kolom 4 */
+  .footer-column:last-child {
+    margin: 10px 20px;
+    padding: 20px;
+  }
+}
+
+
+
+
+/* Tablet Devices (min-width: 768px and max-width: 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  /* Navbar */
+  .navbar .container-fluid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Logo */
+  .navbar img.logo {
+    order: 2;
+    margin-left: auto;
+    width: auto;
+    max-width: 150px; 
+  }
+
+   /* Bagian collapse (nav links) berada di sebelah kiri */
+   .navbar .collapse {
+    order: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Ketika collapse aktif (memiliki kelas .show), tampilkan sebagai flex dan agar menu muncul secara vertikal di sebelah kiri */
+  .navbar .collapse.show {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .navbar .navbar-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    margin-top: 10px;
+  }
+  
+  .navbar .nav-item {
+    margin: 5px 0; 
+  }
+  
+  .navbar .nav-link {
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    font-size: 16px; 
+  }
+
+
+  /* Main Content & Input Section */
+ 
+  .main-content {
+    padding: 10px;
+  }
+  
+  .container-option {
+    padding: 0 10px;
+  }
+  
+  .input-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .container-option ul.nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  
+  .input-box {
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto;
+  }
+
+
+   /* Pastikan container input URL menggunakan layout kolom */
+   .input-box.input-url {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
+    box-sizing: border-box;
+  }
+
+
   .input-field {
     width: 100%;
     font-size: 14px;
@@ -1600,110 +2160,269 @@ p {
   }
 
   .footer-content {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    grid-template-columns: 1fr;
+    gap: 30px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  /* Hilangkan padding kiri untuk kolom 2 dan 3 agar tampilan lebih rapi */
+  .footer-column:nth-child(2),
+  .footer-column:nth-child(3) {
+    padding-left: 0;
+  }
+  /* Sesuaikan margin dan padding untuk kolom 4 */
+  .footer-column:last-child {
+    margin: 10px 20px;
     padding: 20px;
   }
-
-  /* Kolom 1: Bahasa & Supervene (diubah agar disusun secara vertikal) */
-  .footer-column:first-child {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-  
-  /* Bagian bahasa: susun dalam grid dua baris (misalnya 3 kolom per baris) */
-  .language-list {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-  
-  /* Pastikan Supervene section tampil di bawah bahasa */
-  .supervene-section {
-    text-align: left;
-  }
-  
-  /* Untuk bagian dropdown (kolom 2, 3, dan 4) gunakan elemen <details> dan <summary> */
-  /* Pastikan Anda mengubah struktur HTML untuk kolom-kolom ini seperti contoh di bawah */
-  details.footer-dropdown {
-    width: 100%;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    overflow: hidden;
-  }
-  details.footer-dropdown summary {
-    cursor: pointer;
-    background-color: #f0f4f7;
-    padding: 10px;
-    font-weight: bold;
-    border-bottom: 1px solid #ddd;
-    border-radius: 5px 5px 0 0;
-    list-style: none; /* Hapus marker default pada beberapa browser */
-  }
-  details.footer-dropdown summary::-webkit-details-marker {
-    display: none;
-  }
-  details.footer-dropdown .footer-links {
-    padding: 10px;
-    background-color: #f8fafc;
-    display: none;
-  }
-  details.footer-dropdown[open] .footer-links {
-    display: block;
-  }
-  
 }
 
 
-/* 
-@media screen and (max-width: 481px) {
+
+
+
+
+/* Small Desktop (min-width: 992px and max-width: 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  /* Navbar */
+  .navbar .container-fluid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Logo */
+  .navbar img.logo {
+    order: 2;
+    margin-left: auto;
+    width: auto;
+    max-width: 150px; 
+  }
+
+   /* Bagian collapse (nav links) berada di sebelah kiri */
+   .navbar .collapse {
+    order: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Ketika collapse aktif (memiliki kelas .show), tampilkan sebagai flex dan agar menu muncul secara vertikal di sebelah kiri */
+  .navbar .collapse.show {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .navbar .navbar-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    margin-top: 10px;
+  }
+  
+  .navbar .nav-item {
+    margin: 5px 0; 
+  }
+  
   .navbar .nav-link {
-    font-size: 14px;
-    margin-left: 3px;
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    font-size: 16px; 
   }
-  .navbar img {
-    width: 60%;
+
+
+  /* Main Content & Input Section */
+ 
+  .main-content {
+    padding: 10px;
   }
-  .container {
-    padding: 5px;
+  
+  .container-option {
+    padding: 0 10px;
   }
-  h1 {
-    font-size: 20px;
-    padding: 5px;
+  
+  .input-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
-  .tab-button {
-    font-size: 14px;
-    padding: 5px 10px;
+  
+  .container-option ul.nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 10px;
   }
+  
+  .input-box {
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto;
+  }
+
+
+  .input-box.input-url {
+    margin-bottom: 20px;
+  }
+
+  .output-container {
+    margin-top: 20px;
+  }
+
+  .output-textarea {
+    min-height: 200px;
+  }
+
+   /* Pastikan container input URL menggunakan layout kolom */
+   /* .input-box.input-url {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px; */
+    /* margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
+    /* box-sizing: border-box;
+  } */ 
+
+
   .input-field {
+    width: 100%;
+    font-size: 14px;
+    padding: 12px;
+  }
+  
+  .btn-check {
+    width: 100%;
+    max-width: 200px;
     padding: 10px;
     font-size: 14px;
+    margin-top: 10px;
   }
-  .btn-check {
-    padding: 8px 20px;
-    font-size: 14px;
-  }
-  .container-use {
-    padding: 60px 20px;
-  }
-  .title {
-    font-size: 28px;
-  }
-  .row-use {
-    gap: 20px;
-    grid-template-columns: 1fr;
-  }
-  .row-use .col {
+  
+  /* .output-container {
+    clear: both;
+    margin-top: 50px;
+    position: relative;
+    bottom: 1;
+    z-index: 1;
     width: 100%;
-    min-width: unset;
+    max-width: 550px;
+    padding: 25px;
   }
-  .contact-us-container {
-    grid-template-columns: 1fr;
+  
+  .output-textarea {
+    width: 100%;
     height: auto;
+    min-height: 400px !important;
+  } */
+
+  .container-use {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px; /* sesuaikan padding jika perlu */
+  }
+
+  /* Atur grid row-use agar hanya satu kolom, sehingga semua kolom tertata secara vertikal */
+  .row-use {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center; /* pastikan setiap kolom terpusat secara horizontal */
+    gap: 20px;
+    width: 100%;
+  }
+
+  /* Setiap kolom akan mengisi sebagian besar lebar layar, misalnya 90% */
+  .row-use .col {
+    width: 90%;
+    max-width: 400px; /* atau sesuaikan sesuai desain */
+    margin: 0 auto;
+  }
+
+  /* Sesuaikan ukuran heading dan paragraf jika perlu */
+  .row-use .col h3 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .row-use .col p {
+    font-size: 16px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .contact-us-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 80px;
+    height: auto;
+  }
+
+  /* Contact Us */
+  .contact-text {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .contact-form {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-bottom: 60px; 
+    box-sizing: border-box;
+    border: 1px solid transparent; 
+  }
+
+  .contact-form input,
+  .contact-form textarea {
+    width: 100%;
+  }
+
+  .button-container {
+    position: absolute;
+    bottom: 5px;
+    /* right: 1; */
+    left: 0;
+    /* z-index: 10; */
+  }
+
+  .contact-button {
+    padding: 10px 30px !important; 
+    font-size: 16px;
+    white-space: wrap;   
+    min-width: 180px;
+    box-sizing: border-box;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  /* Hilangkan padding kiri untuk kolom 2 dan 3 agar tampilan lebih rapi */
+  .footer-column:nth-child(2),
+  .footer-column:nth-child(3) {
+    padding-left: 0;
+  }
+  /* Sesuaikan margin dan padding untuk kolom 4 */
+  .footer-column:last-child {
+    margin: 10px 20px;
     padding: 20px;
   }
-} */
+}
+
 
 </style>

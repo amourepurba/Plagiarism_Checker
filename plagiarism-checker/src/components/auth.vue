@@ -2,7 +2,7 @@
   <div class="body">
     <div class="container" :class="{ active: isActive }">
       <!-- Form Login -->
-      <div class="form-box login">
+      <div class="form-box login" v-if="!isActive">
         <form @submit.prevent="login">
           <h1>Login</h1>
           <div class="input-box">
@@ -36,11 +36,15 @@
             <span>Login with Google</span>
             <i class="bx bxl-google"></i>
           </button>
+          <!-- Tombol Navigasi untuk Layar Kecil -->
+          <button type="button" class="btn-switch" @click="toggleForm">
+            Don't have an account? Register
+          </button>
         </form>
       </div>
 
       <!-- Form Register -->
-      <div class="form-box register">
+      <div class="form-box register" v-if="isActive">
         <form @submit.prevent="register">
           <h1>Registration</h1>
           <div class="input-box">
@@ -79,6 +83,10 @@
           <button type="button" class="btn-login" @click="loginWithGoogle">
             <span>Login with Google</span>
             <i class="bx bxl-google"></i>
+          </button>
+          <!-- Tombol Navigasi untuk Layar Kecil -->
+          <button type="button" class="btn-switch" @click="toggleForm">
+            Already have an account? Login
           </button>
         </form>
       </div>
@@ -291,14 +299,6 @@ form {
   right: 50%; 
 }
 
-.form-box.register { 
-  visibility: hidden; 
-}
-
-.container.active .form-box.register { 
-  visibility: visible; 
-}
-
 .input-box { 
   position: relative; 
   margin: 20px 0; 
@@ -388,122 +388,171 @@ form {
   border-color: #18A0FB;
 }
 
-
-
-.toggle-box { 
-  position: absolute; 
-  width: 100%; 
-  height: 100%; 
-}
-
-.toggle-box::before { 
-  content: ''; 
-  position: absolute; 
-  left: -250%; 
-  width: 300%; 
-  height: 100%; 
-  background: #18A0FB; 
-  border-radius: 150px; 
-  z-index: 2; 
-  transition: 1.8s ease-in-out; 
-}
-
-.container.active .toggle-box::before { 
-  left: 50%; 
-}
-
-.toggle-panel { 
-  position: absolute; 
-  width: 50%; 
-  height: 100%; 
-  color: #fff; 
-  display: flex; 
-  flex-direction: column; 
-  justify-content: center; 
-  align-items: center; 
-  z-index: 2; 
-  transition: .6s ease-in-out; 
-}
-
-.toggle-panel.toggle-left { 
-  left: 0; 
-  transition-delay: 1.2s; 
-}
-
-.container.active .toggle-panel.toggle-left { 
-  left: -50%; 
-  transition-delay: .6s; 
-}
-
-.toggle-panel.toggle-right { 
-  right: -50%; 
-  transition-delay: .6s; 
-}
-
-.container.active .toggle-panel.toggle-right { 
-  right: 0; 
-  transition-delay: 1.2s; 
-}
-
-.toggle-panel p { 
-  margin-bottom: 20px; 
-}
-
-.toggle-panel .btn { 
-  width: 160px; 
-  height: 46px; 
-  background: transparent; 
-  border: 2px solid #fff; 
-  box-shadow: none; 
-  transition: background 0.3s, color 0.3s;
-}
-
-.toggle-panel .btn:hover {
-  background: #fff;
-  color: #18A0FB;
-}
-
-@media screen and (max-width: 650px) { 
-  .container { 
-      width: 90%;
-      height: auto;
-      padding: 20px;
+.btn-switch {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    color: #18A0FB;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+    text-align: center;
+    text-decoration: underline;
   }
 
-  .form-box { 
-      position: relative;
-      width: 100%;
-      height: auto;
-      padding: 20px;
+  .btn-switch:hover {
+    color: #1167c2;
   }
 
-  .container.active .form-box { 
-      right: 0; 
+  .toggle-box { 
+    position: absolute; 
+    width: 100%; 
+    height: 100%; 
   }
 
   .toggle-box::before { 
-      display: none; 
+    content: ''; 
+    position: absolute; 
+    left: -250%; 
+    width: 300%; 
+    height: 100%; 
+    background: #18A0FB; 
+    border-radius: 150px; 
+    z-index: 2; 
+    transition: 1.8s ease-in-out; 
+  }
+
+  .container.active .toggle-box::before { 
+    left: 50%; 
   }
 
   .toggle-panel { 
-      position: relative;
-      width: 100%;
-      height: auto;
-      margin-top: 20px;
+    position: absolute; 
+    width: 50%; 
+    height: 100%; 
+    color: #fff; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 2; 
+    transition: .6s ease-in-out; 
   }
 
-  .toggle-panel.toggle-left, 
+  .toggle-panel.toggle-left { 
+    left: 0; 
+    transition-delay: 1.2s; 
+  }
+
+  .container.active .toggle-panel.toggle-left { 
+    left: -50%; 
+    transition-delay: .6s; 
+  }
+
   .toggle-panel.toggle-right { 
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
+    right: -50%; 
+    transition-delay: .6s; 
   }
 
-  .container.active .toggle-panel.toggle-left, 
   .container.active .toggle-panel.toggle-right { 
-      left: 0;
-      right: 0;
+    right: 0; 
+    transition-delay: 1.2s; 
   }
-}
+
+  .toggle-panel p { 
+    margin-bottom: 20px; 
+  }
+
+  .toggle-panel .btn { 
+    width: 160px; 
+    height: 46px; 
+    background: transparent; 
+    border: 2px solid #fff; 
+    box-shadow: none; 
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .toggle-panel .btn:hover {
+    background: #fff;
+    color: #18A0FB;
+  }
+
+  /* Responsive Design untuk Layar Kecil */
+  @media screen and (max-width: 768px) {
+    .container {
+      width: 90%; /* Lebar container 90% dari layar */
+      max-width: 400px; /* Maksimum lebar container */
+      height: auto; /* Tinggi menyesuaikan konten */
+      padding: 15px; /* Padding yang lebih kecil */
+      border-radius: 15px; /* Border radius yang lebih kecil */
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Shadow yang lebih halus */
+      margin: 20px auto; /* Pusatkan container */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .form-box {
+      position: relative;
+      width: 100%; 
+      height: auto;
+      max-height: 400px;
+      padding: 10px; 
+    }
+
+    .container.active .form-box {
+      right: 0 !important; /* Nonaktifkan animasi slide pada layar kecil */
+    }
+
+    .toggle-box {
+      display: none; /* Sembunyikan toggle panel pada layar kecil */
+    }
+
+    .form-box .input-box {
+      width: 100%; 
+      margin: 8px 0;
+    }
+
+    .form-box .input-box input {
+      width: 100%; /* Lebar input 100% dari input-box */
+      padding: 8px 30px 8px 10px; /* Padding yang lebih kecil */
+      font-size: 14px; /* Ukuran font yang lebih kecil */
+    }
+
+    .form-box .input-box i {
+      right: 10px; 
+      font-size: 16px; 
+    }
+
+    .btn, .btn-login {
+      width: 100%; /* Lebar tombol 100% dari form-box */
+      padding: 8px; /* Padding yang lebih kecil */
+      font-size: 14px; /* Ukuran font yang lebih kecil */
+      margin-top: 8px; /* Margin atas yang lebih kecil */
+    }
+
+    .btn-login {
+      gap: 5px; /* Jarak antara teks dan ikon yang lebih kecil */
+    }
+
+    .forgot-link {
+      margin: 8px 0; /* Margin yang lebih kecil */
+      text-align: center; /* Pusatkan teks "Forgot Password" */
+    }
+
+    .forgot-link a {
+      font-size: 12px; /* Ukuran font yang lebih kecil */
+    }
+
+    h1 {
+      font-size: 22px; /* Ukuran judul yang lebih kecil */
+      margin: 8px 0; /* Margin yang lebih kecil */
+    }
+
+    p {
+      font-size: 12px; /* Ukuran teks yang lebih kecil */
+    }
+  }
 </style>
