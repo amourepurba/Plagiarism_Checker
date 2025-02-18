@@ -75,73 +75,73 @@
         </ul>
 
         <!-- Dynamic Input Section -->
-        <div class="input-container d-flex flex-column align-items-center">
-          <!-- Tab Text -->
-          <div v-if="activeTab === 'text'" class="input-box input-text">
-            <textarea
-              v-model="inputValue"
-              class="form-control input-field"
-              rows="6"
-              placeholder="Enter your text here..."
-            ></textarea>
-            <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-            <button class="btn btn-check mt-2" @click="checkAction" :disabled="isLoading">
-              <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              <span v-else>Check Plagiarism</span>
-            </button>
-          </div>
+    <div class="input-container d-flex flex-column align-items-center">
+      <!-- Tab Text -->
+      <div v-if="activeTab === 'text'" class="input-box input-text">
+        <textarea
+          v-model="textInput"
+          class="form-control input-field"
+          rows="6"
+          placeholder="Enter your text here..."
+        ></textarea>
+        <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+        <button class="btn btn-check mt-2" @click="checkAction" :disabled="isLoading">
+          <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <span v-else>Check Plagiarism</span>
+        </button>
+      </div>
 
-          <!-- Tab File -->
-          <div v-else-if="activeTab === 'file'" class="input-box input-file">
-            <template v-if="showOutput">
-              <textarea
-                v-model="processedText"
-                class="form-control input-field output-textarea"
-                rows="6"
-                readonly
-              ></textarea>
-            </template>
-            <template v-else>
-              <input
-                type="file"
-                @change="handleFileUpload"
-                class="form-control input-field"
-                accept=".pdf, .doc, .docx"
-              />
-            </template>
-            <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-            <button class="btn btn-check mt-2" @click="checkAction" :disabled="isLoading">
-              <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              <span v-else>Check Plagiarism</span>
-            </button>
-          </div>
+      <!-- Tab File -->
+      <div v-else-if="activeTab === 'file'" class="input-box input-file">
+        <template v-if="showOutput && activeTab === 'file'">
+          <textarea
+            v-model="fileOutput"
+            class="form-control input-field output-textarea"
+            rows="6"
+            readonly
+          ></textarea>
+        </template>
+        <template v-else>
+          <input
+            type="file"
+            @change="handleFileUpload"
+            class="form-control input-field"
+            accept=".pdf, .doc, .docx"
+          />
+        </template>
+        <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+        <button class="btn btn-check mt-2" @click="checkAction" :disabled="isLoading">
+          <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <span v-else>Check Plagiarism</span>
+        </button>
+      </div>
 
-          <!-- Tab URL -->
-          <div v-else-if="activeTab === 'url'" class="input-box input-url">
-            <template v-if="showOutput">
-              <textarea
-                v-model="processedText"
-                class="form-control input-field output-textarea"
-                rows="6"
-                readonly
-              ></textarea>
-            </template>
-            <template v-else>
-              <input
-                v-model="inputValue"
-                type="url"
-                class="form-control input-field"
-                style="text-align: center;"
-                placeholder="Enter your URL here..."
-              />
-            </template>
-            <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-            <button class="btn btn-check mt-2" @click="checkAction" :disabled="isLoading">
-              <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              <span v-else>Check Plagiarism</span>
-            </button>
-          </div>
-        </div>
+      <!-- Tab URL -->
+      <div v-else-if="activeTab === 'url'" class="input-box input-url">
+        <template v-if="showOutput && activeTab === 'url'">
+          <textarea
+            v-model="urlOutput"
+            class="form-control input-field output-textarea"
+            rows="6"
+            readonly
+          ></textarea>
+        </template>
+        <template v-else>
+          <input
+            v-model="urlInput"
+            type="url"
+            class="form-control input-field"
+            style="text-align: center;"
+            placeholder="Enter your URL here..."
+          />
+        </template>
+        <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+        <button class="btn btn-check mt-2" @click="checkAction" :disabled="isLoading">
+          <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <span v-else>Check Plagiarism</span>
+        </button>
+      </div>
+    </div>
 
         <!-- Animasi Loading -->
         <div v-if="isLoading" class="loading-container">
@@ -309,15 +309,16 @@
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 
 export default {
   data() {
     return {
       isLoading: false,
       activeTab: 'text',
-      inputValue: '',
-      file: null,
+      textInput: '',
+      fileInput: null,
+      urlInput: '',
       showOutput: false,
       errorMessage: '',
       similarityScore: 0,
@@ -325,20 +326,23 @@ export default {
       readabilityScore: 0,
       topKeywords: [],
       sources: [],
-      processedText: ''
+      textOutput: '',
+      fileOutput: '',
+      urlOutput: '',
+      selectedLanguage: 'english'
     };
   },
   methods: {
     validateInput() {
-      if (this.activeTab === 'text' && this.inputValue.trim() === '') {
+      if (this.activeTab === 'text' && this.textInput.trim() === '') {
         this.errorMessage = 'Input tidak boleh kosong!';
         return false;
       }
-      if (this.activeTab === 'url' && !this.inputValue.match(/^https?:\/\/[^\s$.?#].[^\s]*$/)) {
+      if (this.activeTab === 'url' && !this.urlInput.match(/^https?:\/\/[^\s$.?#].[^\s]*$/)) {
         this.errorMessage = 'URL tidak valid!';
         return false;
       }
-      if (this.activeTab === 'file' && !this.file) {
+      if (this.activeTab === 'file' && !this.fileInput) {
         this.errorMessage = 'Silakan unggah file!';
         return false;
       }
@@ -356,14 +360,13 @@ export default {
       const apiUrl = "http://localhost:5001/analyze";
       let requestOptions = {};
 
-      // Sertakan parameter 'language' berdasarkan pilihan dropdown (selectedLanguage)
       if (this.activeTab === 'text') {
         requestOptions = {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             input_type: 'text', 
-            text: this.inputValue,
+            text: this.textInput,
             language: this.selectedLanguage 
           })
         };
@@ -373,13 +376,13 @@ export default {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             input_type: 'url', 
-            url: this.inputValue,
+            url: this.urlInput,
             language: this.selectedLanguage 
           })
         };
       } else if (this.activeTab === 'file') {
         const formData = new FormData();
-        formData.append("file", this.file);
+        formData.append("file", this.fileInput);
         formData.append("input_type", "file");
         formData.append("language", this.selectedLanguage);
         requestOptions = { method: 'POST', body: formData };
@@ -396,7 +399,13 @@ export default {
             this.readabilityScore = data.readability_score;
             this.topKeywords = Object.keys(data.top_keywords);
             this.sources = data.plagiarized_sites.map(item => item.url);
-            this.processedText = data.processed_text || '';
+            if (this.activeTab === 'text') {
+              this.textOutput = data.processed_text || '';
+            } else if (this.activeTab === 'file') {
+              this.fileOutput = data.processed_text || '';
+            } else if (this.activeTab === 'url') {
+              this.urlOutput = data.processed_text || '';
+            }
             this.showOutput = true;
             this.$nextTick(() => {
               if (this.$refs.resultSection) {
@@ -422,24 +431,35 @@ export default {
       const fileExtension = file.name.split('.').pop().toLowerCase();
       if (!allowedExtensions.includes(fileExtension)) {
         this.errorMessage = 'Format file tidak valid!';
-        this.file = null;
+        this.fileInput = null;
         return;
       }
 
       if (file.size > 5 * 1024 * 1024) {
         this.errorMessage = 'Ukuran file terlalu besar! Maksimal 5MB.';
-        this.file = null;
+        this.fileInput = null;
         return;
       }
 
-      this.file = file;
+      this.fileInput = file;
       this.errorMessage = '';
     },
 
-    changeLanguage(event) {
-      // Fungsi ini sudah tidak wajib lagi karena kita menggunakan v-model,
-      // tetapi tetap dapat digunakan untuk logging atau logika tambahan.
-      console.log('Bahasa diubah ke:', this.selectedLanguage);
+    resetOutput() {
+      this.showOutput = false;
+      this.textOutput = '';
+      this.fileOutput = '';
+      this.urlOutput = '';
+      this.similarityScore = 0;
+      this.uniqueScore = 0;
+      this.readabilityScore = 0;
+      this.topKeywords = [];
+      this.sources = [];
+    }
+  },
+  watch: {
+    activeTab() {
+      this.resetOutput(); // Reset output saat tab berubah
     }
   },
 
@@ -1663,45 +1683,48 @@ p {
     box-sizing: border-box;
   }
 
-  .footer-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  width: 100%;
-  padding: 20px 10px;
-  }
-
-  .footer-language {
-    width: 100%;
-    margin-bottom: 20px;
-  }
-
-  .footer-menu {
-    width: 100%;
-  }
-
-  .footer-item {
-    width: 100%;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    padding: 10px 0;
-  }
-
-  .footer-title {
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 10px;
-    display: block;
-    width: 100%;
-    text-align: left;
-  }
-
+  /* Ubah container footer utama menjadi grid dengan 3 kolom untuk bagian yang diinginkan */
   .footer-content {
-    padding: 10px;
+    display: grid;
+    /* Misalnya, kita inginkan 3 kolom dengan lebar sama untuk Solutions, Information, dan Company */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  /* Biarkan kolom pertama (bahasa & supervene) dan kolom keempat (cost-effective fees) tetap di tempatnya, 
+    misalnya dengan mengatur posisi grid atau mengeset ulang jika diperlukan.
+    Contoh: */
+  .footer-column:first-child,
+  .footer-column:last-child {
+    grid-column: 1 / -1; /* Membuatnya memenuhi baris sendiri */
+  }
+
+  /* Flatten struktur HTML untuk kolom kedua dan ketiga,
+    sehingga anak-anaknya (solutions, information, company) menjadi langsung anak dari .footer-content */
+  .footer-column:nth-child(2),
+  .footer-column:nth-child(3) {
+    display: contents;
+  }
+
+  /* Atur posisi masing-masing bagian dalam grid */
+  .solutions-section {
+    grid-column: 1; /* Kolom pertama dalam baris khusus ini */
+  }
+  .information-section {
+    grid-column: 2; /* Kolom kedua */
+  }
+  .company-section {
+    grid-column: 3; /* Kolom ketiga */
+  }
+
+
+  /* Sembunyikan kolom paling bawah (misalnya, kolom partnership) pada tampilan mobile */
+  .footer-content .footer-column:last-child {
+    display: none;
   }
 }
+
+
 
 
 
@@ -1926,259 +1949,46 @@ p {
     box-sizing: border-box;
   }
 
+  /* Ubah container footer utama menjadi grid dengan 3 kolom untuk bagian yang diinginkan */
   .footer-content {
-    grid-template-columns: 1fr;
-    gap: 30px;
-    max-width: 100%;
-    margin: 0 auto;
-  }
-  /* Hilangkan padding kiri untuk kolom 2 dan 3 agar tampilan lebih rapi */
-  .footer-column:nth-child(2),
-  .footer-column:nth-child(3) {
-    padding-left: 0;
-  }
-  /* Sesuaikan margin dan padding untuk kolom 4 */
-  .footer-column:last-child {
-    margin: 10px 20px;
-    padding: 20px;
-  }
-}
-
-
-
-
-/* Tablet Devices (min-width: 768px and max-width: 991px) */
-@media (min-width: 768px) and (max-width: 991px) {
-  /* Navbar */
-  .navbar .container-fluid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  /* Logo */
-  .navbar img.logo {
-    order: 2;
-    margin-left: auto;
-    width: auto;
-    max-width: 150px; 
-  }
-
-   /* Bagian collapse (nav links) berada di sebelah kiri */
-   .navbar .collapse {
-    order: 0;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-  }
-  
-  /* Ketika collapse aktif (memiliki kelas .show), tampilkan sebagai flex dan agar menu muncul secara vertikal di sebelah kiri */
-  .navbar .collapse.show {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .navbar .navbar-nav {
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-    margin-top: 10px;
-  }
-  
-  .navbar .nav-item {
-    margin: 5px 0; 
-  }
-  
-  .navbar .nav-link {
-    padding: 0;
-    margin: 0;
-    text-align: left;
-    font-size: 16px; 
-  }
-
-
-  /* Main Content & Input Section */
- 
-  .main-content {
-    padding: 10px;
-  }
-  
-  .container-option {
-    padding: 0 10px;
-  }
-  
-  .input-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .container-option ul.nav {
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 10px;
-  }
-  
-  .input-box {
-    width: 100%;
-    max-width: 500px;
-    margin: 10px auto;
-  }
-
-
-   /* Pastikan container input URL menggunakan layout kolom */
-   .input-box.input-url {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 500px;
-    margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
-    box-sizing: border-box;
-  }
-
-
-  .input-field {
-    width: 100%;
-    font-size: 14px;
-    padding: 12px;
-  }
-  
-  .btn-check {
-    width: 100%;
-    max-width: 200px;
-    padding: 10px;
-    font-size: 14px;
-    margin-top: 10px;
-  }
-  
-  .output-container {
-    clear: both;
-    margin-top: 50px;
-    position: relative;
-    bottom: 1;
-    z-index: 1;
-    width: 100%;
-    max-width: 550px;
-    padding: 25px;
-  }
-  
-  .output-textarea {
-    width: 100%;
-    height: auto;
-    min-height: 400px !important;
-  }
-
-  .container-use {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 20px; /* sesuaikan padding jika perlu */
-  }
-
-  /* Atur grid row-use agar hanya satu kolom, sehingga semua kolom tertata secara vertikal */
-  .row-use {
     display: grid;
-    grid-template-columns: 1fr;
-    justify-items: center; /* pastikan setiap kolom terpusat secara horizontal */
+    /* Misalnya, kita inginkan 3 kolom dengan lebar sama untuk Solutions, Information, dan Company */
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
-    width: 100%;
   }
 
-  /* Setiap kolom akan mengisi sebagian besar lebar layar, misalnya 90% */
-  .row-use .col {
-    width: 90%;
-    max-width: 400px; /* atau sesuaikan sesuai desain */
-    margin: 0 auto;
+  /* Biarkan kolom pertama (bahasa & supervene) dan kolom keempat (cost-effective fees) tetap di tempatnya, 
+    misalnya dengan mengatur posisi grid atau mengeset ulang jika diperlukan.
+    Contoh: */
+  .footer-column:first-child,
+  .footer-column:last-child {
+    grid-column: 1 / -1; /* Membuatnya memenuhi baris sendiri */
   }
 
-  /* Sesuaikan ukuran heading dan paragraf jika perlu */
-  .row-use .col h3 {
-    font-size: 24px;
-    margin-bottom: 8px;
-    text-align: center;
-  }
-  .row-use .col p {
-    font-size: 16px;
-    line-height: 1.5;
-    text-align: center;
-  }
-
-  .contact-us-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    margin-bottom: 80px;
-    height: auto;
-  }
-
-  /* Contact Us */
-  .contact-text {
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .contact-form {
-    position: relative;
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    padding-bottom: 60px; 
-    box-sizing: border-box;
-    border: 1px solid transparent; 
-  }
-
-  .contact-form input,
-  .contact-form textarea {
-    width: 100%;
-  }
-
-  .button-container {
-    position: absolute;
-    bottom: 5px;
-    /* right: 1; */
-    left: 0;
-    /* z-index: 10; */
-  }
-
-  .contact-button {
-    padding: 10px 30px !important; 
-    font-size: 16px;
-    white-space: wrap;   
-    min-width: 180px;
-    box-sizing: border-box;
-  }
-
-  .footer-content {
-    grid-template-columns: 1fr;
-    gap: 30px;
-    max-width: 100%;
-    margin: 0 auto;
-  }
-  /* Hilangkan padding kiri untuk kolom 2 dan 3 agar tampilan lebih rapi */
+  /* Flatten struktur HTML untuk kolom kedua dan ketiga,
+    sehingga anak-anaknya (solutions, information, company) menjadi langsung anak dari .footer-content */
   .footer-column:nth-child(2),
   .footer-column:nth-child(3) {
-    padding-left: 0;
+    display: contents;
   }
-  /* Sesuaikan margin dan padding untuk kolom 4 */
-  .footer-column:last-child {
-    margin: 10px 20px;
-    padding: 20px;
+
+  /* Atur posisi masing-masing bagian dalam grid */
+  .solutions-section {
+    grid-column: 1; /* Kolom pertama dalam baris khusus ini */
+  }
+  .information-section {
+    grid-column: 2; /* Kolom kedua */
+  }
+  .company-section {
+    grid-column: 3; /* Kolom ketiga */
+  }
+
+
+  /* Sembunyikan kolom paling bawah (misalnya, kolom partnership) pada tampilan mobile */
+  .footer-content .footer-column:last-child {
+    display: none;
   }
 }
-
-
-
 
 
 
@@ -2423,6 +2233,7 @@ p {
     padding: 20px;
   }
 }
+
 
 
 </style>
