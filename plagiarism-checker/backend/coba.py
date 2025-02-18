@@ -13,7 +13,6 @@ import io
 import PyPDF2
 import docx
 import time
-import base64
 
 try:
     import textract
@@ -23,62 +22,57 @@ except ImportError:
 app = Flask(__name__)
 CORS(app)
 
+# Pastikan stopwords sudah diunduh
 nltk.download('stopwords')
-STOPWORDS = set(stopwords.words('english'))
+STOPWORDS_LANGUAGES = {
+    'english': set(stopwords.words('english')),
+    'indonesian': set(stopwords.words('indonesian')),
+    'turkish': set(stopwords.words('turkish')),
+    'spanish': set(stopwords.words('spanish')),
+    'french': set(stopwords.words('french')),
+    'german': set(stopwords.words('german'))
+}
 
-# DataForSEO Credentials
-DATAFORSEO_EMAIL = "email_anda@example.com"
-DATAFORSEO_PASSWORD = "password_api_anda"
+# DataForSEO configuration
+DATAFORSEO_API_KEY = "am9obkBleGFtcGxl"
 DATAFORSEO_BASE_URL = "https://api.dataforseo.com/v3"
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Autentikasi Basic Authentication
-def get_dataforseo_headers():
-    credentials = f"{DATAFORSEO_EMAIL}:{DATAFORSEO_PASSWORD}"
-    encoded_credentials = base64.b64encode(credentials.encode()).decode()
-    return {"Authorization": f"Basic {encoded_credentials}", "Content-Type": "application/json"}
-
-# Fungsi untuk mengambil data SERP dari DataForSEO
-def fetch_serp_dataforseo_async(keyword):
-    url_post = f"{DATAFORSEO_BASE_URL}/serp/google/organic/task_post"
-    headers = get_dataforseo_headers()
-    
+def fetch_serp_dataforseo(keyword):
+    """
+    Mengirim permintaan ke API DataForSEO sebagai bridge menggunakan endpoint live/regular.
+    Pastikan payload dan struktur respons sudah sesuai.
+    """
+    url = f"{DATAFORSEO_BASE_URL}/serp/google/organic/live/regular"
+    headers = {"Content-Type": "application/json"}
     payload = {
-        "data": [{
-            "keyword": keyword,
-            "language_code": "en",
-            "location_code": 2840  # Kode untuk USA
-        }]
+        "secretCode": DATAFORSEO_API_KEY,
+        "payload": {
+            "data": [{
+                "keyword": keyword,
+                "language_code": "en",
+                "location_code": 2840
+            }]
+        }
     }
-    
     try:
-        response = requests.post(url_post, json=payload, headers=headers)
+        response = requests.post(url, json=payload, headers=headers)
+        logger.info("DataForSEO response status: %s", response.status_code)
+        logger.info("DataForSEO response text: %s", response.text)
         if response.status_code != 200:
-            return {"error": f"Error posting task: {response.text}"}
-        
-        task_data = response.json()
-        task_id = task_data.get("tasks", [{}])[0].get("id")
-        if not task_id:
-            return {"error": "Gagal mendapatkan task ID"}
-        
-        # Tunggu beberapa detik sebelum mengambil hasil
-        url_get = f"{DATAFORSEO_BASE_URL}/serp/google/organic/task_get/{task_id}"
-        for _ in range(10):  
-            response = requests.get(url_get, headers=headers)
-            result = response.json()
-            if result.get("status_code") == 20000:
-                return result
-            time.sleep(5)  # Tunggu sebelum mencoba lagi
-
-        return {"error": "Gagal mendapatkan hasil dari DataForSEO"}
-    except requests.RequestException as e:
+            logger.error("Response status bukan 200, isi response: %s", response.text)
+            return {"error": "Gagal mengirim permintaan ke DataForSEO"}
+        return response.json()  # Mengembalikan object payload dari DataForSEO
+    except Exception as e:
         logger.error(f"Error fetching SERP data: {e}")
         return {"error": str(e)}
 
-# Fungsi untuk ekstraksi teks dari file
 def extract_text_from_file(file):
+    """
+    Mengekstrak teks dari file yang diunggah (PDF, DOCX, atau DOC).
+    """
     try:
         if file.filename.endswith('.pdf'):
             reader = PyPDF2.PdfReader(file)
@@ -93,44 +87,62 @@ def extract_text_from_file(file):
         return None
     return None
 
-# Fungsi untuk ekstraksi teks dari URL
 def extract_text_from_url(url):
+    """
+    Mengekstrak teks dari URL menggunakan BeautifulSoup.
+    """
     try:
         response = requests.get(url, timeout=5)
         response.raise_for_status()
         soup = BeautifulSoup(response.content, "html.parser")
         return soup.get_text(separator=' ', strip=True)
-    except requests.RequestException:
+    except requests.RequestException as e:
+        logger.error(f"Error fetching URL {url}: {e}")
         return None
 
-# Fungsi untuk menghitung skor keterbacaan
 def calculate_readability_score(text):
+    """
+    Menghitung skor keterbacaan menggunakan formula Flesch Reading Ease.
+    """
     try:
         return max(0, min(flesch_reading_ease(text), 100)) if text.strip() else 0
-    except Exception:
+    except Exception as e:
+        logger.error(f"Error calculating readability score: {e}")
         return 0
 
-# Fungsi untuk menghitung kata kunci utama
-def calculate_top_keywords(text):
+def calculate_top_keywords(text, language='english'):
+    """
+    Menghitung top 5 kata kunci dengan mengabaikan stopwords sesuai bahasa.
+    """
     words = re.findall(r'\b\w+\b', text.lower())
-    filtered_words = [word for word in words if word not in STOPWORDS and len(word) > 3]
+    stopwords_set = STOPWORDS_LANGUAGES.get(language, STOPWORDS_LANGUAGES['english'])
+    filtered_words = [word for word in words if word not in stopwords_set and len(word) > 3]
     if not filtered_words:
         return {}
     total_words = len(filtered_words)
     freq_dist = Counter(filtered_words)
     return {word: (count / total_words) * 100 for word, count in freq_dist.most_common(5)}
 
-# Fungsi untuk menghitung skor keunikan
 def calculate_uniqueness_score(text, similar_sites):
+    """
+    Menghitung skor keunikan berdasarkan kesamaan antara teks dengan snippet situs serupa.
+    """
     if not similar_sites:
         return 100
-    similarities = [SequenceMatcher(None, text, site.get("snippet", "")).ratio() for site in similar_sites if site.get("snippet")]
-    return max(0, min(100 - (sum(similarities) / len(similarities) * 100 if similarities else 0), 100))
+    similarities = [
+        SequenceMatcher(None, text, site.get("snippet", "")).ratio()
+        for site in similar_sites if site.get("snippet")
+    ]
+    average_similarity = (sum(similarities) / len(similarities)) * 100 if similarities else 0
+    return max(0, min(100 - average_similarity, 100))
 
-# Fungsi untuk mendeteksi plagiarisme
 def detect_plagiarism(text, similar_sites):
+    """
+    Mendeteksi kalimat yang mungkin ter-plagiasi dengan membandingkan setiap kalimat
+    dengan snippet dari situs. Jika similarity > 80%, dianggap plagiasi.
+    """
     plagiarized_sites = []
-    sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
+    sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)\s', text)
     for sentence in sentences:
         for site in similar_sites:
             similarity = SequenceMatcher(None, sentence, site.get("snippet", "")).ratio()
@@ -143,23 +155,49 @@ def detect_plagiarism(text, similar_sites):
                 })
     return plagiarized_sites
 
-# Endpoint utama untuk analisis teks
 @app.route('/analyze', methods=['POST'])
 def analyze():
+    """
+    Endpoint untuk menganalisis teks/URL/file.
+    Proses analisis meliputi:
+      - Ekstraksi teks
+      - Perhitungan readability dan top keywords
+      - Pemanggilan API DataForSEO sebagai bridge untuk mendapatkan situs-situs serupa
+      - Perhitungan uniqueness dan deteksi plagiasi
+    """
+    # Jika ada file, proses file; jika tidak, proses input JSON
     if 'file' in request.files:
         file = request.files['file']
         text = extract_text_from_file(file)
+        # Mengambil parameter bahasa dari form data jika tersedia, default 'english'
+        language = request.form.get('language', 'english').lower()
     else:
         data = request.get_json()
-        text = data.get('text', '') if data.get('input_type') == 'text' else extract_text_from_url(data.get('url', ''))
+        language = data.get('language', 'english').lower()
+        if data.get('input_type') == 'text':
+            text = data.get('text', '')
+        else:  # diasumsikan input_type 'url'
+            text = extract_text_from_url(data.get('url', ''))
     
     if not text or not text.strip():
         return jsonify({"error": "Konten kosong"}), 400
     
     readability_score = calculate_readability_score(text)
-    top_keywords = calculate_top_keywords(text)
-    serp_result = fetch_serp_dataforseo_async(text[:100])
-    similar_sites = serp_result.get("tasks", [{}])[0].get("result", []) if "tasks" in serp_result else []
+    top_keywords = calculate_top_keywords(text, language)
+    
+    # Panggil API DataForSEO dengan 100 karakter pertama sebagai keyword
+    serp_result = fetch_serp_dataforseo(text[:100])
+    logger.info("SERP API result: %s", serp_result)
+    
+    # Jika terjadi error pada respons, gunakan daftar kosong untuk similar_sites
+    if 'error' in serp_result:
+        similar_sites = []
+    else:
+        # Pastikan struktur respons sesuai; sesuaikan jika berbeda
+        similar_sites = serp_result.get("payload", {}).get("data", [{}])[0].get("result", [])
+        if similar_sites is None:
+            similar_sites = []
+    
     uniqueness_score = calculate_uniqueness_score(text, similar_sites)
     duplication_score = 100 - uniqueness_score
     plagiarized_sites = detect_plagiarism(text, similar_sites)

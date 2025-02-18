@@ -9,10 +9,8 @@ from collections import Counter
 import re
 from difflib import SequenceMatcher
 import logging
-import io
 import PyPDF2
 import docx
-import time
 
 try:
     import textract
@@ -22,6 +20,7 @@ except ImportError:
 app = Flask(__name__)
 CORS(app)
 
+# Pastikan stopwords sudah diunduh
 nltk.download('stopwords')
 STOPWORDS_LANGUAGES = {
     'english': set(stopwords.words('english')),
@@ -32,52 +31,51 @@ STOPWORDS_LANGUAGES = {
     'german': set(stopwords.words('german'))
 }
 
+# Pemetaan bahasa ke kode untuk SERP API
+SERP_LANGUAGE_MAPPING = {
+    "english": "en",
+    "indonesian": "id",
+    "turkish": "tr",
+    "spanish": "es",
+    "french": "fr",
+    "german": "de"
+}
+
+# Konfigurasi API
 DATAFORSEO_API_KEY = "am9obkBleGFtcGxl"
-DATAFORSEO_BASE_URL = "https://api.dataforseo.com/v3"
+BRIDGE_BASE_URL = "https://external-dfseo-redirect-1054425646954.asia-southeast1.run.app"
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def fetch_serp_dataforseo_async(keyword):
-    url_post = f"{DATAFORSEO_BASE_URL}/serp/google/organic/task_post"
-    headers = {"Authorization": f"Bearer {DATAFORSEO_API_KEY}", "Content-Type": "application/json"}
-    payload = {"data": [{"keyword": keyword, "language_code": "en", "location_code": 2840}]}
-    
+def fetch_serp_dataforseo(keyword, language="english"):
+    """
+    Mengirim permintaan ke API DataForSEO melalui bridge dengan penyesuaian language_code.
+    """
+    language_code = SERP_LANGUAGE_MAPPING.get(language, "en")
+    url = f"{BRIDGE_BASE_URL}/serp/google/organic/live/regular"
+    headers = {"Content-Type": "application/json"}
+    payload = {
+        "secretCode": DATAFORSEO_API_KEY,
+        "payload": {
+            "data": [{
+                "keyword": keyword,
+                "language_code": language_code,
+                "location_code": 2840
+            }]
+        }
+    }
     try:
-        response = requests.post(url_post, json=payload, headers=headers)
+        response = requests.post(url, json=payload, headers=headers)
+        logger.info("Bridge API response status: %s", response.status_code)
+        logger.info("Bridge API response text: %s", response.text)
         if response.status_code != 200:
+            logger.error("Response status bukan 200, isi response: %s", response.text)
             return {"error": "Gagal mengirim permintaan ke DataForSEO"}
-        
-        task_id = response.json().get("tasks", [{}])[0].get("id")
-        if not task_id:
-            return {"error": "Gagal mendapatkan task ID"}
-        
-        url_get = f"{DATAFORSEO_BASE_URL}/serp/google/organic/task_get/{task_id}"
-        for _ in range(10):
-            response = requests.get(url_get, headers=headers)
-            result = response.json()
-            if result.get("status_code") == 20000:
-                return result
-            time.sleep(5)
-        return {"error": "Gagal mendapatkan hasil dari DataForSEO"}
+        return response.json()
     except Exception as e:
-        logger.error(f"Error fetching SERP data async: {e}")
+        logger.error(f"Error fetching SERP data via bridge: {e}")
         return {"error": str(e)}
-
-def extract_text_from_file(file):
-    try:
-        if file.filename.endswith('.pdf'):
-            reader = PyPDF2.PdfReader(file)
-            return "\n".join(page.extract_text() or "" for page in reader.pages)
-        elif file.filename.endswith('.docx'):
-            doc = docx.Document(file)
-            return "\n".join(para.text for para in doc.paragraphs)
-        elif file.filename.endswith('.doc') and textract:
-            return textract.process(file, extension='doc').decode('utf-8')
-    except Exception as e:
-        logger.error(f"Error extracting text from {file.filename}: {e}")
-        return None
-    return None
 
 def extract_text_from_url(url):
     try:
@@ -104,12 +102,6 @@ def calculate_top_keywords(text, language='english'):
     freq_dist = Counter(filtered_words)
     return {word: (count / total_words) * 100 for word, count in freq_dist.most_common(5)}
 
-def calculate_uniqueness_score(text, similar_sites):
-    if not similar_sites:
-        return 100
-    similarities = [SequenceMatcher(None, text, site.get("snippet", "")).ratio() for site in similar_sites if site.get("snippet")]
-    return max(0, min(100 - (sum(similarities) / len(similarities) * 100 if similarities else 0), 100))
-
 def detect_plagiarism(text, similar_sites):
     plagiarized_sites = []
     sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)\s', text)
@@ -117,36 +109,40 @@ def detect_plagiarism(text, similar_sites):
         for site in similar_sites:
             similarity = SequenceMatcher(None, sentence, site.get("snippet", "")).ratio()
             if similarity > 0.8:
-                plagiarized_sites.append({"url": site.get("url"), "snippet": site.get("snippet"), "similarity": similarity * 100, "plagiarized_sentence": sentence})
+                plagiarized_sites.append({
+                    "url": site.get("url"),
+                    "snippet": site.get("snippet"),
+                    "similarity": similarity * 100,
+                    "plagiarized_sentence": sentence
+                })
     return plagiarized_sites
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
+    if 'file' in request.files:
+        return jsonify({"error": "Fitur analisis file belum diimplementasikan"}), 400
+    
     data = request.get_json()
     language = data.get('language', 'english').lower()
-    
-    if 'file' in request.files:
-        file = request.files['file']
-        text = extract_text_from_file(file)
+    if data.get('input_type') == 'text':
+        text = data.get('text', '')
     else:
-        text = data.get('text', '') if data.get('input_type') == 'text' else extract_text_from_url(data.get('url', ''))
+        text = extract_text_from_url(data.get('url', ''))
     
     if not text or not text.strip():
         return jsonify({"error": "Konten kosong"}), 400
     
     readability_score = calculate_readability_score(text)
     top_keywords = calculate_top_keywords(text, language)
-    serp_result = fetch_serp_dataforseo_async(text[:100])
-    similar_sites = serp_result.get("tasks", [{}])[0].get("result", []) if "tasks" in serp_result else []
-    uniqueness_score = calculate_uniqueness_score(text, similar_sites)
-    duplication_score = 100 - uniqueness_score
+    serp_result = fetch_serp_dataforseo(text[:100], language)
+    similar_sites = serp_result.get("payload", {}).get("data", [{}])[0].get("result", [])
     plagiarized_sites = detect_plagiarism(text, similar_sites)
+    uniqueness_score = 100 - (sum(site['similarity'] for site in plagiarized_sites) / len(plagiarized_sites) if plagiarized_sites else 0)
     
     return jsonify({
         "processed_text": text,
         "readability_score": readability_score,
         "uniqueness_score": uniqueness_score,
-        "duplication_score": duplication_score,
         "top_keywords": top_keywords,
         "similar_sites": similar_sites,
         "plagiarized_sites": plagiarized_sites
