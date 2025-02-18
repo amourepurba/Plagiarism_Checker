@@ -332,6 +332,7 @@ export default {
       selectedLanguage: 'english'
     };
   },
+
   methods: {
     validateInput() {
       if (this.activeTab === 'text' && this.textInput.trim() === '') {
@@ -360,10 +361,6 @@ export default {
       const apiUrl = "http://localhost:5001/analyze";
       let requestOptions = {};
 
-<<<<<<< HEAD
-=======
-      // Sertakan parameter 'language' sesuai pilihan dropdown
->>>>>>> 814b5159d7f657d522addf3dcef0cdebf76de63d
       if (this.activeTab === 'text') {
         requestOptions = {
           method: 'POST',
@@ -385,7 +382,6 @@ export default {
           })
         };
       } else if (this.activeTab === 'file') {
-        // Backend untuk file belum diimplementasikan
         const formData = new FormData();
         formData.append("file", this.fileInput);
         formData.append("input_type", "file");
@@ -399,11 +395,9 @@ export default {
           if (data.error) {
             this.errorMessage = data.error;
           } else {
-            // Karena backend mengembalikan uniqueness_score, kita hitung skor plagiasi sebagai inversenya.
             this.uniqueScore = data.uniqueness_score;
-            this.similarityScore = 100 - data.uniqueness_score; // Skor plagiasi
+            this.similarityScore = 100 - data.uniqueness_score;
             this.readabilityScore = data.readability_score;
-            // Menampilkan keyword beserta persentase (jika diinginkan)
             this.topKeywords = Object.entries(data.top_keywords).map(
               ([word, percentage]) => `${word} (${percentage.toFixed(2)}%)`
             );
@@ -454,7 +448,6 @@ export default {
       this.errorMessage = '';
     },
 
-<<<<<<< HEAD
     resetOutput() {
       this.showOutput = false;
       this.textOutput = '';
@@ -465,20 +458,23 @@ export default {
       this.readabilityScore = 0;
       this.topKeywords = [];
       this.sources = [];
-    }
-  },
-  watch: {
-    activeTab() {
-      this.resetOutput(); // Reset output saat tab berubah
-=======
+      this.errorMessage = ''; // Tambahkan ini untuk reset error message
+    },
+
     changeLanguage(event) {
       console.log('Bahasa diubah ke:', this.selectedLanguage);
->>>>>>> 814b5159d7f657d522addf3dcef0cdebf76de63d
+    }
+  },
+
+    watch: {
+    activeTab() {
+      this.resetOutput();
+      this.errorMessage = ''; // Tambahkan ini untuk memastikan error di-reset
     }
   },
 
   setup() {
-    const selectedLanguage = ref('english'); // Default sesuai dengan backend
+    const selectedLanguage = ref('english');
     const isVisible = ref(false);
     const isShaking = ref(false);
     const howToUseSection = ref(null);
@@ -562,7 +558,6 @@ export default {
   }
 };
 </script>
-
 
 
 
