@@ -107,8 +107,8 @@ def check_plagiarism(text, language):
             "payload": {
                 "data": [{
                     "keyword": text[:300],
-                    "language_code": SERP_LANGUAGE_MAPPING.get(language, "en"),
-                    "location_code": 2840
+                    "language_code": "id",
+                    "location_code": 2360
                 }]
             }
         }
