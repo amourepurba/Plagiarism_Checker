@@ -11,6 +11,7 @@ from difflib import SequenceMatcher
 import logging
 import PyPDF2
 import docx
+import os
 
 try:
     import textract
@@ -20,8 +21,11 @@ except ImportError:
 app = Flask(__name__)
 CORS(app)
 
-# Pastikan stopwords sudah diunduh
+# Inisialisasi NLTK
 nltk.download('stopwords')
+nltk.download('punkt')
+
+# Konfigurasi Bahasa
 STOPWORDS_LANGUAGES = {
     'english': set(stopwords.words('english')),
     'indonesian': set(stopwords.words('indonesian')),
@@ -31,7 +35,6 @@ STOPWORDS_LANGUAGES = {
     'german': set(stopwords.words('german'))
 }
 
-# Pemetaan bahasa ke kode untuk SERP API
 SERP_LANGUAGE_MAPPING = {
     "english": "en",
     "indonesian": "id",
@@ -48,105 +51,127 @@ BRIDGE_BASE_URL = "https://external-dfseo-redirect-1054425646954.asia-southeast1
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def fetch_serp_dataforseo(keyword, language="english"):
-    """
-    Mengirim permintaan ke API DataForSEO melalui bridge dengan penyesuaian language_code.
-    """
-    language_code = SERP_LANGUAGE_MAPPING.get(language, "en")
-    url = f"{BRIDGE_BASE_URL}/serp/google/organic/live/regular"
-    headers = {"Content-Type": "application/json"}
-    payload = {
-        "secretCode": DATAFORSEO_API_KEY,
-        "payload": {
-            "data": [{
-                "keyword": keyword,
-                "language_code": language_code,
-                "location_code": 2840
-            }]
-        }
-    }
+def extract_text_from_file(file):
+    """Ekstrak teks dari file PDF, DOC, atau DOCX"""
     try:
-        response = requests.post(url, json=payload, headers=headers)
-        logger.info("Bridge API response status: %s", response.status_code)
-        logger.info("Bridge API response text: %s", response.text)
-        if response.status_code != 200:
-            logger.error("Response status bukan 200, isi response: %s", response.text)
-            return {"error": "Gagal mengirim permintaan ke DataForSEO"}
-        return response.json()
+        if file.filename.endswith('.pdf'):
+            reader = PyPDF2.PdfReader(file)
+            return " ".join([page.extract_text() for page in reader.pages]), None
+        
+        elif file.filename.endswith('.docx'):
+            doc = docx.Document(file)
+            return " ".join([p.text for p in doc.paragraphs]), None
+        
+        elif file.filename.endswith('.doc'):
+            if textract:
+                return textract.process(file).decode('utf-8'), None
+            return None, "File .doc membutuhkan textract (pip install textract)"
+        
+        return None, "Format file tidak didukung"
+    
     except Exception as e:
-        logger.error(f"Error fetching SERP data via bridge: {e}")
-        return {"error": str(e)}
+        logger.error(f"Error extracting text: {str(e)}")
+        return None, f"Error processing file: {str(e)}"
 
 def extract_text_from_url(url):
+    """Ekstrak teks dari URL"""
     try:
-        response = requests.get(url, timeout=5)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.content, "html.parser")
-        return soup.get_text(separator=' ', strip=True)
-    except requests.RequestException:
+        response = requests.get(url, timeout=10)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        return ' '.join([p.get_text() for p in soup.find_all('p')])
+    except Exception as e:
+        logger.error(f"Error extracting URL content: {str(e)}")
         return None
 
-def calculate_readability_score(text):
+def calculate_readability(text):
+    """Hitung skor keterbacaan"""
     try:
-        return max(0, min(flesch_reading_ease(text), 100)) if text.strip() else 0
-    except Exception:
+        return max(0, min(flesch_reading_ease(text), 100))
+    except:
         return 0
 
-def calculate_top_keywords(text, language='english'):
+def analyze_keywords(text, language):
+    """Analisis kata kunci"""
     words = re.findall(r'\b\w+\b', text.lower())
-    stopwords_set = STOPWORDS_LANGUAGES.get(language, STOPWORDS_LANGUAGES['english'])
-    filtered_words = [word for word in words if word not in stopwords_set and len(word) > 3]
-    if not filtered_words:
-        return {}
-    total_words = len(filtered_words)
-    freq_dist = Counter(filtered_words)
-    return {word: (count / total_words) * 100 for word, count in freq_dist.most_common(5)}
+    filtered = [w for w in words if w not in STOPWORDS_LANGUAGES.get(language, 'english')]
+    counter = Counter(filtered)
+    total = sum(counter.values())
+    return {word: (count/total)*100 for word, count in counter.most_common(5)}
 
-def detect_plagiarism(text, similar_sites):
-    plagiarized_sites = []
-    sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)\s', text)
-    for sentence in sentences:
-        for site in similar_sites:
-            similarity = SequenceMatcher(None, sentence, site.get("snippet", "")).ratio()
-            if similarity > 0.8:
-                plagiarized_sites.append({
-                    "url": site.get("url"),
-                    "snippet": site.get("snippet"),
-                    "similarity": similarity * 100,
-                    "plagiarized_sentence": sentence
-                })
-    return plagiarized_sites
+def check_plagiarism(text, language):
+    """Cek plagiarisme menggunakan API eksternal"""
+    try:
+        headers = {"Content-Type": "application/json"}
+        payload = {
+            "secretCode": DATAFORSEO_API_KEY,
+            "payload": {
+                "data": [{
+                    "keyword": text[:300],
+                    "language_code": SERP_LANGUAGE_MAPPING.get(language, "en"),
+                    "location_code": 2840
+                }]
+            }
+        }
+        
+        response = requests.post(
+            f"{BRIDGE_BASE_URL}/serp/google/organic/live/regular",
+            json=payload,
+            headers=headers
+        )
+        
+        results = response.json().get('payload', {}).get('data', [{}])[0].get('result', [])
+        return [{"url": r.get('url'), "similarity": SequenceMatcher(None, text, r.get('snippet', '')).ratio()*100} for r in results]
+    
+    except Exception as e:
+        logger.error(f"Plagiarism check error: {str(e)}")
+        return []
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
+    # Handle file upload
     if 'file' in request.files:
-        return jsonify({"error": "Fitur analisis file belum diimplementasikan"}), 400
+        file = request.files['file']
+        text, error = extract_text_from_file(file)
+        language = request.form.get('language', 'english').lower()
+        
+        if error:
+            return jsonify({"error": error}), 400
     
-    data = request.get_json()
-    language = data.get('language', 'english').lower()
-    if data.get('input_type') == 'text':
-        text = data.get('text', '')
+    # Handle text/url
     else:
-        text = extract_text_from_url(data.get('url', ''))
+        data = request.get_json()
+        language = data.get('language', 'english').lower()
+        
+        if data.get('input_type') == 'text':
+            text = data.get('text', '')
+        else:
+            text = extract_text_from_url(data.get('url', ''))
     
-    if not text or not text.strip():
-        return jsonify({"error": "Konten kosong"}), 400
+    # Validasi teks
+    if not text or len(text.strip()) < 50:
+        return jsonify({"error": "Konten terlalu pendek (minimal 50 karakter)"}), 400
     
-    readability_score = calculate_readability_score(text)
-    top_keywords = calculate_top_keywords(text, language)
-    serp_result = fetch_serp_dataforseo(text[:100], language)
-    similar_sites = serp_result.get("payload", {}).get("data", [{}])[0].get("result", [])
-    plagiarized_sites = detect_plagiarism(text, similar_sites)
-    uniqueness_score = 100 - (sum(site['similarity'] for site in plagiarized_sites) / len(plagiarized_sites) if plagiarized_sites else 0)
+    # Proses analisis
+    try:
+        readability = calculate_readability(text)
+        keywords = analyze_keywords(text, language)
+        plagiarism_results = check_plagiarism(text, language)
+        
+        # Hitung skor unik
+        similarity_score = sum([r['similarity'] for r in plagiarism_results]) / len(plagiarism_results) if plagiarism_results else 0
+        uniqueness = max(0, 100 - similarity_score)
+        
+        return jsonify({
+            "processed_text": text[:5000] + "..." if len(text) > 5000 else text,
+            "readability_score": round(readability, 2),
+            "uniqueness_score": round(uniqueness, 2),
+            "top_keywords": keywords,
+            "plagiarized_sites": [r['url'] for r in plagiarism_results if r['similarity'] > 70][:5]
+        })
     
-    return jsonify({
-        "processed_text": text,
-        "readability_score": readability_score,
-        "uniqueness_score": uniqueness_score,
-        "top_keywords": top_keywords,
-        "similar_sites": similar_sites,
-        "plagiarized_sites": plagiarized_sites
-    })
+    except Exception as e:
+        logger.error(f"Analysis error: {str(e)}")
+        return jsonify({"error": "Terjadi kesalahan dalam pemrosesan"}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(host='0.0.0.0', port=5001, debug=True)

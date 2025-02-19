@@ -2000,7 +2000,7 @@ p {
 
 
 /* Small Desktop (min-width: 992px and max-width: 1199px) */
-@media (min-width: 992px) and (max-width: 1199px) {
+@media (min-width: 992px) and (max-width: 1200px) {
   /* Navbar */
   .navbar .container-fluid {
     display: flex;
