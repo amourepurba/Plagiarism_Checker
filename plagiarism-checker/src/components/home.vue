@@ -9,7 +9,7 @@
           </button>
 
           <!-- Logo -->
-          <router-link  v-if="!isAuthenticated" to="/seo">
+          <router-link v-if="!isAuthenticated" to="/seo">
             <img src="../assets/logo-blue.png" alt="cmlabs logo" class="logo" />
           </router-link>
 
@@ -29,9 +29,9 @@
 
             <!-- Login -->
             <form class="d-flex" role="login">
-              <router-link v-if="!isAuthenticated" to="/auth" class="btn btn-outline-success d-flex align-items-center" type="submit" >
-                <button class="btn btn-outline-success d-flex align-items-center" >Login
-                  <i class="fa-solid fa-arrow-right-to-bracket" style="color: #18a0fb; padding-left: 5px;"></i>                </button>
+              <router-link v-if="!isAuthenticated" to="/auth" class="btn btn-outline-success">
+                Login
+                <i class="fa-solid fa-arrow-right-to-bracket" style="color: #18a0fb; padding-left: 5px;"></i>
               </router-link>
             </form>
           </div>
@@ -59,87 +59,138 @@
               URL
             </button>
           </li>
-          <!-- Language Dropdown -->
+          <!-- Dropdown untuk Bahasa -->
           <li class="nav-item">
             <div class="dropdown-container">
-              <select class="form-control dropdown" @change="changeLanguage($event)">
-                <option value="id">Indonesia</option>
-                <option value="en">English</option>
-                <option value="tr">Turkish</option>
-                <option value="th">Thailand</option>
-                <option value="es">Español</option>
-                <option value="sg">Singapore</option>
+              <select class="form-control dropdown" v-model="selectedLanguage">
+                <option value="indonesian">Indonesia</option>
+                <option value="english">English</option>
+                <option value="turkish">Turkish</option>
+                <option value="spanish">Spanish</option>
+                <option value="french">French</option>
+                <option value="german">German</option>
               </select>
             </div>
           </li>
         </ul>
 
         <!-- Dynamic Input Section -->
-        <div class="input-container d-flex flex-column align-items-center">
-          <div v-if="activeTab === 'text'" class="input-box input-text">
-            <textarea v-model="inputValue" class="form-control input-field" rows="6" placeholder="Enter your text here..."></textarea>
-            <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-            <button class="btn btn-check mt-2" @click="checkAction">Check Plagiarism</button>
-          </div>
+    <div class="input-container d-flex flex-column align-items-center">
+      <!-- Tab Text -->
+      <div v-if="activeTab === 'text'" class="input-box input-text">
+        <textarea
+          v-model="textInput"
+          class="form-control input-field"
+          rows="6"
+          placeholder="Enter your text here..."
+        ></textarea>
+        <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+        <button class="btn btn-check mt-2" @click="checkAction" :disabled="isLoading">
+          <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <span v-else>Check Plagiarism</span>
+        </button>
+      </div>
 
-          <div v-else-if="activeTab === 'file'" class="input-box input-file">
-            <input type="file" @change="handleFileUpload" class="form-control input-field" accept=".pdf, .doc, .docx" />
-            <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-            <button class="btn btn-check mt-2" @click="checkAction">Check Plagiarism</button>
-          </div>
+      <!-- Tab File -->
+      <div v-else-if="activeTab === 'file'" class="input-box input-file">
+        <template v-if="showOutput && activeTab === 'file'">
+          <textarea
+            v-model="fileOutput"
+            class="form-control input-field output-textarea"
+            rows="6"
+            readonly
+          ></textarea>
+        </template>
+        <template v-else>
+          <input
+            type="file"
+            @change="handleFileUpload"
+            class="form-control input-field"
+            accept=".pdf, .doc, .docx"
+          />
+        </template>
+        <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+        <button class="btn btn-check mt-2" @click="checkAction" :disabled="isLoading">
+          <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <span v-else>Check Plagiarism</span>
+        </button>
+      </div>
 
-          <div v-else-if="activeTab === 'url'" class="input-box input-url">
-            <input v-model="inputValue" type="url" class="form-control input-field" style="text-align: center;" placeholder="Enter your URL here..." />
-            <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-            <button class="btn btn-check mt-2" @click="checkAction">Check Plagiarism</button>
-          </div>
-        </div>
-
-
-        <!-- Output Section -->
-        <div v-if="showOutput" class="output-container">
-          <h2>Result</h2>
-          <div class="row">
-              <!-- Left Column: Scores -->
-              <div class="col left-section">
-                <div class="score-item">
-                  <p class="text-center text-xl text-red-600">{{ similarityScore }}%</p>
-                  <p class="text-center text-gray-700">Skor Plagiasi</p>
-                </div>
-                <div class="score-item">
-                  <p class="text-center text-xl text-green-600">{{ uniqueScore }}%</p>
-                  <p class="text-gray-700">Skor Uniq</p>
-                </div>
-                <div class="score-item">
-                  <p class="text-center text-xl text-blue-600">{{ readabilityScore }}%</p>
-                  <p class="text-gray-700">Skor Readability</p>
-                </div>
-              </div>
-            
-              
-              <!-- Right Column: Keywords & Plagiarized Sites -->
-              <div class="col right-section">
-                  <div>
-                      <h5 class="text-center text-gray-700">Top 5 Keywords</h5>
-                      <ul class="list-disc list-inside text-gray-700 text-center">
-                          <li v-for="(keyword, index) in topKeywords" :key="index">{{ keyword }}</li>
-                      </ul>
-                  </div>
-                  <div class="mt-4">
-                      <h5 class="text-center text-gray-700">Plagiarized Sites</h5>
-                      <ul class="list-disc list-inside text-red-500 text-center">
-                          <li v-for="(site, index) in sources" :key="index">{{ site }}</li>
-                      </ul>
-                  </div>
-              </div>
-          </div>
+      <!-- Tab URL -->
+      <div v-else-if="activeTab === 'url'" class="input-box input-url">
+        <template v-if="showOutput && activeTab === 'url'">
+          <textarea
+            v-model="urlOutput"
+            class="form-control input-field output-textarea"
+            rows="6"
+            readonly
+          ></textarea>
+        </template>
+        <template v-else>
+          <input
+            v-model="urlInput"
+            type="url"
+            class="form-control input-field"
+            style="text-align: center;"
+            placeholder="Enter your URL here..."
+          />
+        </template>
+        <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+        <button class="btn btn-check mt-2" @click="checkAction" :disabled="isLoading">
+          <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <span v-else>Check Plagiarism</span>
+        </button>
       </div>
     </div>
-  </div>
-  
 
-  <!-- How To Use Section -->
-    <div class="container-use text-center" id="how-to-use" ref="howToUseSection" :class="{ 'visible': isVisible, 'hidden': !isVisible }" >
+        <!-- Animasi Loading -->
+        <div v-if="isLoading" class="loading-container">
+          <div class="spinner"></div>
+          <p>Checking for plagiarism...</p>
+        </div>
+
+        <!-- Output Section -->
+        <div v-if="showOutput" class="output-container" ref="resultSection">
+          <h2>Result</h2>
+          <div class="row">
+            <!-- Left Column: Scores -->
+            <div class="col left-section">
+              <div class="score-item">
+                <p class="text-center text-xl text-red-600">{{ similarityScore }}%</p>
+                <p class="text-center text-gray-700">Skor Plagiasi</p>
+              </div>
+              <div class="score-item">
+                <p class="text-center text-xl text-green-600">{{ uniqueScore }}%</p>
+                <p class="text-gray-700">Skor Uniq</p>
+              </div>
+              <div class="score-item">
+                <p class="text-center text-xl text-blue-600">{{ readabilityScore }}%</p>
+                <p class="text-gray-700">Skor Readability</p>
+              </div>
+            </div>
+
+            <!-- Right Column: Keywords & Plagiarized Sites -->
+            <div class="col right-section">
+              <div>
+                <h5 class="text-center text-gray-700">Top 5 Keywords</h5>
+                <ul class="list-disc list-inside text-gray-700 text-center">
+                  <li v-for="(keyword, index) in topKeywords" :key="index">{{ keyword }}</li>
+                </ul>
+              </div>
+              <div class="mt-4">
+                <h5 class="text-center text-gray-700">Plagiarized Sites</h5>
+                <ul class="list-disc list-inside text-red-500 text-center">
+                  <li v-for="(site, index) in sources" :key="index">{{ site }}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- How To Use Section -->
+    <div class="container-use text-center" id="how-to-use" ref="howToUseSection" :class="{ 'visible': isVisible, 'hidden': !isVisible }">
       <h1 class="title">How to Use Plagiarism Checker</h1>
       <div class="row-use align-items-start">
         <div class="col">
@@ -148,7 +199,7 @@
         </div>
         <div class="col">
           <h3>2</h3>
-          <p><strong>Provide details</strong><br> Paste your text, url, or upload a file in PDF, DOC, or DOCX format.</p>
+          <p><strong>Provide details</strong><br> Paste your text, URL, or upload a file in PDF, DOC, or DOCX format.</p>
         </div>
         <div class="col">
           <h3>3</h3>
@@ -157,124 +208,117 @@
       </div>
     </div>
 
-
     <!-- Contact Us Section -->
-    <div 
-    class="contact-us-container" id="contact-us" :class="{ 'visible': isVisible }" ref="contactSection">
-    <div class="contact-text">
-      <h1 class="contact-title">Contact Us</h1>
-      <p class="contact-description">Have questions or need help? Reach out to us!</p>
-    </div>
-
-    <!-- Notifikasi -->
-    <div v-if="notification.message" :class="['notification', notification.type]">
-          {{ notification.message }}
-    </div>
-
-    <form 
-      class="contact-form" 
-      :class="{ 'shake': isShaking}"
-      @submit.prevent="validateForm"
-    >
-      <input type="text" class="contact-input" v-model="name" placeholder="Your Name" :class="{'error-border': showError.name}">
-      <input type="email" class="contact-input" v-model="email" placeholder="Your Email" :class="{'error-border': showError.email}">
-      <textarea class="contact-textarea" v-model="message" placeholder="Your Message" :class="{'error-border': showError.message}"></textarea>
-      <div class="button-container">
-        <button type="submit" class="contact-button">Send Message</button>
+    <div class="contact-us-container" id="contact-us" ref="contactSection" :class="{ 'visible': isVisible }">
+      <div class="contact-text">
+        <h1 class="contact-title">Contact Us</h1>
+        <p class="contact-description">Have questions or need help? Reach out to us!</p>
       </div>
-    </form>
-  </div>
 
+      <!-- Notifikasi -->
+      <div v-if="notification.message" :class="['notification', notification.type]">
+        {{ notification.message }}
+      </div>
 
-      <!-- footer section -->
-      <footer class="footer">
-        <div class="footer-content">
-          <!-- Column 1: Languages & Supervene -->
-          <div class="footer-column">
-            <div class="language-section">
-              <div class="language-list">
-                <button class="language-btn">English</button>
-                <button class="language-btn">Indonesian</button>
-                <button class="language-btn">Turkish</button>
-                <button class="language-btn">Singapore</button>
-                <button class="language-btn">Thailand</button>
-                <button class="language-btn">Español</button>
-              </div>
-            </div>
+      <form class="contact-form" :class="{ 'shake': isShaking }" @submit.prevent="validateForm">
+        <input type="text" class="contact-input" v-model="name" placeholder="Your Name" :class="{'error-border': showError.name}">
+        <input type="email" class="contact-input" v-model="email" placeholder="Your Email" :class="{'error-border': showError.email}">
+        <textarea class="contact-textarea" v-model="message" placeholder="Your Message" :class="{'error-border': showError.message}"></textarea>
+        <div class="button-container">
+          <button type="submit" class="contact-button">Send Message</button>
+        </div>
+      </form>
+    </div>
 
-            <div class="supervene-section">
-              <h4 class="footer-title">SUPERVENE SEARCH ODYSSEY</h4>
-              <div class="contact-address">
-                <p>cmlabs Jakarta Jl. Pluit Kencana Raya No.63, Pluit,</p>
-                <p>Penjaringan, Jakarta Utara, DKI Jakarta, 14450, Indonesia</p>
-                <p class="phone-number">(+62) 21-666-04470</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Column 2: Solutions & Information -->
-          <div class="footer-column">
-            <div class="solutions-section">
-              <h4 class="footer-title">Solutions</h4>
-              <div class="footer-links">
-                <a href="#">SEO Services</a>
-                <a href="#">SEO Writing</a>
-                <a href="#">Media Buying</a>
-              </div>
-            </div>
-
-            <div class="information-section">
-              <h4 class="footer-title">Information</h4>
-              <div class="footer-links">
-                <a href="#">Notification Center</a>
-                <a href="#">Client's Testimony</a>
-                <a href="#">FAQ of cmlabs Services</a>
-              </div>
+    <!-- Footer Section -->
+    <footer class="footer">
+      <div class="footer-content">
+        <!-- Column 1: Languages & Supervene -->
+        <div class="footer-column">
+          <div class="language-section">
+            <div class="language-list">
+              <button class="language-btn">Indonesian</button>
+              <button class="language-btn">English</button>
+              <button class="language-btn">Turkish</button>
+              <button class="language-btn">Spanish</button>
+              <button class="language-btn">French</button>
+              <button class="language-btn">German</button>
             </div>
           </div>
 
-          <!-- Column 3: Company -->
-          <div class="footer-column">
-            <div class="company-section">
-              <h4 class="footer-title">Company</h4>
-              <div class="footer-links">
-                <a href="#">About cmlabs</a>
-                <a href="#">Career</a>
-                <a href="#">Press Release</a>
-                <a href="#">Whistleblower Protection</a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Column 4: Cost-Effective Fees -->
-          <div class="footer-column">
-            <div class="partnership-section">
-              <h4 class="footer-title">COST-EFECTIVE FEES, UP TO 5%</h4>
-              <h4 class="footer-subtitle">WE ARE OPEN TO PARTNERSHIP WITH VARIOUS NICHES</h4>
-              <div class="partnership-list">
-                <a href="#">Franchise Organizations</a>
-                <a href="#">Educational Institutions</a>
-                <a href="#">Professional Services Firms</a>
-                <a href="#">Startup Incubators / Accelerators</a>
-                <a href="#">...and 34 more</a>
-              </div>
+          <div class="supervene-section">
+            <h4 class="footer-title">SUPERVENE SEARCH ODYSSEY</h4>
+            <div class="contact-address">
+              <p>cmlabs Jakarta Jl. Pluit Kencana Raya No.63, Pluit, Penjaringan, Jakarta Utara, DKI Jakarta, 14450, Indonesia</p>
+              <p class="phone-number">(+62) 21-666-04470</p>
             </div>
           </div>
         </div>
-      </footer>
+
+        <!-- Column 2: Solutions & Information -->
+        <div class="footer-column">
+          <div class="solutions-section">
+            <h4 class="footer-title">Solutions</h4>
+            <div class="footer-links">
+              <a href="#">SEO Services</a>
+              <a href="#">SEO Writing</a>
+              <a href="#">Media Buying</a>
+            </div>
+          </div>
+
+          <div class="information-section">
+            <h4 class="footer-title">Information</h4>
+            <div class="footer-links">
+              <a href="#">Notification Center</a>
+              <a href="#">Client's Testimony</a>
+              <a href="#">FAQ of cmlabs Services</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 3: Company -->
+        <div class="footer-column">
+          <div class="company-section">
+            <h4 class="footer-title">Company</h4>
+            <div class="footer-links">
+              <a href="#">About cmlabs</a>
+              <a href="#">Career</a>
+              <a href="#">Press Release</a>
+              <a href="#">Whistleblower Protection</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 4: Cost-Effective Fees -->
+        <div class="footer-column">
+          <div class="partnership-section">
+            <h4 class="footer-title">COST-EFECTIVE FEES, UP TO 5%</h4>
+            <h4 class="footer-subtitle">WE ARE OPEN TO PARTNERSHIP WITH VARIOUS NICHES</h4>
+            <div class="partnership-list">
+              <a href="#">Franchise Organizations</a>
+              <a href="#">Educational Institutions</a>
+              <a href="#">Professional Services Firms</a>
+              <a href="#">Startup Incubators / Accelerators</a>
+              <a href="#">...and 34 more</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
-
-
 <script>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 
-export default {  
+export default {
   data() {
     return {
+      isLoading: false,
       activeTab: 'text',
-      inputValue: '',
+      textInput: '',
+      fileInput: null,
+      urlInput: '',
       showOutput: false,
       errorMessage: '',
       similarityScore: 0,
@@ -282,28 +326,24 @@ export default {
       readabilityScore: 0,
       topKeywords: [],
       sources: [],
+      textOutput: '',
+      fileOutput: '',
+      urlOutput: '',
+      selectedLanguage: 'english'
     };
-  },
-
-  watch: {
-    activeTab() {
-      this.errorMessage = '';
-      this.inputValue = '';
-      this.showOutput = false; // Pastikan output disembunyikan saat tab berubah
-    }
   },
 
   methods: {
     validateInput() {
-      if (this.activeTab === 'text' && this.inputValue.trim() === '') {
+      if (this.activeTab === 'text' && this.textInput.trim() === '') {
         this.errorMessage = 'Input tidak boleh kosong!';
         return false;
       }
-      if (this.activeTab === 'url' && !this.inputValue.match(/^https?:\/\/[^\s$.?#].[^\s]*$/)) {
+      if (this.activeTab === 'url' && !this.urlInput.match(/^https?:\/\/[^\s$.?#].[^\s]*$/)) {
         this.errorMessage = 'URL tidak valid!';
         return false;
       }
-      if (this.activeTab === 'file' && !this.inputValue) {
+      if (this.activeTab === 'file' && !this.fileInput) {
         this.errorMessage = 'Silakan unggah file!';
         return false;
       }
@@ -312,44 +352,132 @@ export default {
     },
 
     checkAction() {
-      if (!this.validateInput()) {
-        return;
+      if (!this.validateInput()) return;
+
+      this.isLoading = true;
+      this.showOutput = false;
+      this.errorMessage = "";
+
+      const apiUrl = "http://localhost:5001/analyze";
+      let requestOptions = {};
+
+      if (this.activeTab === 'text') {
+        requestOptions = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            input_type: 'text', 
+            text: this.textInput,
+            language: this.selectedLanguage 
+          })
+        };
+      } else if (this.activeTab === 'url') {
+        requestOptions = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            input_type: 'url', 
+            url: this.urlInput,
+            language: this.selectedLanguage 
+          })
+        };
+      } else if (this.activeTab === 'file') {
+        const formData = new FormData();
+        formData.append("file", this.fileInput);
+        formData.append("input_type", "file");
+        formData.append("language", this.selectedLanguage);
+        requestOptions = { method: 'POST', body: formData };
       }
-      console.log("Tombol Check diklik!");
-      this.similarityScore = Math.floor(Math.random() * 100);
-      this.uniqueScore = Math.floor(Math.random() * 100);
-      this.readabilityScore = Math.floor(Math.random() * 100);
-      this.topKeywords = ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"];
-      this.sources = [
-        "https://example.com/article1",
-        "https://example.com/article2",
-        "https://example.com/article3",
-      ];
-      this.showOutput = true;
-      console.log("Output ditampilkan:", this.showOutput);
+
+      fetch(apiUrl, requestOptions)
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            this.errorMessage = data.error;
+          } else {
+            // Mengambil skor dari API
+            this.uniqueScore = data.uniqueness_score;
+            this.similarityScore = 100 - data.uniqueness_score;
+            this.readabilityScore = data.readability_score;
+
+            // Mengonversi top_keywords menjadi array string
+            this.topKeywords = Object.entries(data.top_keywords).map(
+              ([word, percentage]) => `${word} (${percentage.toFixed(2)}%)`
+            );
+
+            // Mengambil daftar situs serupa (pastikan menggunakan key yang sesuai, misalnya "link")
+            this.sources = data.similar_sites.map(item => item.link);
+
+            this.showOutput = true;
+            this.$nextTick(() => {
+              if (this.$refs.resultSection) {
+                this.$refs.resultSection.scrollIntoView({ behavior: "smooth" });
+              }
+            });
+          }
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          this.errorMessage = "Terjadi kesalahan saat melakukan analisis.";
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
     },
 
     handleFileUpload(event) {
       const file = event.target.files[0];
-      if (file) {
-        const allowedExtensions = ['pdf', 'doc', 'docx'];
-        const fileExtension = file.name.split('.').pop().toLowerCase();
-        if (!allowedExtensions.includes(fileExtension)) {
-          this.errorMessage = 'Format file tidak valid!';
-          this.inputValue = '';
-          return;
-        }
-        this.inputValue = file.name;
-        this.errorMessage = '';
+      if (!file) return;
+
+      const allowedExtensions = ['pdf', 'doc', 'docx'];
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+      if (!allowedExtensions.includes(fileExtension)) {
+        this.errorMessage = 'Format file tidak valid!';
+        this.fileInput = null;
+        return;
       }
+
+      if (file.size > 5 * 1024 * 1024) {
+        this.errorMessage = 'Ukuran file terlalu besar! Maksimal 5MB.';
+        this.fileInput = null;
+        return;
+      }
+
+      this.fileInput = file;
+      this.errorMessage = '';
+    },
+
+    resetOutput() {
+      this.showOutput = false;
+      this.textOutput = '';
+      this.fileOutput = '';
+      this.urlOutput = '';
+      this.similarityScore = 0;
+      this.uniqueScore = 0;
+      this.readabilityScore = 0;
+      this.topKeywords = [];
+      this.sources = [];
+      this.errorMessage = ''; // Tambahkan ini untuk reset error message
+    },
+
+    changeLanguage(event) {
+      console.log('Bahasa diubah ke:', this.selectedLanguage);
+    }
+  },
+
+    watch: {
+    activeTab() {
+      this.resetOutput();
+      this.errorMessage = ''; // Tambahkan ini untuk memastikan error di-reset
     }
   },
 
   setup() {
+    const selectedLanguage = ref('english');
     const isVisible = ref(false);
     const isShaking = ref(false);
-    const contactSection = ref(null);
     const howToUseSection = ref(null);
+    const contactSection = ref(null);
     const name = ref('');
     const email = ref('');
     const message = ref('');
@@ -383,7 +511,6 @@ export default {
         name.value = "";
         email.value = "";
         message.value = "";
-
         setTimeout(() => {
           notification.value = { message: "", type: "" };
         }, 3000);
@@ -392,7 +519,6 @@ export default {
 
     onMounted(() => {
       isVisible.value = true;
-
       observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
           if (entry.target === contactSection.value || entry.target === howToUseSection.value) {
@@ -400,7 +526,6 @@ export default {
           }
         });
       }, { threshold: 0.2 });
-
       if (contactSection.value) {
         observer.observe(contactSection.value);
       }
@@ -416,8 +541,20 @@ export default {
       }
     });
 
-    return { isVisible, isShaking, contactSection, howToUseSection, name, email, message, showError, validateForm, notification };
-  }, 
+    return {
+      selectedLanguage,
+      isVisible,
+      isShaking,
+      contactSection,
+      howToUseSection,
+      name,
+      email,
+      message,
+      notification,
+      showError,
+      validateForm
+    };
+  }
 };
 </script>
 
@@ -425,6 +562,26 @@ export default {
 
 
 <style scoped>
+
+.loading-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
 * {
   box-sizing: border-box;
@@ -559,7 +716,12 @@ h1 {
 
 /* Dropdown Styles */
 .dropdown-container {
-  margin: 0;
+  margin: 10px;
+}
+
+.form-control {
+  padding: 5px;
+  font-size: 16px;
 }
 
 .dropdown {
@@ -599,6 +761,37 @@ h1 {
   align-items: center;
 }
 
+.input-box.input-file {
+  margin-bottom: 100px;
+}
+
+.input-box.input-url {
+  /* margin-bottom: 130px; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 700px;
+  margin: 10px auto;
+  box-sizing: border-box;
+}
+
+.input-box.input-url .input-field {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* Tombol Check Plagiarism */
+.input-box.input-url .btn-check {
+  width: auto;
+  font-weight: 500; 
+  min-width: 150px; 
+  padding: 10px 30px; 
+  font-size: 16px; 
+  white-space: nowrap; 
+  margin-top: 10px;
+}
+
 .input-text {
   width: 150%;
   height: 500px; 
@@ -609,10 +802,13 @@ h1 {
   height: auto;
 }
 
-.input-url {
+/* .input-url {
   width: 80%;
   height: 70px; 
-}
+} */
+
+
+
 
 /* Input Field Styling */
 .input-field {
@@ -638,7 +834,48 @@ textarea.input-field {
   resize: vertical;
   min-height: 150px;
   max-height: 400px;
+  padding-right: 15px;
 }
+
+textarea::-webkit-scrollbar {
+  width: 10px; /* Lebar scrollbar */
+}
+
+textarea::-webkit-scrollbar-track {
+  /* background: #f1f1f1;  */
+  /* border-radius: 10px; Border radius track scrollbar */
+  margin: 14px 4px;
+}
+
+textarea::-webkit-scrollbar-thumb {
+  background: #888; /* Warna thumb scrollbar */
+  border-radius: 10px; /* Border radius thumb scrollbar */
+  border: 2px solid transparent; /* Tambahkan border transparan */
+  background-clip: content-box;
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+  background: #007bff; /* Warna thumb scrollbar saat dihover */
+  border: 1px solid #f1f1f1;
+}
+
+/* textarea.input-field {
+  width: 100%;
+  padding: 15px;
+  margin-bottom: 10px;
+  border: 2px solid #ccc;
+  border-radius: 25px;
+  font-size: 16px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  resize: vertical; /* Memungkinkan resize vertikal */
+/* }
+
+textarea.input-field:focus {
+  border-color: #007bff;
+  outline: none;
+  transform: scale(1.02);
+  box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
+} */ 
 
 .error-text {
   color: red;
@@ -666,15 +903,71 @@ textarea.input-field {
   z-index: 10; /* Menjadikan tombol di atas elemen lain jika ada overlap */
   pointer-events: auto; /* Memastikan tombol bisa diklik */
   transition: background-color 0.3s ease, transform 0.3s ease;
-  /* margin-top: 10px; */
-  /* width: 100%; */
-  /* max-width: 200px;
-  text-align: center; */
 }
 
 .btn-check:hover {
   background-color: #1167c2;
   transform: scale(1.05);
+}
+
+
+/* Output Section */
+.output-container {
+  width: 100%;
+  max-width: 700px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  clear: both;
+}
+
+.output-textarea {
+  width: 100%;
+  height: auto;
+  min-height: 150px;
+  resize: vertical;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 2px solid #007bff;
+  border-radius: 25px;
+  font-size: 15px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.output-textarea:focus {
+  border-color: #007bff;
+  outline: none;
+  transform: scale(1.02);
+  box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
+}
+
+/* Style khusus untuk output box (textarea untuk file dan URL setelah check) */
+/* .output-textarea {
+  width: 210%;
+  height: 500px;
+  resize: vertical;
+  box-sizing: border-box;
+  margin-bottom: 20px; Jarak agar tidak menutupi konten lain */
+  /* padding: 15px;
+  border: 2px solid #007bff;
+  border-radius: 25px;
+  font-size: 15px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.output-textarea:focus {
+  border-color: #007bff;
+  outline: none;
+  transform: scale(1.02);
+  box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
+} */
+
+.input-url.show-output {
+  height: auto !important;
+  width: 70% !important;
 }
 
 
@@ -687,7 +980,7 @@ textarea.input-field {
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
   max-width: 700px;
   min-height: 200px; /* ruang minimum untuk output */
-  margin-top: 10px;
+  margin-top: 5 px;
   clear: both;
   /* opacity: 0; */
   /* transform: translateY(20px);
@@ -769,8 +1062,13 @@ h2 {
   padding: 120px;
   background-color: #f9f9f9;
   opacity: 0;
-  transform: scale(0.8) rotateY(-10deg);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.container-use.appear {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .container-use.visible {
@@ -852,6 +1150,9 @@ p {
   color: white;
 }
 
+
+
+
 /* Contact Us Style */
 .contact-us-container {
   display: grid;
@@ -865,8 +1166,13 @@ p {
   padding: 20px;
   background-color: #ffffff;
   opacity: 0;
-  transform: translateY(50px);
-  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.contact-us-container.appear {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .contact-us-container.visible {
@@ -956,7 +1262,7 @@ p {
   transform: scale(1.05);
 }
 
-@media (max-width: 600px) {
+/* @media (max-width: 600px) {
   .contact-us-container {
     grid-template-columns: 1fr;
     text-align: center;
@@ -964,7 +1270,7 @@ p {
   .contact-text {
     text-align: center;
   }
-}
+} */
 
 
 .footer {
@@ -1155,5 +1461,785 @@ p {
             transform: translateY(100px);
   }
 }  */
+
+
+
+/* RESPONSIVE STYLES */
+/* Mobile Devices (max-width: 767px) */
+@media (max-width: 767px) {
+  /* Navbar */
+  .navbar .container-fluid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Logo */
+  .navbar img.logo {
+    order: 2;
+    margin-left: auto;
+    width: auto;
+    max-width: 150px; 
+  }
+
+   /* Bagian collapse (nav links) berada di sebelah kiri */
+   .navbar .collapse {
+    order: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Ketika collapse aktif (memiliki kelas .show), tampilkan sebagai flex dan agar menu muncul secara vertikal di sebelah kiri */
+  .navbar .collapse.show {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .navbar .navbar-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    margin-top: 10px;
+  }
+  
+  .navbar .nav-item {
+    margin: 5px 0; 
+  }
+  
+  .navbar .nav-link {
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    font-size: 16px; 
+  }
+
+
+  /* Main Content & Input Section */
+  .main-content {
+    padding: 10px;
+  }
+  
+  .container-option {
+    padding: 0 10px;
+  }
+  
+  .input-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .container-option ul.nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  
+  .input-box {
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto;
+  }
+
+  .input-box.input-url {
+    margin-bottom: 20px;
+  }
+
+  .output-container {
+    margin-top: 20px;
+  }
+
+  .output-textarea {
+    min-height: 200px;
+  }
+
+
+
+   /* Pastikan container input URL menggunakan layout kolom */
+   /*.input-box.input-url {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
+    /*box-sizing: border-box;
+  }*/
+
+
+  .input-field {
+    width: 100%;
+    font-size: 14px;
+    padding: 12px;
+  }
+  
+  .btn-check {
+    width: 100%;
+    max-width: 200px;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  
+  /* .output-container {
+    clear: both;
+    margin-top: 50px;
+    position: relative;
+    bottom: 1;
+    z-index: 1;
+    width: 100%;
+    max-width: 550px;
+    padding: 25px;
+  } */
+  
+  /* .output-textarea {
+    width: 100%;
+    height: auto;
+    min-height: 400px !important;
+  } */
+
+  .container-use {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px; /* sesuaikan padding jika perlu */
+  }
+
+  /* Atur grid row-use agar hanya satu kolom, sehingga semua kolom tertata secara vertikal */
+  .row-use {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center; /* pastikan setiap kolom terpusat secara horizontal */
+    gap: 20px;
+    width: 100%;
+  }
+
+  /* Setiap kolom akan mengisi sebagian besar lebar layar, misalnya 90% */
+  .row-use .col {
+    width: 90%;
+    max-width: 400px; /* atau sesuaikan sesuai desain */
+    margin: 0 auto;
+  }
+
+  /* Sesuaikan ukuran heading dan paragraf jika perlu */
+  .row-use .col h3 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .row-use .col p {
+    font-size: 16px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .contact-us-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 80px;
+    height: auto;
+  }
+
+  /* Contact Us */
+  .contact-text {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .contact-form {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-bottom: 60px; 
+    box-sizing: border-box;
+    border: 1px solid transparent; 
+  }
+
+  .contact-form input,
+  .contact-form textarea {
+    width: 100%;
+  }
+
+  .button-container {
+    position: absolute;
+    bottom: 5px;
+    /* right: 1; */
+    left: 0;
+    /* z-index: 10; */
+  }
+
+  .contact-button {
+    padding: 10px 30px !important; 
+    font-size: 16px;
+    white-space: wrap;   
+    min-width: 180px;
+    box-sizing: border-box;
+  }
+
+  /* Ubah container footer utama menjadi grid dengan 3 kolom untuk bagian yang diinginkan */
+  .footer-content {
+    display: grid;
+    /* Misalnya, kita inginkan 3 kolom dengan lebar sama untuk Solutions, Information, dan Company */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  /* Biarkan kolom pertama (bahasa & supervene) dan kolom keempat (cost-effective fees) tetap di tempatnya, 
+    misalnya dengan mengatur posisi grid atau mengeset ulang jika diperlukan.
+    Contoh: */
+  .footer-column:first-child,
+  .footer-column:last-child {
+    grid-column: 1 / -1; /* Membuatnya memenuhi baris sendiri */
+  }
+
+  /* Flatten struktur HTML untuk kolom kedua dan ketiga,
+    sehingga anak-anaknya (solutions, information, company) menjadi langsung anak dari .footer-content */
+  .footer-column:nth-child(2),
+  .footer-column:nth-child(3) {
+    display: contents;
+  }
+
+  /* Atur posisi masing-masing bagian dalam grid */
+  .solutions-section {
+    grid-column: 1; /* Kolom pertama dalam baris khusus ini */
+  }
+  .information-section {
+    grid-column: 2; /* Kolom kedua */
+  }
+  .company-section {
+    grid-column: 3; /* Kolom ketiga */
+  }
+
+
+  /* Sembunyikan kolom paling bawah (misalnya, kolom partnership) pada tampilan mobile */
+  .footer-content .footer-column:last-child {
+    display: none;
+  }
+}
+
+
+
+
+
+
+/* Tablet Devices (min-width: 768px and max-width: 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  /* Navbar */
+  .navbar .container-fluid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Logo */
+  .navbar img.logo {
+    order: 2;
+    margin-left: auto;
+    width: auto;
+    max-width: 150px; 
+  }
+
+   /* Bagian collapse (nav links) berada di sebelah kiri */
+   .navbar .collapse {
+    order: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Ketika collapse aktif (memiliki kelas .show), tampilkan sebagai flex dan agar menu muncul secara vertikal di sebelah kiri */
+  .navbar .collapse.show {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .navbar .navbar-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    margin-top: 10px;
+  }
+  
+  .navbar .nav-item {
+    margin: 5px 0; 
+  }
+  
+  .navbar .nav-link {
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    font-size: 16px; 
+  }
+
+
+  /* Main Content & Input Section */
+  .main-content {
+    padding: 10px;
+  }
+  
+  .container-option {
+    padding: 0 10px;
+  }
+  
+  .input-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .container-option ul.nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  
+  .input-box {
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto;
+  }
+
+
+   /* Pastikan container input URL menggunakan layout kolom */
+   .input-box.input-url {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
+    box-sizing: border-box;
+    margin-bottom: 30px;
+  }
+
+  .output-container {
+    margin-top: 30px;
+  }
+
+  .output-textarea {
+    min-height: 250px;
+  }
+
+
+  .input-field {
+    width: 100%;
+    font-size: 14px;
+    padding: 12px;
+  }
+  
+  .btn-check {
+    width: 100%;
+    max-width: 200px;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  
+  /* .output-container {
+    clear: both;
+    margin-top: 50px;
+    position: relative;
+    bottom: 1;
+    z-index: 1;
+    width: 100%;
+    max-width: 550px;
+    padding: 25px;
+  }
+  
+  .output-textarea {
+    width: 100%;
+    height: auto;
+    min-height: 400px !important;
+  } */
+
+  .container-use {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px; /* sesuaikan padding jika perlu */
+  }
+
+  /* Atur grid row-use agar hanya satu kolom, sehingga semua kolom tertata secara vertikal */
+  .row-use {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center; /* pastikan setiap kolom terpusat secara horizontal */
+    gap: 20px;
+    width: 100%;
+  }
+
+  /* Setiap kolom akan mengisi sebagian besar lebar layar, misalnya 90% */
+  .row-use .col {
+    width: 90%;
+    max-width: 400px; /* atau sesuaikan sesuai desain */
+    margin: 0 auto;
+  }
+
+  /* Sesuaikan ukuran heading dan paragraf jika perlu */
+  .row-use .col h3 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .row-use .col p {
+    font-size: 16px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .contact-us-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 80px;
+    height: auto;
+  }
+
+  /* Contact Us */
+  .contact-text {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .contact-form {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-bottom: 60px; 
+    box-sizing: border-box;
+    border: 1px solid transparent; 
+  }
+
+  .contact-form input,
+  .contact-form textarea {
+    width: 100%;
+  }
+
+  .button-container {
+    position: absolute;
+    bottom: 5px;
+    /* right: 1; */
+    left: 0;
+    /* z-index: 10; */
+  }
+
+  .contact-button {
+    padding: 10px 30px !important; 
+    font-size: 16px;
+    white-space: wrap;   
+    min-width: 180px;
+    box-sizing: border-box;
+  }
+
+  /* Ubah container footer utama menjadi grid dengan 3 kolom untuk bagian yang diinginkan */
+  .footer-content {
+    display: grid;
+    /* Misalnya, kita inginkan 3 kolom dengan lebar sama untuk Solutions, Information, dan Company */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  /* Biarkan kolom pertama (bahasa & supervene) dan kolom keempat (cost-effective fees) tetap di tempatnya, 
+    misalnya dengan mengatur posisi grid atau mengeset ulang jika diperlukan.
+    Contoh: */
+  .footer-column:first-child,
+  .footer-column:last-child {
+    grid-column: 1 / -1; /* Membuatnya memenuhi baris sendiri */
+  }
+
+  /* Flatten struktur HTML untuk kolom kedua dan ketiga,
+    sehingga anak-anaknya (solutions, information, company) menjadi langsung anak dari .footer-content */
+  .footer-column:nth-child(2),
+  .footer-column:nth-child(3) {
+    display: contents;
+  }
+
+  /* Atur posisi masing-masing bagian dalam grid */
+  .solutions-section {
+    grid-column: 1; /* Kolom pertama dalam baris khusus ini */
+  }
+  .information-section {
+    grid-column: 2; /* Kolom kedua */
+  }
+  .company-section {
+    grid-column: 3; /* Kolom ketiga */
+  }
+
+
+  /* Sembunyikan kolom paling bawah (misalnya, kolom partnership) pada tampilan mobile */
+  .footer-content .footer-column:last-child {
+    display: none;
+  }
+}
+
+
+
+/* Small Desktop (min-width: 992px and max-width: 1199px) */
+@media (min-width: 992px) and (max-width: 1200px) {
+  /* Navbar */
+  .navbar .container-fluid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Logo */
+  .navbar img.logo {
+    order: 2;
+    margin-left: auto;
+    width: auto;
+    max-width: 150px; 
+  }
+
+   /* Bagian collapse (nav links) berada di sebelah kiri */
+   .navbar .collapse {
+    order: 0;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Ketika collapse aktif (memiliki kelas .show), tampilkan sebagai flex dan agar menu muncul secara vertikal di sebelah kiri */
+  .navbar .collapse.show {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .navbar .navbar-nav {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    margin-top: 10px;
+  }
+  
+  .navbar .nav-item {
+    margin: 5px 0; 
+  }
+  
+  .navbar .nav-link {
+    padding: 0;
+    margin: 0;
+    text-align: left;
+    font-size: 16px; 
+  }
+
+
+  /* Main Content & Input Section */
+ 
+  .main-content {
+    padding: 10px;
+  }
+  
+  .container-option {
+    padding: 0 10px;
+  }
+  
+  .input-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .container-option ul.nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  
+  .input-box {
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto;
+  }
+
+
+  .input-box.input-url {
+    margin-bottom: 20px;
+  }
+
+  .output-container {
+    margin-top: 20px;
+  }
+
+  .output-textarea {
+    min-height: 200px;
+  }
+
+   /* Pastikan container input URL menggunakan layout kolom */
+   /* .input-box.input-url {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px; */
+    /* margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
+    /* box-sizing: border-box;
+  } */ 
+
+
+  .input-field {
+    width: 100%;
+    font-size: 14px;
+    padding: 12px;
+  }
+  
+  .btn-check {
+    width: 100%;
+    max-width: 200px;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  
+  /* .output-container {
+    clear: both;
+    margin-top: 50px;
+    position: relative;
+    bottom: 1;
+    z-index: 1;
+    width: 100%;
+    max-width: 550px;
+    padding: 25px;
+  }
+  
+  .output-textarea {
+    width: 100%;
+    height: auto;
+    min-height: 400px !important;
+  } */
+
+  .container-use {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px; /* sesuaikan padding jika perlu */
+  }
+
+  /* Atur grid row-use agar hanya satu kolom, sehingga semua kolom tertata secara vertikal */
+  .row-use {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center; /* pastikan setiap kolom terpusat secara horizontal */
+    gap: 20px;
+    width: 100%;
+  }
+
+  /* Setiap kolom akan mengisi sebagian besar lebar layar, misalnya 90% */
+  .row-use .col {
+    width: 90%;
+    max-width: 400px; /* atau sesuaikan sesuai desain */
+    margin: 0 auto;
+  }
+
+  /* Sesuaikan ukuran heading dan paragraf jika perlu */
+  .row-use .col h3 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .row-use .col p {
+    font-size: 16px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .contact-us-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 80px;
+    height: auto;
+  }
+
+  /* Contact Us */
+  .contact-text {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .contact-form {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-bottom: 60px; 
+    box-sizing: border-box;
+    border: 1px solid transparent; 
+  }
+
+  .contact-form input,
+  .contact-form textarea {
+    width: 100%;
+  }
+
+  .button-container {
+    position: absolute;
+    bottom: 5px;
+    /* right: 1; */
+    left: 0;
+    /* z-index: 10; */
+  }
+
+  .contact-button {
+    padding: 10px 30px !important; 
+    font-size: 16px;
+    white-space: wrap;   
+    min-width: 180px;
+    box-sizing: border-box;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  /* Hilangkan padding kiri untuk kolom 2 dan 3 agar tampilan lebih rapi */
+  .footer-column:nth-child(2),
+  .footer-column:nth-child(3) {
+    padding-left: 0;
+  }
+  /* Sesuaikan margin dan padding untuk kolom 4 */
+  .footer-column:last-child {
+    margin: 10px 20px;
+    padding: 20px;
+  }
+}
+
+
 
 </style>
