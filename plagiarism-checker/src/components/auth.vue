@@ -116,6 +116,8 @@ import { signInWithPopup } from 'firebase/auth';
 export default {
   data() {
     return {
+      isAuthenticated: !!localStorage.getItem('token'), // Cek token
+      user: JSON.parse(localStorage.getItem('user')) || { username: '', avatar: '' },
       isActive: false, // Untuk toggle form login/register
       loading: false,
       errorMessage: '',
@@ -137,23 +139,93 @@ export default {
     },
 
     // LOGIN
+    // async login() {
+    //   if (!this.loginForm.email || !this.loginForm.password) {
+    //     this.errorMessage = 'Please fill in all fields';
+    //     return;
+    //   }
+    //   try {
+    //     this.loading = true;
+    //     const response = await axios.post('/login', this.loginForm);
+    //     localStorage.setItem('token', response.data.token);
+    //     alert('Login berhasil!');
+    //     this.$router.push('/');
+    //   } catch (error) {
+    //     this.handleAuthError(error);
+    //   } finally {
+    //     this.loading = false;
+    //   }
+    // },
+
+
     async login() {
-      if (!this.loginForm.email || !this.loginForm.password) {
-        this.errorMessage = 'Please fill in all fields';
+  if (!this.loginForm.email || !this.loginForm.password) {
+    this.errorMessage = 'Please fill in all fields';
+    return;
+  }
+  try {
+    this.loading = true;
+    const response = await axios.post('/login', this.loginForm);
+    // Simpan token dan data user ke Vuex store
+    this.$store.commit('setAuth', {
+      token: response.data.token,
+      user: response.data.user
+    });
+    alert('Login berhasil!');
+    this.$router.push('/');
+  } catch (error) {
+    this.handleAuthError(error);
+  } finally {
+    this.loading = false;
+  }
+},
+
+
+async loginWithGoogle() {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+
+    const userData = {
+      username: user.displayName,
+      email: user.email,
+      avatar: user.photoURL, // Simpan foto profil dari Google
+      password: 'google_auth'
+    };
+
+    try {
+      await axios.post('/register', userData);
+      console.log('User baru berhasil didaftarkan.');
+    } catch (registerError) {
+      if (
+        (registerError.response && registerError.response.status === 409) ||
+        (registerError.response.data?.error?.code === 'ER_DUP_ENTRY')
+      ) {
+        console.log('User sudah ada di database, lanjut login.');
+      } else {
+        console.error('Error saat registrasi user:', registerError);
+        alert('Gagal memproses data user Google.');
         return;
       }
-      try {
-        this.loading = true;
-        const response = await axios.post('/login', this.loginForm);
-        localStorage.setItem('token', response.data.token);
-        alert('Login berhasil!');
-        this.$router.push('/');
-      } catch (error) {
-        this.handleAuthError(error);
-      } finally {
-        this.loading = false;
-      }
-    },
+    }
+
+    const loginResponse = await axios.post('/login', {
+      email: user.email,
+      password: 'google_auth'
+    });
+
+    localStorage.setItem('token', loginResponse.data.token);
+    localStorage.setItem('user', JSON.stringify({ // Simpan data pengguna
+      username: user.displayName,
+      avatar: user.photoURL
+    }));
+    alert('Login dengan Google berhasil!');
+    this.$router.push('/');
+  } catch (error) {
+    console.error(error);
+    alert('Login dengan Google gagal.');
+  }
+},
 
     // REGISTER
     async register() {
@@ -174,52 +246,52 @@ export default {
     },
 
     // LOGIN DENGAN GOOGLE (dengan pengecualian duplicate entry)
-    async loginWithGoogle() {
-      try {
-        // Otentikasi ke Firebase dengan Google
-        const result = await signInWithPopup(auth, googleProvider);
-        const user = result.user;
+    // async loginWithGoogle() {
+    //   try {
+    //     // Otentikasi ke Firebase dengan Google
+    //     const result = await signInWithPopup(auth, googleProvider);
+    //     const user = result.user;
 
-        // Data user untuk dikirim ke backend
-        const userData = {
-          username: user.displayName,
-          email: user.email,
-          // Gunakan password dummy untuk proses backend
-          password: 'google_auth'
-        };
+    //     // Data user untuk dikirim ke backend
+    //     const userData = {
+    //       username: user.displayName,
+    //       email: user.email,
+    //       // Gunakan password dummy untuk proses backend
+    //       password: 'google_auth'
+    //     };
 
-        // Coba registrasi user ke backend
-        try {
-          await axios.post('/register', userData);
-          console.log('User baru berhasil didaftarkan.');
-        } catch (registerError) {
-          // Jika error karena user sudah ada (status 409 atau error duplicate entry)
-          if (
-            (registerError.response && registerError.response.status === 409) ||
-            (registerError.response && registerError.response.data && registerError.response.data.error && registerError.response.data.error.code === 'ER_DUP_ENTRY')
-          ) {
-            console.log('User sudah ada di database, lanjut login.');
-          } else {
-            console.error('Error saat registrasi user:', registerError);
-            alert('Gagal memproses data user Google.');
-            return;
-          }
-        }
+    //     // Coba registrasi user ke backend
+    //     try {
+    //       await axios.post('/register', userData);
+    //       console.log('User baru berhasil didaftarkan.');
+    //     } catch (registerError) {
+    //       // Jika error karena user sudah ada (status 409 atau error duplicate entry)
+    //       if (
+    //         (registerError.response && registerError.response.status === 409) ||
+    //         (registerError.response && registerError.response.data && registerError.response.data.error && registerError.response.data.error.code === 'ER_DUP_ENTRY')
+    //       ) {
+    //         console.log('User sudah ada di database, lanjut login.');
+    //       } else {
+    //         console.error('Error saat registrasi user:', registerError);
+    //         alert('Gagal memproses data user Google.');
+    //         return;
+    //       }
+    //     }
 
-        // Lakukan login ke backend
-        const loginResponse = await axios.post('/login', {
-          email: user.email,
-          password: 'google_auth'
-        });
+    //     // Lakukan login ke backend
+    //     const loginResponse = await axios.post('/login', {
+    //       email: user.email,
+    //       password: 'google_auth'
+    //     });
 
-        localStorage.setItem('token', loginResponse.data.token);
-        alert('Login dengan Google berhasil!');
-        this.$router.push('/');
-      } catch (error) {
-        console.error(error);
-        alert('Login dengan Google gagal.');
-      }
-    },
+    //     localStorage.setItem('token', loginResponse.data.token);
+    //     alert('Login dengan Google berhasil!');
+    //     this.$router.push('/');
+    //   } catch (error) {
+    //     console.error(error);
+    //     alert('Login dengan Google gagal.');
+    //   }
+    // },
 
     // Menangani error autentikasi
     handleAuthError(error) {

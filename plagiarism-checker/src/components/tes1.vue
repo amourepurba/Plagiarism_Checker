@@ -4,13 +4,15 @@
     <header class="header">
       <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03"
+                  aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
 
           <!-- Logo -->
-          <router-link v-if="!isAuthenticated" to="/seo">
-            <img src="../assets/logo-blue.png" alt="cmlabs logo" class="logo" />
+          <router-link to="/">
+            <img src="../assets/logo-blue.png" alt="cmlabs logo" class="logo"/>
           </router-link>
 
           <!-- Menu -->
@@ -27,13 +29,19 @@
               </li>
             </ul>
 
-            <!-- Login -->
-            <form class="d-flex" role="login">
-              <router-link v-if="!isAuthenticated" to="/auth" class="btn btn-outline-success">
-                Login
-                <i class="fa-solid fa-arrow-right-to-bracket" style="color: #18a0fb; padding-left: 5px;"></i>
-              </router-link>
-            </form>
+            <!-- Foto Profil dan Username atau Tombol Login -->
+            <div v-if="isAuthenticated" class="user-profile" :class="{ active: showDropdown }" @click="toggleDropdown">
+              <img :src="user.avatar" alt="User Avatar" class="rounded-circle me-2" />
+              <span class="me-2">{{ user.username }}</span>
+              <!-- Dropdown Logout -->
+              <div v-if="showDropdown" class="dropdown-menu">
+                <button class="btn btn-outline-danger" @click.stop="logout">Logout</button>
+              </div>
+            </div>
+            <router-link v-else to="/auth" class="btn btn-outline-success">
+              Login
+              <i class="fa-solid fa-arrow-right-to-bracket" style="color: #18a0fb; padding-left: 5px;"></i>
+            </router-link>
           </div>
         </div>
       </nav>
@@ -329,27 +337,49 @@ export default {
       textOutput: '',
       fileOutput: '',
       urlOutput: '',
-      selectedLanguage: 'english'
+      selectedLanguage: 'english',
+      showDropdown: false
     };
   },
 
+
+  computed: {
+  isAuthenticated() {
+    return !!localStorage.getItem('token');
+  },
+  user() {
+    return JSON.parse(localStorage.getItem('user')) || { username: '', avatar: '' };
+  }
+},
+
+
   methods: {
-    validateInput() {
-      if (this.activeTab === 'text' && this.textInput.trim() === '') {
-        this.errorMessage = 'Input tidak boleh kosong!';
-        return false;
-      }
-      if (this.activeTab === 'url' && !this.urlInput.match(/^https?:\/\/[^\s$.?#].[^\s]*$/)) {
-        this.errorMessage = 'URL tidak valid!';
-        return false;
-      }
-      if (this.activeTab === 'file' && !this.fileInput) {
-        this.errorMessage = 'Silakan unggah file!';
-        return false;
-      }
-      this.errorMessage = '';
-      return true;
+    toggleDropdown() {
+      this.showDropdown = !this.showDropdown;
     },
+
+    logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      this.$router.push('/auth');
+    },
+
+    validateInput() {
+    if (this.activeTab === 'text' && this.textInput.trim().length < 50) {
+      this.errorMessage = 'Konten harus lebih dari 50 karakter!';
+      return false;
+    }
+    if (this.activeTab === 'url' && !this.urlInput.match(/^https?:\/\/[^\s$.?#].[^\s]*$/)) {
+      this.errorMessage = 'URL tidak valid!';
+      return false;
+    }
+    if (this.activeTab === 'file' && !this.fileInput) {
+      this.errorMessage = 'Silakan unggah file!';
+      return false;
+    }
+    this.errorMessage = '';
+    return true;
+  },
 
     checkAction() {
       if (!this.validateInput()) return;
@@ -475,7 +505,7 @@ export default {
 
   setup() {
     const selectedLanguage = ref('english');
-    const isVisible = ref(false);
+    const isVisible = ref(true);
     const isShaking = ref(false);
     const howToUseSection = ref(null);
     const contactSection = ref(null);
@@ -518,29 +548,29 @@ export default {
       }
     };
 
-    onMounted(() => {
-      isVisible.value = true;
-      observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (entry.target === contactSection.value || entry.target === howToUseSection.value) {
-            isVisible.value = entry.isIntersecting;
-          }
-        });
-      }, { threshold: 0.2 });
-      if (contactSection.value) {
-        observer.observe(contactSection.value);
-      }
-      if (howToUseSection.value) {
-        observer.observe(howToUseSection.value);
-      }
-    });
+    // onMounted(() => {
+    //   isVisible.value = true;
+    //   observer = new IntersectionObserver(entries => {
+    //     entries.forEach(entry => {
+    //       if (entry.target === contactSection.value || entry.target === howToUseSection.value) {
+    //         isVisible.value = entry.isIntersecting;
+    //       }
+    //     });
+    //   }, { threshold: 0.2 });
+    //   if (contactSection.value) {
+    //     observer.observe(contactSection.value);
+    //   }
+    //   if (howToUseSection.value) {
+    //     observer.observe(howToUseSection.value);
+    //   }
+    // });
 
-    onUnmounted(() => {
-      if (observer) {
-        if (contactSection.value) observer.unobserve(contactSection.value);
-        if (howToUseSection.value) observer.unobserve(howToUseSection.value);
-      }
-    });
+    // onUnmounted(() => {
+    //   if (observer) {
+    //     if (contactSection.value) observer.unobserve(contactSection.value);
+    //     if (howToUseSection.value) observer.unobserve(howToUseSection.value);
+    //   }
+    // });
 
     return {
       selectedLanguage,
@@ -563,6 +593,8 @@ export default {
 
 
 <style scoped>
+
+
 
 .loading-container {
   text-align: center;
@@ -617,7 +649,16 @@ export default {
 }
 
 .navbar .navbar-nav {
-  padding-left: 150px;
+  padding-left: 20px; 
+  margin-right: auto; 
+  display: flex; 
+  gap: 20px; 
+}
+
+.navbar .collapse.navbar-collapse {
+  display: flex !important;
+  justify-content: space-between; /* Logo di kiri, menu di tengah (jika mau), user profile di kanan */
+  align-items: center;
 }
 
 .navbar .nav-link {
@@ -657,10 +698,110 @@ export default {
   background-color: #ffffff;
 }
 
-.navbar img {
+/* .navbar img {
   width: 30%;
   margin-left: 15px;
+} */
+
+.navbar img.logo {
+  width: 160px; /* Ubah sesuai kebutuhan */
+  margin-left: 15px;
+  height: auto;
 }
+
+
+/* profil style */
+.rounded-circle {
+  border: 1px solid #000000;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.user-profile {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  padding: 5px;
+  z-index: 1020; /* Konten profile berada di atas pseudo-element */
+}
+
+/* Pseudo-element untuk animasi lingkaran, muncul di belakang konten profile */
+.user-profile.active::before {
+  content: "";
+  position: absolute;
+  bottom: 5%;
+  left: 110%;
+  width: 170px;
+  height: 170px;
+  background-color: #18a0fba8; /* Warna biru */
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  animation: circleWrap 0.5s forwards;
+  z-index: -1; /* Pastikan pseudo-element berada di belakang konten profile */
+}
+
+/* Animasi lingkaran yang membesar */
+@keyframes circleWrap {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3);
+    opacity: 1;
+  }
+}
+
+.dropdown-menu {
+  font-size: 16px;
+  position: absolute;
+  top: 50px; /* Dropdown muncul di bawah profile */
+  right: 0;
+  background-color: transparent; /* Hilangkan background putih */
+  border: none;
+  padding: 0; /* Hapus padding */
+  display: flex;
+  flex-direction: column;
+  min-width: 120px;
+  transform-origin: top center;
+  animation: openDown 0.5s ease-out;
+  z-index: 1025; /* Dropdown muncul di atas profile dan lingkaran */
+}
+
+.dropdown-menu button {
+  background-color: #18a0fb00; /* Background tombol sama dengan lingkaran */
+  border: none;
+  color: #ffffff; /* Teks putih */
+  width: 100%;
+  text-align: center;
+  padding: 5px 10px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-menu button:hover {
+  background-color: #18a0fb00; /* Tetap sama saat hover */
+  color: #ff0000;
+}
+
+/* Animasi poster terbuka ke bawah */
+@keyframes openDown {
+  0% {
+    transform: perspective(400px) rotateX(-90deg);
+    opacity: 0;
+  }
+  100% {
+    transform: perspective(400px) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
 
 
 /* Input Section */
@@ -859,24 +1000,7 @@ textarea::-webkit-scrollbar-thumb:hover {
   background: #007bff; /* Warna thumb scrollbar saat dihover */
   border: 1px solid #f1f1f1;
 }
-
-/* textarea.input-field {
-  width: 100%;
-  padding: 15px;
-  margin-bottom: 10px;
-  border: 2px solid #ccc;
-  border-radius: 25px;
-  font-size: 16px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  resize: vertical; /* Memungkinkan resize vertikal */
-/* }
-
-textarea.input-field:focus {
-  border-color: #007bff;
-  outline: none;
-  transform: scale(1.02);
-  box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
-} */ 
+ 
 
 .error-text {
   color: red;
@@ -945,26 +1069,7 @@ textarea.input-field:focus {
   box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
 }
 
-/* Style khusus untuk output box (textarea untuk file dan URL setelah check) */
-/* .output-textarea {
-  width: 210%;
-  height: 500px;
-  resize: vertical;
-  box-sizing: border-box;
-  margin-bottom: 20px; Jarak agar tidak menutupi konten lain */
-  /* padding: 15px;
-  border: 2px solid #007bff;
-  border-radius: 25px;
-  font-size: 15px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
 
-.output-textarea:focus {
-  border-color: #007bff;
-  outline: none;
-  transform: scale(1.02);
-  box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
-} */
 
 .input-url.show-output {
   height: auto !important;
@@ -1062,32 +1167,21 @@ h2 {
   text-align: center;
   padding: 120px;
   background-color: #f9f9f9;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+
 }
 
-.container-use.appear {
-  opacity: 1;
-  transform: translateY(0);
-}
 
-.container-use.visible {
-  opacity: 1;
-  transform: scale(1) rotateY(0);
-}
-
-/* Efek saat keluar dari layar */
-/* .container-use.hidden {
-  opacity: 0;
-  transform: scale(0.7) rotateY(10deg);
-} */
 
 .title {
   font-size: 40px;
   font-weight: bold;
   margin-bottom: 40px;
+  
 }
+
+
+
+
 
 .row-use {
   display: grid;
@@ -1166,12 +1260,12 @@ p {
   margin: 50px auto;
   padding: 20px;
   background-color: #ffffff;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  /* opacity: 1;
+  transform: none;
+  transition: none; */
 }
 
-.contact-us-container.appear {
+/* .contact-us-container.appear {
   opacity: 1;
   transform: translateY(0);
 }
@@ -1179,7 +1273,7 @@ p {
 .contact-us-container.visible {
   opacity: 1;
   transform: translateY(0);
-}
+} */
 
 /* .contact-us-container.hidden {
   opacity: 0;
@@ -1213,6 +1307,21 @@ p {
   font-weight: bold;
   margin-bottom: 1px;
   padding: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+  display: inline-block; /* Supaya tetap di tengah */
+  max-width: 0; /* Awalnya tidak terlihat */
+  animation: typing 7s steps(20) infinite alternate-reverse;
+}
+
+@keyframes typing {
+  from {
+    max-width: 0;
+  }
+  to {
+    max-width: 100%;
+  }
 }
 
 .contact-description {
@@ -1263,15 +1372,7 @@ p {
   transform: scale(1.05);
 }
 
-/* @media (max-width: 600px) {
-  .contact-us-container {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-  .contact-text {
-    text-align: center;
-  }
-} */
+
 
 
 .footer {
@@ -1738,8 +1839,8 @@ p {
 
 /* Tablet Devices (min-width: 768px and max-width: 991px) */
 @media (min-width: 768px) and (max-width: 991px) {
-  /* Navbar */
-  .navbar .container-fluid {
+    /* Navbar */
+    .navbar .container-fluid {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
@@ -1818,26 +1919,30 @@ p {
     margin: 10px auto;
   }
 
+  .input-box.input-url {
+    margin-bottom: 20px;
+  }
+
+  .output-container {
+    margin-top: 20px;
+  }
+
+  .output-textarea {
+    min-height: 200px;
+  }
+
+
 
    /* Pastikan container input URL menggunakan layout kolom */
-   .input-box.input-url {
+   /*.input-box.input-url {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
     max-width: 500px;
     margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
-    box-sizing: border-box;
-    margin-bottom: 30px;
-  }
-
-  .output-container {
-    margin-top: 30px;
-  }
-
-  .output-textarea {
-    min-height: 250px;
-  }
+    /*box-sizing: border-box;
+  }*/
 
 
   .input-field {
@@ -1863,9 +1968,9 @@ p {
     width: 100%;
     max-width: 550px;
     padding: 25px;
-  }
+  } */
   
-  .output-textarea {
+  /* .output-textarea {
     width: 100%;
     height: auto;
     min-height: 400px !important;
@@ -2001,8 +2106,8 @@ p {
 
 /* Small Desktop (min-width: 992px and max-width: 1199px) */
 @media (min-width: 992px) and (max-width: 1200px) {
-  /* Navbar */
-  .navbar .container-fluid {
+   /* Navbar */
+   .navbar .container-fluid {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
@@ -2054,7 +2159,6 @@ p {
 
 
   /* Main Content & Input Section */
- 
   .main-content {
     padding: 10px;
   }
@@ -2082,7 +2186,6 @@ p {
     margin: 10px auto;
   }
 
-
   .input-box.input-url {
     margin-bottom: 20px;
   }
@@ -2095,16 +2198,18 @@ p {
     min-height: 200px;
   }
 
+
+
    /* Pastikan container input URL menggunakan layout kolom */
-   /* .input-box.input-url {
+   /*.input-box.input-url {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 500px; */
-    /* margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
-    /* box-sizing: border-box;
-  } */ 
+    max-width: 500px;
+    margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
+    /*box-sizing: border-box;
+  }*/
 
 
   .input-field {
@@ -2130,9 +2235,9 @@ p {
     width: 100%;
     max-width: 550px;
     padding: 25px;
-  }
+  } */
   
-  .output-textarea {
+  /* .output-textarea {
     width: 100%;
     height: auto;
     min-height: 400px !important;
@@ -2223,23 +2328,52 @@ p {
     box-sizing: border-box;
   }
 
+  /* Ubah container footer utama menjadi grid dengan 3 kolom untuk bagian yang diinginkan */
   .footer-content {
-    grid-template-columns: 1fr;
-    gap: 30px;
-    max-width: 100%;
-    margin: 0 auto;
+    display: grid;
+    /* Misalnya, kita inginkan 3 kolom dengan lebar sama untuk Solutions, Information, dan Company */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
   }
-  /* Hilangkan padding kiri untuk kolom 2 dan 3 agar tampilan lebih rapi */
+
+  /* Biarkan kolom pertama (bahasa & supervene) dan kolom keempat (cost-effective fees) tetap di tempatnya, 
+    misalnya dengan mengatur posisi grid atau mengeset ulang jika diperlukan.
+    Contoh: */
+  .footer-column:first-child,
+  .footer-column:last-child {
+    grid-column: 1 / -1; /* Membuatnya memenuhi baris sendiri */
+  }
+
+  /* Flatten struktur HTML untuk kolom kedua dan ketiga,
+    sehingga anak-anaknya (solutions, information, company) menjadi langsung anak dari .footer-content */
   .footer-column:nth-child(2),
   .footer-column:nth-child(3) {
-    padding-left: 0;
+    display: contents;
   }
-  /* Sesuaikan margin dan padding untuk kolom 4 */
-  .footer-column:last-child {
-    margin: 10px 20px;
-    padding: 20px;
+
+  /* Atur posisi masing-masing bagian dalam grid */
+  .solutions-section {
+    grid-column: 1; /* Kolom pertama dalam baris khusus ini */
+  }
+  .information-section {
+    grid-column: 2; /* Kolom kedua */
+  }
+  .company-section {
+    grid-column: 3; /* Kolom ketiga */
+  }
+
+
+  /* Sembunyikan kolom paling bawah (misalnya, kolom partnership) pada tampilan mobile */
+  .footer-content .footer-column:last-child {
+    display: none;
   }
 }
+
+
+@media (max-width: 1920px) {
+
+}
+
 
 
 
