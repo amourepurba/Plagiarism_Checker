@@ -1592,6 +1592,7 @@ p {
   
 }
 
+
 @media screen and (max-width: 481px) {
   .navbar .nav-link {
     font-size: 14px;
@@ -1639,5 +1640,7 @@ p {
     padding: 20px;
   }
 }
+
+
 
 </style>

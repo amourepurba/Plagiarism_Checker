@@ -1,43 +1,65 @@
 <template>
-  <div class="container">
+  <div class="home-container">  
+    <div class="container">
     <!-- Header Section -->
     <header class="header">
-      <nav class="navbar navbar-expand-lg bg-body-tertiary">
-        <div class="container-fluid">
-          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <!-- Logo -->
+      <router-link to="/" @click.native="closeNavbar" class="navbar-brand">
+        <img src="../assets/logo-blue.png" alt="cmlabs logo" class="logo" />
+      </router-link>
 
-          <!-- Logo -->
-          <router-link v-if="!isAuthenticated" to="/seo">
-            <img src="../assets/logo-blue.png" alt="cmlabs logo" class="logo" />
-          </router-link>
+      <!-- Tombol Navbar Toggler -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+              data-bs-target="#navbarSupportedContent"
+              aria-controls="navbarSupportedContent" aria-expanded="false"
+              aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-          <!-- Menu -->
-          <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-              <li class="nav-item">
-                <a class="nav-link active" href="#plagiarism-checker">Plagiarism Checker</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#how-to-use">How To Use</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link active" aria-disabled="true" href="#contact-us">Contact Us</a>
-              </li>
-            </ul>
+      <!-- Menu & User Profile / Login -->
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="#plagiarism-checker" @click="closeNavbar">
+              Plagiarism Checker
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#how-to-use" @click="closeNavbar">
+              How To Use
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#contact-us" @click="closeNavbar">
+              Contact Us
+            </a>
+          </li>
+        </ul>
 
-            <!-- Login -->
-            <form class="d-flex" role="login">
-              <router-link v-if="!isAuthenticated" to="/auth" class="btn btn-outline-success">
-                Login
-                <i class="fa-solid fa-arrow-right-to-bracket" style="color: #18a0fb; padding-left: 5px;"></i>
-              </router-link>
-            </form>
+        <!-- User Profile / Login -->
+        <div class="d-flex align-items-center">
+          <div v-if="isAuthenticated" class="user-profile d-flex align-items-center" 
+               :class="{ active: showDropdown }" @click="toggleDropdown">
+            <img :src="user.avatar" alt="User Avatar" class="rounded-circle me-2" style="width: 40px; height: 40px;" />
+            <span class="me-2">{{ user.username }}</span>
+            <!-- Dropdown Logout -->
+            <div v-if="showDropdown" class="dropdown-menu">
+              <button class="btn btn-outline-danger" @click.stop="logout">Logout</button>
+            </div>
           </div>
+          <router-link v-else to="/auth" class="btn btn-outline-success ms-2" @click.native="closeNavbar">
+            Login
+            <i class="fa-solid fa-arrow-right-to-bracket" style="color: #007bff; padding-left: 5px;"></i>
+          </router-link>
         </div>
-      </nav>
-    </header>
+      </div>
+    </div>
+  </nav>
+</header>
+
+
     
     <!-- Input Section -->
     <div class="main-content" id="plagiarism-checker">
@@ -306,12 +328,15 @@
       </div>
     </footer>
   </div>
+  </div>
 </template>
 
 <script>
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 
 export default {
+  name: "Tes1",
+
   data() {
     return {
       isLoading: false,
@@ -329,27 +354,69 @@ export default {
       textOutput: '',
       fileOutput: '',
       urlOutput: '',
-      selectedLanguage: 'english'
+      selectedLanguage: 'english',
+      showDropdown: false
     };
   },
 
+
+  computed: {
+  isAuthenticated() {
+    return !!localStorage.getItem('token');
+  },
+  user() {
+    return JSON.parse(localStorage.getItem('user')) || { username: '', avatar: '' };
+  }
+},
+
+
   methods: {
-    validateInput() {
-      if (this.activeTab === 'text' && this.textInput.trim() === '') {
-        this.errorMessage = 'Input tidak boleh kosong!';
-        return false;
-      }
-      if (this.activeTab === 'url' && !this.urlInput.match(/^https?:\/\/[^\s$.?#].[^\s]*$/)) {
-        this.errorMessage = 'URL tidak valid!';
-        return false;
-      }
-      if (this.activeTab === 'file' && !this.fileInput) {
-        this.errorMessage = 'Silakan unggah file!';
-        return false;
-      }
-      this.errorMessage = '';
-      return true;
+    // closeNavbar() {
+    //   // Dapatkan elemen collapse navbar
+    //   const collapseEl = document.getElementById('navbarTogglerDemo03');
+    //   if (collapseEl && collapseEl.classList.contains('show')) {
+    //     // Ambil instance Bootstrap Collapse, jika belum ada, buat baru
+    //     let bsCollapse = bootstrap.Collapse.getInstance(collapseEl);
+    //     if (!bsCollapse) {
+    //       bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
+    //     }
+    //     bsCollapse.hide();
+    //   }
+    // },
+    toggleDropdown() {
+      this.showDropdown = !this.showDropdown;
     },
+    logout() {
+      // Implementasikan fungsi logout di sini
+      console.log("Logout");
+    },
+
+    toggleDropdown() {
+      this.showDropdown = !this.showDropdown;
+    },
+
+    logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      this.$router.push('/auth');
+    },
+
+    validateInput() {
+    if (this.activeTab === 'text' && this.textInput.trim().length < 50) {
+      this.errorMessage = 'Konten harus lebih dari 50 karakter!';
+      return false;
+    }
+    if (this.activeTab === 'url' && !this.urlInput.match(/^https?:\/\/[^\s$.?#].[^\s]*$/)) {
+      this.errorMessage = 'URL tidak valid!';
+      return false;
+    }
+    if (this.activeTab === 'file' && !this.fileInput) {
+      this.errorMessage = 'Silakan unggah file!';
+      return false;
+    }
+    this.errorMessage = '';
+    return true;
+  },
 
     checkAction() {
       if (!this.validateInput()) return;
@@ -395,19 +462,20 @@ export default {
           if (data.error) {
             this.errorMessage = data.error;
           } else {
-            // Mengambil skor dari API
             this.uniqueScore = data.uniqueness_score;
             this.similarityScore = 100 - data.uniqueness_score;
             this.readabilityScore = data.readability_score;
-
-            // Mengonversi top_keywords menjadi array string
             this.topKeywords = Object.entries(data.top_keywords).map(
               ([word, percentage]) => `${word} (${percentage.toFixed(2)}%)`
             );
-
-            // Mengambil daftar situs serupa (pastikan menggunakan key yang sesuai, misalnya "link")
-            this.sources = data.similar_sites.map(item => item.link);
-
+            this.sources = data.plagiarized_sites.map(item => item.url);
+            if (this.activeTab === 'text') {
+              this.textOutput = data.processed_text || '';
+            } else if (this.activeTab === 'file') {
+              this.fileOutput = data.processed_text || '';
+            } else if (this.activeTab === 'url') {
+              this.urlOutput = data.processed_text || '';
+            }
             this.showOutput = true;
             this.$nextTick(() => {
               if (this.$refs.resultSection) {
@@ -474,7 +542,7 @@ export default {
 
   setup() {
     const selectedLanguage = ref('english');
-    const isVisible = ref(false);
+    const isVisible = ref(true);
     const isShaking = ref(false);
     const howToUseSection = ref(null);
     const contactSection = ref(null);
@@ -517,29 +585,29 @@ export default {
       }
     };
 
-    onMounted(() => {
-      isVisible.value = true;
-      observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (entry.target === contactSection.value || entry.target === howToUseSection.value) {
-            isVisible.value = entry.isIntersecting;
-          }
-        });
-      }, { threshold: 0.2 });
-      if (contactSection.value) {
-        observer.observe(contactSection.value);
-      }
-      if (howToUseSection.value) {
-        observer.observe(howToUseSection.value);
-      }
-    });
+    // onMounted(() => {
+    //   isVisible.value = true;
+    //   observer = new IntersectionObserver(entries => {
+    //     entries.forEach(entry => {
+    //       if (entry.target === contactSection.value || entry.target === howToUseSection.value) {
+    //         isVisible.value = entry.isIntersecting;
+    //       }
+    //     });
+    //   }, { threshold: 0.2 });
+    //   if (contactSection.value) {
+    //     observer.observe(contactSection.value);
+    //   }
+    //   if (howToUseSection.value) {
+    //     observer.observe(howToUseSection.value);
+    //   }
+    // });
 
-    onUnmounted(() => {
-      if (observer) {
-        if (contactSection.value) observer.unobserve(contactSection.value);
-        if (howToUseSection.value) observer.unobserve(howToUseSection.value);
-      }
-    });
+    // onUnmounted(() => {
+    //   if (observer) {
+    //     if (contactSection.value) observer.unobserve(contactSection.value);
+    //     if (howToUseSection.value) observer.unobserve(howToUseSection.value);
+    //   }
+    // });
 
     return {
       selectedLanguage,
@@ -561,1685 +629,5 @@ export default {
 
 
 
-<style scoped>
 
-.loading-container {
-  text-align: center;
-  margin-top: 20px;
-}
 
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid rgba(0, 0, 0, 0.1);
-  border-top: 5px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: auto;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-* {
-  box-sizing: border-box;
-}
-
-.container {
-  font-family: "Poppins", serif;
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  padding: 0;
-  min-height: 100vh; /* Memastikan container mengambil seluruh tinggi layar */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #ffffff;
-  gap: 9px;
-  animation: fadeIn 1s ease-out;
-}
-
-.header {
-  width: 100%;
-  position: sticky; /* Membuat header sticky */
-  top: 0; /* Menempel di bagian atas */
-  z-index: 1000; /* Memastikan header selalu di atas elemen lain */
-  background-color: #ffffff; /* Warna background header */
-}
-
-.navbar {
-  background-color: #ffffff !important;
-  padding: 20px;
-}
-
-.navbar .navbar-nav {
-  padding-left: 150px;
-}
-
-.navbar .nav-link {
-  color: #000000 !important;
-  font-weight: 700;
-  margin-left: 9px;
-  font-size: 20px;
-  transition: transform 0.3s ease, color 0.3s ease;
-}
-
-.navbar .nav-link:hover {
-  text-decoration: underline;
-  cursor: pointer;
-  transform: translateY(-3px);
-  color: #18A0FB !important;
-}
-
-.navbar .d-flex {
-  transition: transform 0.3s ease, color 0.3s ease;
-}
-
-.navbar .d-flex:hover {
-  transform: translateX(3px);
-}
-
-.navbar .btn-outline-success {
-  color: #18A0FB;
-  background-color: transparent;
-  border: none;
-  padding: 0;
-  font-weight: 700;
-  font-size: 20px;
-}
-
-.navbar .btn-outline-success:hover {
-  cursor: pointer;
-  background-color: #ffffff;
-}
-
-.navbar img {
-  width: 30%;
-  margin-left: 15px;
-}
-
-
-/* Input Section */
-.main-content {
-  flex: 1;
-  width: 100%;
-  padding-bottom: 25px;
-  /* height: 20vh; */
-  /* display: flex; */
-  /* flex-direction: column; */
-  /* grid-template-columns: 1fr 1fr;
-  align-items: center;
-  justify-content: center; */
-}
-
-h1 {
-  text-align: center;
-  padding: 10px;
-  font-weight: bold;
-}
-
-.container-option {
-  min-height: 60vh; /*  Memberikan ruang default saat output belum tampil */
-  display: flex;
-  /* height: 63vh; */
-  flex-direction: column;
-  align-items: center;
-}
-
-/* Tab Button Styles */
-.tab-button {
-  font-size: 16px;
-  padding: 5px 20px;
-  border-radius: 5px;
-  margin: 0 5px;
-  color: #353535;
-  background-color: #eaeaea;
-  border: none;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.tab-button.active {
-  background-color: #18A0FB;
-  color: white;
-  transform: scale(1.05);
-}
-
-.tab-button:hover {
-  transition: background-color 0.3s, color 0.3s;
-  background-color: #1167c2;
-  color: white;
-  transform: scale(1.05);
-}
-
-/* Dropdown Styles */
-.dropdown-container {
-  margin: 10px;
-}
-
-.form-control {
-  padding: 5px;
-  font-size: 16px;
-}
-
-.dropdown {
-  font-size: 14px;
-  padding: 5px 25px;
-  border: 2px solid #ccc;
-  border-radius: 5px;
-  background-color: white;
-  appearance: none;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="%23007bff" d="M7 10l5 5 5-5z"/></svg>');
-  background-repeat: no-repeat;
-  background-position: right 5px center;
-  background-size: 16px;
-}
-
-.dropdown:focus {
-  border-color: #007bff;
-  outline: none;
-}
-
-/* Input Box Style */
-.input-container {
-  width: 100%;
-  max-width: 700px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center; /* Memastikan tombol tidak tertumpuk */
-  min-height: 200px; /* Berikan cukup ruang untuk tombol */
-}
-
-.input-box {
-  width: 100%;
-  /* max-width: 700px; */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.input-box.input-file {
-  margin-bottom: 100px;
-}
-
-.input-box.input-url {
-  /* margin-bottom: 130px; */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 700px;
-  margin: 10px auto;
-  box-sizing: border-box;
-}
-
-.input-box.input-url .input-field {
-  width: 100%;
-  margin-bottom: 10px;
-}
-
-/* Tombol Check Plagiarism */
-.input-box.input-url .btn-check {
-  width: auto;
-  font-weight: 500; 
-  min-width: 150px; 
-  padding: 10px 30px; 
-  font-size: 16px; 
-  white-space: nowrap; 
-  margin-top: 10px;
-}
-
-.input-text {
-  width: 150%;
-  height: 500px; 
-}
-
-.input-file {
-  width: 70%;
-  height: auto;
-}
-
-/* .input-url {
-  width: 80%;
-  height: 70px; 
-} */
-
-
-
-
-/* Input Field Styling */
-.input-field {
-  width: 100%;
-  padding: 15px;
-  margin-bottom: 10px;
-  border: 2px solid #ccc;
-  border-radius: 25px;
-  font-size: 16px;
-  height: 100%; 
-  transition: border-color 0.3s ease, box-shadow 0.3s ease; 
-}
-
-.input-field:focus {
-  border-color: #007bff;
-  outline: none;
-  /* box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); */
-  transform: scale(1.02);
-  box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
-}
-
-textarea.input-field {
-  resize: vertical;
-  min-height: 150px;
-  max-height: 400px;
-  padding-right: 15px;
-}
-
-textarea::-webkit-scrollbar {
-  width: 10px; /* Lebar scrollbar */
-}
-
-textarea::-webkit-scrollbar-track {
-  /* background: #f1f1f1;  */
-  /* border-radius: 10px; Border radius track scrollbar */
-  margin: 14px 4px;
-}
-
-textarea::-webkit-scrollbar-thumb {
-  background: #888; /* Warna thumb scrollbar */
-  border-radius: 10px; /* Border radius thumb scrollbar */
-  border: 2px solid transparent; /* Tambahkan border transparan */
-  background-clip: content-box;
-}
-
-textarea::-webkit-scrollbar-thumb:hover {
-  background: #007bff; /* Warna thumb scrollbar saat dihover */
-  border: 1px solid #f1f1f1;
-}
-
-/* textarea.input-field {
-  width: 100%;
-  padding: 15px;
-  margin-bottom: 10px;
-  border: 2px solid #ccc;
-  border-radius: 25px;
-  font-size: 16px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  resize: vertical; /* Memungkinkan resize vertikal */
-/* }
-
-textarea.input-field:focus {
-  border-color: #007bff;
-  outline: none;
-  transform: scale(1.02);
-  box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
-} */ 
-
-.error-text {
-  color: red;
-  font-size: 14px;
-  margin-top: 5px;
-}
-
-
-
-/* Button Styles */
-.text-center.mt-4 {
-  width: 100%;
-  margin: 30px 0;
-  cursor: pointer;
-}
-
-.btn-check {
-  background-color: #18A0FB;
-  color: white;
-  padding: 10px 30px;
-  font-size: 16px;
-  font-weight: 500;
-  border-radius: 8px;
-  position: relative; /* Memastikan tombol berada di atas elemen lain */
-  z-index: 10; /* Menjadikan tombol di atas elemen lain jika ada overlap */
-  pointer-events: auto; /* Memastikan tombol bisa diklik */
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.btn-check:hover {
-  background-color: #1167c2;
-  transform: scale(1.05);
-}
-
-
-/* Output Section */
-.output-container {
-  width: 100%;
-  max-width: 700px;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: #f8fafc;
-  border-radius: 12px;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-  clear: both;
-}
-
-.output-textarea {
-  width: 100%;
-  height: auto;
-  min-height: 150px;
-  resize: vertical;
-  box-sizing: border-box;
-  margin-bottom: 20px;
-  padding: 15px;
-  border: 2px solid #007bff;
-  border-radius: 25px;
-  font-size: 15px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.output-textarea:focus {
-  border-color: #007bff;
-  outline: none;
-  transform: scale(1.02);
-  box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
-}
-
-/* Style khusus untuk output box (textarea untuk file dan URL setelah check) */
-/* .output-textarea {
-  width: 210%;
-  height: 500px;
-  resize: vertical;
-  box-sizing: border-box;
-  margin-bottom: 20px; Jarak agar tidak menutupi konten lain */
-  /* padding: 15px;
-  border: 2px solid #007bff;
-  border-radius: 25px;
-  font-size: 15px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.output-textarea:focus {
-  border-color: #007bff;
-  outline: none;
-  transform: scale(1.02);
-  box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
-} */
-
-.input-url.show-output {
-  height: auto !important;
-  width: 70% !important;
-}
-
-
-/* Output */
-.output-container {
-  width: 100%;
-  background-color: #f8fafc;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-  max-width: 700px;
-  min-height: 200px; /* ruang minimum untuk output */
-  margin-top: 5 px;
-  clear: both;
-  /* opacity: 0; */
-  /* transform: translateY(20px);
-  transition: opacity 0.5s ease, transform 0.5s ease; */
-}
-
-.output-container.show {
-  display: block; /* Tampilkan saat output ada */
-  flex-grow: 1; /* Output akan mengisi ruang yang tersedia */
-  /* opacity: 1;
-  transform: translateY(0); */
-}
-
-h2 {
-    text-align: center;
-    font-size: 1.7rem;
-    font-weight: 700;
-    color: #333;
-    margin-bottom: 20px;
-}
-
-.row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5px;
-    border-top: 2px solid #d1d5db;
-    padding-top: 16px;
-}
-
-.left-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
-
-.right-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
-}
-
-.text-xl {
-    font-size: 1.4rem;
-    font-weight: 600;
-}  
-  
-.text-red-600 {  
-  color: #dc2626;
-}
-
-.text-green-600 {
-    color: #16a34a;
-}
-
-.text-blue-600 {
-    color: #2563eb;
-}
-
-.list-disc {
-    list-style-type: disc;
-    padding-left: 10px;
-}
-
-.list-inside {
-    list-style-position: inside;
-}
-
-.text-red-500 {
-    color: #ef4444;
-}
-
-
-/* Hot To Use Style */
-.container-use {
-  width: 100%;
-  text-align: center;
-  padding: 120px;
-  background-color: #f9f9f9;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.container-use.appear {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.container-use.visible {
-  opacity: 1;
-  transform: scale(1) rotateY(0);
-}
-
-/* Efek saat keluar dari layar */
-/* .container-use.hidden {
-  opacity: 0;
-  transform: scale(0.7) rotateY(10deg);
-} */
-
-.title {
-  font-size: 40px;
-  font-weight: bold;
-  margin-bottom: 40px;
-}
-
-.row-use {
-  display: grid;
-  grid-template-columns: auto auto auto;
-  gap: 100px;
-  justify-content: center;
-  /* flex-direction: column; */
-}
-
-.row-use .col {
-  /* flex: 1 1 calc(33.333% - 20px);  */
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 300px;
-  text-align: center;
-  /* max-width: 30%; */
-  min-width: 250px;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.row-use .col:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-  /* transform: scale(1.05); */
-}
-
-h3 {
-  font-size: 28px;
-  color: #007bff;
-  margin-bottom: 10px;
-}
-
-p {
-  font-size: 16px;
-  color: #333333;
-}
-
-
-/* Notifikasi */
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 15px 20px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  z-index: 1000;
-  transition: opacity 0.5s ease-in-out;
-}
-
-.notification.success {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.notification.error {
-  background-color: #E74C3C;
-  color: white;
-}
-
-
-
-
-/* Contact Us Style */
-.contact-us-container {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  height: 50vh;
-  min-width: 100%;
-  margin: 50px auto;
-  padding: 20px;
-  background-color: #ffffff;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.contact-us-container.appear {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.contact-us-container.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* .contact-us-container.hidden {
-  opacity: 0;
-  transform: translateY(50px);
-} */
-
-.shake {
-  animation: shake 0.3s ease-in-out;
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-10px); }
-  50% { transform: translateX(10px); }
-  75% { transform: translateX(-10px); }
-}
-
-.error-border {
-  border: 2px solid red !important;
-  transition: border 0.3s ease-in-out;
-}
-
-.contact-text {
-  text-align: center;
-  margin-bottom: 70px;
-  /* animation: slide-top 0.7s ease-in-out alternate-reverse backwards; */
-}
-
-.contact-title {
-  font-size: 50px;
-  font-weight: bold;
-  margin-bottom: 1px;
-  padding: 1px;
-}
-
-.contact-description {
-  font-size: 16px;
-  color: #555;
-}
-
-.contact-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  /* animation: slide-bottom 0.7s ease-out alternate-reverse both; */
-}
-
-.contact-input, .contact-textarea {
-  width: 80%;
-  padding: 7px;
-  border: 2px solid #ccc;
-  border-radius: 8px;
-  font-size: 16px;
-}
-
-.contact-textarea {
-  height: 120px;
-  resize: none;
-}
-
-.button-container {
-  display: flex;
-  justify-content: flex-end;
-  padding-right: 175px;
-}
-
-.contact-button {
-  background-color: #18A0FB;
-  color: white;
-  width: 20%;
-  padding: 10px;
-  font-size: 15px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.contact-button:hover {
-  background-color: #1167c2;
-  transform: scale(1.05);
-}
-
-/* @media (max-width: 600px) {
-  .contact-us-container {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-  .contact-text {
-    text-align: center;
-  }
-} */
-
-
-.footer {
-  background-color: #f8f9fa;
-  padding: 50px 20px;
-  margin-top: auto;
-  text-align: center;
-  width: 100%;
-  position: relative;
-}
-
-
-.footer-content {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 2fr;
-  gap: 50px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-/* Column 1: Languages & Supervene */
-.footer-column:first-child {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-right: 20px;
-}
-
-.language-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.language-btn {
-  background: #ffffff;
-  color: #2d2d2d;
-  border: 1px solid #ddd;
-  padding: 8px 8px;
-  border-radius: 10px;
-  font-size: 12px;
-  text-align: center;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.language-btn:hover {
-  background: #18A0FB;
-  color: white;
-  transform: scale(1.05);
-}
-
-.supervene-section {
-  margin-top: 20px;
-  margin-right: 5px;
-}
-
-/* Column 2: Solutions & Information */
-.footer-column:nth-child(2) {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  padding-left: 40px;
-}
-
-/* Column 3: Company */
-.footer-column:nth-child(3) {
-  padding-left: 30px;
-}
-
-/* Column 4: Partnerships */
-.footer-column:last-child {
-  background-color: #f0f4f7;
-  padding: 30px;
-  border-radius: 10px;
-  margin: 10px 70px;
-}
-
-/* Align footer titles and content to the left */
-.footer-title {
-  color: #2d2d2d;
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 15px;
-  text-transform: uppercase;
-  text-align: left; /* Align to left */
-}
-
-.footer-subtitle {
-  color: #5f5f5f;
-  font-size: 10px;
-  margin: 10px 0;
-  line-height: 1.4;
-  text-align: left; /* Align to left */
-}
-
-.footer-links {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  font-weight: 500;
-  text-align: left; /* Align to left */
-}
-
-.footer-links a {
-  color: #5f5f5f;
-  text-decoration: none;
-  font-size: 14px;
-  transition: color 0.3s;
-  text-align: left; /* Align to left */
-  transition: color 0.3s ease, transform 0.3s ease;
-}
-
-.footer-links a:hover {
-  color: #18A0FB;
-  transform: translateX(5px);
-}
-
-.contact-address {
-  color: #5f5f5f;
-  font-size: 123px;
-  line-height: 1;
-  font-weight: 500;
-  text-align: left;
-}
-
-.phone-number {
-  color: #18A0FB;
-  font-weight: 600;
-  margin-top: 10px;
-  text-align: left; /* Align to left */
-}
-
-.partnership-list {
-  display: grid;
-  gap: 10px;
-}
-
-.partnership-list a {
-  color: #5f5f5f;
-  text-decoration: none;
-  font-size: 14px;
-  transition: color 0.3s;
-  text-align: left; /* Align to left */
-}
-
-
-/* Animasi Fade-In pada Halaman */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes slide-top {
-  0% {
-    -webkit-transform: translateY(0);
-            transform: translateY(0);
-  }
-  100% {
-    -webkit-transform: translateY(-100px);
-            transform: translateY(-100px);
-  }
-}
-
-@keyframes slide-bottom {
-  0% {
-    -webkit-transform: translateY(0);
-    transform: translateY(0);
-  }
-  100% {
-    -webkit-transform: translateY(100px);
-    transform: translateY(100px);
-  }
-}
-
-
-/* @-webkit-keyframes slide-bottom {
-  0% {
-    -webkit-transform: translateY(0);
-            transform: translateY(0);
-  }
-  100% {
-    -webkit-transform: translateY(100px);
-            transform: translateY(100px);
-  }
-}  */
-
-
-
-/* RESPONSIVE STYLES */
-/* Mobile Devices (max-width: 767px) */
-@media (max-width: 767px) {
-  /* Navbar */
-  .navbar .container-fluid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  /* Logo */
-  .navbar img.logo {
-    order: 2;
-    margin-left: auto;
-    width: auto;
-    max-width: 150px; 
-  }
-
-   /* Bagian collapse (nav links) berada di sebelah kiri */
-   .navbar .collapse {
-    order: 0;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-  }
-  
-  /* Ketika collapse aktif (memiliki kelas .show), tampilkan sebagai flex dan agar menu muncul secara vertikal di sebelah kiri */
-  .navbar .collapse.show {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .navbar .navbar-nav {
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-    margin-top: 10px;
-  }
-  
-  .navbar .nav-item {
-    margin: 5px 0; 
-  }
-  
-  .navbar .nav-link {
-    padding: 0;
-    margin: 0;
-    text-align: left;
-    font-size: 16px; 
-  }
-
-
-  /* Main Content & Input Section */
-  .main-content {
-    padding: 10px;
-  }
-  
-  .container-option {
-    padding: 0 10px;
-  }
-  
-  .input-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .container-option ul.nav {
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 10px;
-  }
-  
-  .input-box {
-    width: 100%;
-    max-width: 500px;
-    margin: 10px auto;
-  }
-
-  .input-box.input-url {
-    margin-bottom: 20px;
-  }
-
-  .output-container {
-    margin-top: 20px;
-  }
-
-  .output-textarea {
-    min-height: 200px;
-  }
-
-
-
-   /* Pastikan container input URL menggunakan layout kolom */
-   /*.input-box.input-url {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 500px;
-    margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
-    /*box-sizing: border-box;
-  }*/
-
-
-  .input-field {
-    width: 100%;
-    font-size: 14px;
-    padding: 12px;
-  }
-  
-  .btn-check {
-    width: 100%;
-    max-width: 200px;
-    padding: 10px;
-    font-size: 14px;
-    margin-top: 10px;
-  }
-  
-  /* .output-container {
-    clear: both;
-    margin-top: 50px;
-    position: relative;
-    bottom: 1;
-    z-index: 1;
-    width: 100%;
-    max-width: 550px;
-    padding: 25px;
-  } */
-  
-  /* .output-textarea {
-    width: 100%;
-    height: auto;
-    min-height: 400px !important;
-  } */
-
-  .container-use {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 20px; /* sesuaikan padding jika perlu */
-  }
-
-  /* Atur grid row-use agar hanya satu kolom, sehingga semua kolom tertata secara vertikal */
-  .row-use {
-    display: grid;
-    grid-template-columns: 1fr;
-    justify-items: center; /* pastikan setiap kolom terpusat secara horizontal */
-    gap: 20px;
-    width: 100%;
-  }
-
-  /* Setiap kolom akan mengisi sebagian besar lebar layar, misalnya 90% */
-  .row-use .col {
-    width: 90%;
-    max-width: 400px; /* atau sesuaikan sesuai desain */
-    margin: 0 auto;
-  }
-
-  /* Sesuaikan ukuran heading dan paragraf jika perlu */
-  .row-use .col h3 {
-    font-size: 24px;
-    margin-bottom: 8px;
-    text-align: center;
-  }
-  .row-use .col p {
-    font-size: 16px;
-    line-height: 1.5;
-    text-align: center;
-  }
-
-  .contact-us-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    margin-bottom: 80px;
-    height: auto;
-  }
-
-  /* Contact Us */
-  .contact-text {
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .contact-form {
-    position: relative;
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    padding-bottom: 60px; 
-    box-sizing: border-box;
-    border: 1px solid transparent; 
-  }
-
-  .contact-form input,
-  .contact-form textarea {
-    width: 100%;
-  }
-
-  .button-container {
-    position: absolute;
-    bottom: 5px;
-    /* right: 1; */
-    left: 0;
-    /* z-index: 10; */
-  }
-
-  .contact-button {
-    padding: 10px 30px !important; 
-    font-size: 16px;
-    white-space: wrap;   
-    min-width: 180px;
-    box-sizing: border-box;
-  }
-
-  /* Ubah container footer utama menjadi grid dengan 3 kolom untuk bagian yang diinginkan */
-  .footer-content {
-    display: grid;
-    /* Misalnya, kita inginkan 3 kolom dengan lebar sama untuk Solutions, Information, dan Company */
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-
-  /* Biarkan kolom pertama (bahasa & supervene) dan kolom keempat (cost-effective fees) tetap di tempatnya, 
-    misalnya dengan mengatur posisi grid atau mengeset ulang jika diperlukan.
-    Contoh: */
-  .footer-column:first-child,
-  .footer-column:last-child {
-    grid-column: 1 / -1; /* Membuatnya memenuhi baris sendiri */
-  }
-
-  /* Flatten struktur HTML untuk kolom kedua dan ketiga,
-    sehingga anak-anaknya (solutions, information, company) menjadi langsung anak dari .footer-content */
-  .footer-column:nth-child(2),
-  .footer-column:nth-child(3) {
-    display: contents;
-  }
-
-  /* Atur posisi masing-masing bagian dalam grid */
-  .solutions-section {
-    grid-column: 1; /* Kolom pertama dalam baris khusus ini */
-  }
-  .information-section {
-    grid-column: 2; /* Kolom kedua */
-  }
-  .company-section {
-    grid-column: 3; /* Kolom ketiga */
-  }
-
-
-  /* Sembunyikan kolom paling bawah (misalnya, kolom partnership) pada tampilan mobile */
-  .footer-content .footer-column:last-child {
-    display: none;
-  }
-}
-
-
-
-
-
-
-/* Tablet Devices (min-width: 768px and max-width: 991px) */
-@media (min-width: 768px) and (max-width: 991px) {
-  /* Navbar */
-  .navbar .container-fluid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  /* Logo */
-  .navbar img.logo {
-    order: 2;
-    margin-left: auto;
-    width: auto;
-    max-width: 150px; 
-  }
-
-   /* Bagian collapse (nav links) berada di sebelah kiri */
-   .navbar .collapse {
-    order: 0;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-  }
-  
-  /* Ketika collapse aktif (memiliki kelas .show), tampilkan sebagai flex dan agar menu muncul secara vertikal di sebelah kiri */
-  .navbar .collapse.show {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .navbar .navbar-nav {
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-    margin-top: 10px;
-  }
-  
-  .navbar .nav-item {
-    margin: 5px 0; 
-  }
-  
-  .navbar .nav-link {
-    padding: 0;
-    margin: 0;
-    text-align: left;
-    font-size: 16px; 
-  }
-
-
-  /* Main Content & Input Section */
-  .main-content {
-    padding: 10px;
-  }
-  
-  .container-option {
-    padding: 0 10px;
-  }
-  
-  .input-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .container-option ul.nav {
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 10px;
-  }
-  
-  .input-box {
-    width: 100%;
-    max-width: 500px;
-    margin: 10px auto;
-  }
-
-
-   /* Pastikan container input URL menggunakan layout kolom */
-   .input-box.input-url {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 500px;
-    margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
-    box-sizing: border-box;
-    margin-bottom: 30px;
-  }
-
-  .output-container {
-    margin-top: 30px;
-  }
-
-  .output-textarea {
-    min-height: 250px;
-  }
-
-
-  .input-field {
-    width: 100%;
-    font-size: 14px;
-    padding: 12px;
-  }
-  
-  .btn-check {
-    width: 100%;
-    max-width: 200px;
-    padding: 10px;
-    font-size: 14px;
-    margin-top: 10px;
-  }
-  
-  /* .output-container {
-    clear: both;
-    margin-top: 50px;
-    position: relative;
-    bottom: 1;
-    z-index: 1;
-    width: 100%;
-    max-width: 550px;
-    padding: 25px;
-  }
-  
-  .output-textarea {
-    width: 100%;
-    height: auto;
-    min-height: 400px !important;
-  } */
-
-  .container-use {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 20px; /* sesuaikan padding jika perlu */
-  }
-
-  /* Atur grid row-use agar hanya satu kolom, sehingga semua kolom tertata secara vertikal */
-  .row-use {
-    display: grid;
-    grid-template-columns: 1fr;
-    justify-items: center; /* pastikan setiap kolom terpusat secara horizontal */
-    gap: 20px;
-    width: 100%;
-  }
-
-  /* Setiap kolom akan mengisi sebagian besar lebar layar, misalnya 90% */
-  .row-use .col {
-    width: 90%;
-    max-width: 400px; /* atau sesuaikan sesuai desain */
-    margin: 0 auto;
-  }
-
-  /* Sesuaikan ukuran heading dan paragraf jika perlu */
-  .row-use .col h3 {
-    font-size: 24px;
-    margin-bottom: 8px;
-    text-align: center;
-  }
-  .row-use .col p {
-    font-size: 16px;
-    line-height: 1.5;
-    text-align: center;
-  }
-
-  .contact-us-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    margin-bottom: 80px;
-    height: auto;
-  }
-
-  /* Contact Us */
-  .contact-text {
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .contact-form {
-    position: relative;
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    padding-bottom: 60px; 
-    box-sizing: border-box;
-    border: 1px solid transparent; 
-  }
-
-  .contact-form input,
-  .contact-form textarea {
-    width: 100%;
-  }
-
-  .button-container {
-    position: absolute;
-    bottom: 5px;
-    /* right: 1; */
-    left: 0;
-    /* z-index: 10; */
-  }
-
-  .contact-button {
-    padding: 10px 30px !important; 
-    font-size: 16px;
-    white-space: wrap;   
-    min-width: 180px;
-    box-sizing: border-box;
-  }
-
-  /* Ubah container footer utama menjadi grid dengan 3 kolom untuk bagian yang diinginkan */
-  .footer-content {
-    display: grid;
-    /* Misalnya, kita inginkan 3 kolom dengan lebar sama untuk Solutions, Information, dan Company */
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-
-  /* Biarkan kolom pertama (bahasa & supervene) dan kolom keempat (cost-effective fees) tetap di tempatnya, 
-    misalnya dengan mengatur posisi grid atau mengeset ulang jika diperlukan.
-    Contoh: */
-  .footer-column:first-child,
-  .footer-column:last-child {
-    grid-column: 1 / -1; /* Membuatnya memenuhi baris sendiri */
-  }
-
-  /* Flatten struktur HTML untuk kolom kedua dan ketiga,
-    sehingga anak-anaknya (solutions, information, company) menjadi langsung anak dari .footer-content */
-  .footer-column:nth-child(2),
-  .footer-column:nth-child(3) {
-    display: contents;
-  }
-
-  /* Atur posisi masing-masing bagian dalam grid */
-  .solutions-section {
-    grid-column: 1; /* Kolom pertama dalam baris khusus ini */
-  }
-  .information-section {
-    grid-column: 2; /* Kolom kedua */
-  }
-  .company-section {
-    grid-column: 3; /* Kolom ketiga */
-  }
-
-
-  /* Sembunyikan kolom paling bawah (misalnya, kolom partnership) pada tampilan mobile */
-  .footer-content .footer-column:last-child {
-    display: none;
-  }
-}
-
-
-
-/* Small Desktop (min-width: 992px and max-width: 1199px) */
-@media (min-width: 992px) and (max-width: 1200px) {
-  /* Navbar */
-  .navbar .container-fluid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  /* Logo */
-  .navbar img.logo {
-    order: 2;
-    margin-left: auto;
-    width: auto;
-    max-width: 150px; 
-  }
-
-   /* Bagian collapse (nav links) berada di sebelah kiri */
-   .navbar .collapse {
-    order: 0;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-  }
-  
-  /* Ketika collapse aktif (memiliki kelas .show), tampilkan sebagai flex dan agar menu muncul secara vertikal di sebelah kiri */
-  .navbar .collapse.show {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .navbar .navbar-nav {
-    flex-direction: column;
-    align-items: flex-start;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-    margin-top: 10px;
-  }
-  
-  .navbar .nav-item {
-    margin: 5px 0; 
-  }
-  
-  .navbar .nav-link {
-    padding: 0;
-    margin: 0;
-    text-align: left;
-    font-size: 16px; 
-  }
-
-
-  /* Main Content & Input Section */
- 
-  .main-content {
-    padding: 10px;
-  }
-  
-  .container-option {
-    padding: 0 10px;
-  }
-  
-  .input-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .container-option ul.nav {
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-bottom: 10px;
-  }
-  
-  .input-box {
-    width: 100%;
-    max-width: 500px;
-    margin: 10px auto;
-  }
-
-
-  .input-box.input-url {
-    margin-bottom: 20px;
-  }
-
-  .output-container {
-    margin-top: 20px;
-  }
-
-  .output-textarea {
-    min-height: 200px;
-  }
-
-   /* Pastikan container input URL menggunakan layout kolom */
-   /* .input-box.input-url {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 500px; */
-    /* margin: 10px auto 130px; /* margin-bottom ditetapkan untuk memberi jarak dengan konten di bawahnya */
-    /* box-sizing: border-box;
-  } */ 
-
-
-  .input-field {
-    width: 100%;
-    font-size: 14px;
-    padding: 12px;
-  }
-  
-  .btn-check {
-    width: 100%;
-    max-width: 200px;
-    padding: 10px;
-    font-size: 14px;
-    margin-top: 10px;
-  }
-  
-  /* .output-container {
-    clear: both;
-    margin-top: 50px;
-    position: relative;
-    bottom: 1;
-    z-index: 1;
-    width: 100%;
-    max-width: 550px;
-    padding: 25px;
-  }
-  
-  .output-textarea {
-    width: 100%;
-    height: auto;
-    min-height: 400px !important;
-  } */
-
-  .container-use {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 20px; /* sesuaikan padding jika perlu */
-  }
-
-  /* Atur grid row-use agar hanya satu kolom, sehingga semua kolom tertata secara vertikal */
-  .row-use {
-    display: grid;
-    grid-template-columns: 1fr;
-    justify-items: center; /* pastikan setiap kolom terpusat secara horizontal */
-    gap: 20px;
-    width: 100%;
-  }
-
-  /* Setiap kolom akan mengisi sebagian besar lebar layar, misalnya 90% */
-  .row-use .col {
-    width: 90%;
-    max-width: 400px; /* atau sesuaikan sesuai desain */
-    margin: 0 auto;
-  }
-
-  /* Sesuaikan ukuran heading dan paragraf jika perlu */
-  .row-use .col h3 {
-    font-size: 24px;
-    margin-bottom: 8px;
-    text-align: center;
-  }
-  .row-use .col p {
-    font-size: 16px;
-    line-height: 1.5;
-    text-align: center;
-  }
-
-  .contact-us-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    margin-bottom: 80px;
-    height: auto;
-  }
-
-  /* Contact Us */
-  .contact-text {
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .contact-form {
-    position: relative;
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    padding-bottom: 60px; 
-    box-sizing: border-box;
-    border: 1px solid transparent; 
-  }
-
-  .contact-form input,
-  .contact-form textarea {
-    width: 100%;
-  }
-
-  .button-container {
-    position: absolute;
-    bottom: 5px;
-    /* right: 1; */
-    left: 0;
-    /* z-index: 10; */
-  }
-
-  .contact-button {
-    padding: 10px 30px !important; 
-    font-size: 16px;
-    white-space: wrap;   
-    min-width: 180px;
-    box-sizing: border-box;
-  }
-
-  .footer-content {
-    grid-template-columns: 1fr;
-    gap: 30px;
-    max-width: 100%;
-    margin: 0 auto;
-  }
-  /* Hilangkan padding kiri untuk kolom 2 dan 3 agar tampilan lebih rapi */
-  .footer-column:nth-child(2),
-  .footer-column:nth-child(3) {
-    padding-left: 0;
-  }
-  /* Sesuaikan margin dan padding untuk kolom 4 */
-  .footer-column:last-child {
-    margin: 10px 20px;
-    padding: 20px;
-  }
-}
-
-
-
-</style>
