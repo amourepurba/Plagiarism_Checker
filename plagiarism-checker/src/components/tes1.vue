@@ -5,11 +5,6 @@
     <header class="header">
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-      <!-- Logo -->
-      <router-link to="/" @click.native="closeNavbar" class="navbar-brand">
-        <img src="../assets/logo-blue.png" alt="cmlabs logo" class="logo" />
-      </router-link>
-
       <!-- Tombol Navbar Toggler -->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
               data-bs-target="#navbarSupportedContent"
@@ -18,7 +13,20 @@
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <!-- Menu & User Profile / Login -->
+      <!-- Logo -->
+      <router-link to="/" @click.native="closeNavbar" class="navbar-brand">
+        <img src="../assets/logo-blue.png" alt="cmlabs logo" class="logo" />
+      </router-link>
+
+      <!-- Login di Pojok Kanan Atas -->
+      <div class="login-button">
+        <router-link to="/auth" class="btn btn-outline-success ms-2" @click.native="closeNavbar">
+          Login
+          <i class="fa-solid fa-arrow-right-to-bracket" style="padding-left: 5px;"></i>
+        </router-link>
+      </div>
+
+      <!-- Menu Collapse -->
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
@@ -37,27 +45,11 @@
             </a>
           </li>
         </ul>
-
-        <!-- User Profile / Login -->
-        <div class="d-flex align-items-center">
-          <div v-if="isAuthenticated" class="user-profile d-flex align-items-center" 
-               :class="{ active: showDropdown }" @click="toggleDropdown">
-            <img :src="user.avatar" alt="User Avatar" class="rounded-circle me-2" style="width: 40px; height: 40px;" />
-            <span class="me-2">{{ user.username }}</span>
-            <!-- Dropdown Logout -->
-            <div v-if="showDropdown" class="dropdown-menu">
-              <button class="btn btn-outline-danger" @click.stop="logout">Logout</button>
-            </div>
-          </div>
-          <router-link v-else to="/auth" class="btn btn-outline-success ms-2" @click.native="closeNavbar">
-            Login
-            <i class="fa-solid fa-arrow-right-to-bracket" style="color: #007bff; padding-left: 5px;"></i>
-          </router-link>
-        </div>
       </div>
     </div>
   </nav>
 </header>
+
 
 
     
@@ -371,18 +363,7 @@ export default {
 
 
   methods: {
-    // closeNavbar() {
-    //   // Dapatkan elemen collapse navbar
-    //   const collapseEl = document.getElementById('navbarTogglerDemo03');
-    //   if (collapseEl && collapseEl.classList.contains('show')) {
-    //     // Ambil instance Bootstrap Collapse, jika belum ada, buat baru
-    //     let bsCollapse = bootstrap.Collapse.getInstance(collapseEl);
-    //     if (!bsCollapse) {
-    //       bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
-    //     }
-    //     bsCollapse.hide();
-    //   }
-    // },
+
     toggleDropdown() {
       this.showDropdown = !this.showDropdown;
     },
@@ -585,29 +566,6 @@ export default {
       }
     };
 
-    // onMounted(() => {
-    //   isVisible.value = true;
-    //   observer = new IntersectionObserver(entries => {
-    //     entries.forEach(entry => {
-    //       if (entry.target === contactSection.value || entry.target === howToUseSection.value) {
-    //         isVisible.value = entry.isIntersecting;
-    //       }
-    //     });
-    //   }, { threshold: 0.2 });
-    //   if (contactSection.value) {
-    //     observer.observe(contactSection.value);
-    //   }
-    //   if (howToUseSection.value) {
-    //     observer.observe(howToUseSection.value);
-    //   }
-    // });
-
-    // onUnmounted(() => {
-    //   if (observer) {
-    //     if (contactSection.value) observer.unobserve(contactSection.value);
-    //     if (howToUseSection.value) observer.unobserve(howToUseSection.value);
-    //   }
-    // });
 
     return {
       selectedLanguage,

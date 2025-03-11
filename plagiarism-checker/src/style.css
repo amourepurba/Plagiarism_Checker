@@ -49,30 +49,32 @@ color-grey: #979797; */
 
 
 /* Header */
-.header {
+.home-container .header {
   background-color: #ffffff;
   width: 100%;
   position: sticky; 
   top: 0; 
-  z-index: 1000; 
+  z-index: 1000;
 }
 
 /* Navbar */
-.navbar {
-  padding: 20px;
+.home-container .navbar {
+  width: 100%; 
+  background-color: #ffffff; /* Warna latar belakang navbar */
+  padding: 0.5rem 1rem; 
+  position: sticky; 
+  top: 0;
+  z-index: 1000;
+  min-height: 60px; /* Menambah tinggi minimum agar tidak hilang */
 }
 
-.navbar-brand img {
-  height: 60px;
+.home-container .navbar-brand img {
+  height: 50px;
   margin-right: 10px;
 }
 
-.navbar-toggler {
-  border: none;
-}
-
 /* Navbar Links */
-.navbar-nav .nav-link {
+.home-container .navbar-nav .nav-link {
   color: #333;
   font-size: 20px;
   font-weight: 700;
@@ -80,155 +82,49 @@ color-grey: #979797; */
   transition: color 0.2s ease;
 }
 
-.navbar-nav .nav-link:hover {
+.home-container .navbar-nav .nav-link:hover {
   color: #007bff;
 }
 
-.navbar-nav .nav-item:last-child .nav-link {
-  margin-right: 0;
+/* Login Button di Pojok Kanan */
+.home-container .login-button {
+  position: absolute;
+  top: 8px;
+  right: 20px;
 }
 
-/* User Profile */
-.user-profile {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  border-radius: 50px;
-  transition: background-color 0.2s ease;
-}
-
-.user-profile:hover {
-  background-color: rgba(0, 123, 255, 0.1);
-}
-
-.user-profile img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-/* Dropdown Menu */
-.dropdown-menu {
-  margin-top: 0.5rem;
-  min-width: 150px;
-}
-
-.dropdown-menu .btn {
-  width: 100%;
-}
-
-/* botton login */
-/* Gaya tombol sebelum diklik */
-.btn-outline-success {
-  color: #007bff !important; /* Warna font biru */
+/* Tombol Login */
+.home-container .btn-outline-success {
+  color: #007bff !important;
   border-color: #007bff !important;
   border-width: 2px !important;
   font-weight: 700 !important;
   transition: background-color 0.2s ease, color 0.2s ease, border-width 0.2s ease;
 }
 
-/* Gaya tombol saat dihover */
-.btn-outline-success:hover,
-.btn-outline-success:focus {
+/* Hover dan Focus */
+.home-container .btn-outline-success:hover,
+.home-container .btn-outline-success:focus {
   background-color: #007bff !important;
-  color: #fff !important; /* Warna font berubah menjadi putih */
+  color: #fff !important;
   border-color: #007bff !important;
   border-width: 3px !important;
 }
 
-/* Gaya tombol saat diklik (active) */
-.btn-outline-success:active {
+/* Saat Diklik (Active) */
+.home-container .btn-outline-success:active {
   background-color: #0056b3 !important;
-  color: #fff !important; /* Warna font tetap putih */
+  color: #fff !important;
   border-color: #0056b3 !important;
   border-width: 3px !important;
 }
 
 /* Mengubah warna icon saat tombol diklik */
-.btn-outline-success:active i,
-.btn-outline-success:hover i,
-.btn-outline-success:focus i {
-  color: #fff !important; /* Icon berubah jadi putih */
+.home-container .btn-outline-success:active i,
+.home-container .btn-outline-success:hover i,
+.home-container .btn-outline-success:focus i {
+  color: #fff !important;
 }
-
-
-
-
-
-/* Mobile Responsiveness */
-@media (max-width: 767.98px) {
-  .navbar-brand img {
-    height: 40px;
-  }
-  .navbar-nav .nav-link {
-    margin-right: 0;
-    margin-bottom: 0.5rem;
-  }
-  .user-profile {
-    margin-top: 0.5rem;
-  }
-}
-
-
-
-
-
-
-/* .home-container .navbar .navbar-nav {
-  padding-left: 20px; 
-  margin-right: auto; 
-  display: flex; 
-  gap: 20px; 
-}
-
-.home-container .navbar .collapse {
-  display: none;
-}
-
-.home-container .navbar .collapse.navbar-collapse {
-  display: flex !important;   */
-  /* justify-content: space-between; Logo di kiri, menu di tengah (jika mau), user profile di kanan */
-  /* align-items: center;
-}
-
-.home-container .navbar .nav-link {
-  color: #000000 !important;
-  font-weight: 700;
-  margin-left: 9px;
-  font-size: 20px;
-  transition: transform 0.3s ease, color 0.3s ease;
-}
-
-.home-container .navbar .nav-link:hover {
-  text-decoration: underline;
-  cursor: pointer;
-  transform: translateY(-3px);
-  color: #18A0FB !important;
-}
-
-.home-container .navbar .d-flex {
-  transition: transform 0.3s ease, color 0.3s ease;
-}
-
-.home-container .navbar .d-flex:hover {
-  transform: translateX(3px);
-}
-
-.home-container .navbar .btn-outline-success {
-  color: #18A0FB;
-  background-color: transparent;
-  border: none;
-  padding: 0;
-  font-weight: 700;
-  font-size: 20px;
-}
-
-.home-container .navbar .btn-outline-success:hover {
-  cursor: pointer;
-  background-color: #ffffff;
-} */
 
 
 
@@ -986,57 +882,526 @@ color-grey: #979797; */
 
 /* Responsive Styles */
 @media (max-width: 767px) {
-  /* Navbar */
-  .home-container .navbar .container-fluid {
-    display: relative;
-    flex-wrap: wrap;
-    justify-content: space-between;
+  .home-container .navbar {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    background-color: #ffffff; /* Warna latar belakang tetap */
+    min-height: 60px;
+  }
+
+  /* Collapse Background */
+  .home-container .navbar-collapse {
+    background-color: #ffffff; /* Tambahkan latar belakang di dalam collapse */
+  }
+
+  /* Saat Navbar Terbuka */
+  .home-container .collapse.show {
+    background-color: #ffffff;
+  }
+
+  /* Tombol Collapse di pojok kiri atas */
+  .home-container .navbar-toggler {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    z-index: 20;
+  }
+
+  /* Logo berada di samping kanan tombol collapse */
+  .home-container .navbar-brand {
+    position: absolute;
+    top: 8px;
+    left: 70px;
+    display: flex;
+    align-items: center;
+    z-index: 10;
+  }
+
+  .home-container .navbar-brand img {
+    height: 35px;
+  }
+
+  /* Login di pojok kanan atas */
+  .home-container .login-button {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    z-index: 20;
+  }
+
+  /* Navbar Links Rapi dan Terpusat */
+  .home-container .navbar-collapse {
+    margin-top: 45px;
+    text-align: center;
+  }
+
+  .home-container .navbar-nav .nav-link {
+    margin: 0.25rem 0;
+  }
+
+  .home-container .login-button {
+    position: absolute;
+    top: 12px;
+    right: 10px;
+    z-index: 20;
+  }
+
+  /* Ukuran tombol login lebih kecil */
+  .home-container .login-button .btn-outline-success {
+    font-size: 14px !important; /* Ukuran font lebih kecil */
+    padding: 0.3rem 0.3rem !important; /* Padding lebih kecil */
+    border-width: 2px !important; /* Border tetap terlihat */
+  }
+
+  /* Main Content & Input Section */
+  .home-container .main-content {
+    padding: 10px;
+  }
+
+  .home-container .container-option {
+    padding: 0 10px;
+  }
+
+  .home-container .input-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
     align-items: center;
   }
 
-  .home-container .navbar img.logo {
-    order: 2;
-    margin-left: auto;
-    width: auto;
-    max-width: 150px;
+  .home-container .container-option ul.nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 10px;
   }
 
-  .home-container .navbar .collapse {
-    display: none;
+  .home-container .input-box {
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto;
   }
 
-  .home-container .navbar .collapse.show {
+  .home-container .input-box.input-url {
+    margin-bottom: 20px;
+  }
+
+  .home-container .output-container {
+    margin-top: 20px;
+  }
+
+  .home-container .output-textarea {
+    min-height: 200px;
+  }
+
+  .home-container .input-field {
+    width: 100%;
+    font-size: 14px;
+    padding: 12px;
+  }
+
+  .home-container .btn-check {
+    width: 100%;
+    max-width: 200px;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+
+  .home-container .container-use {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    padding: 40px 20px;
   }
 
-  .home-container .navbar .navbar-nav {
-    flex-direction: column;
-    align-items: flex-start;
+  .home-container .row-use {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 20px;
     width: 100%;
-    padding: 0;
-    margin: 0;
-    margin-top: 10px;
   }
 
-  .home-container .navbar .nav-item {
-    margin: 5px 0;
+  .home-container .row-use .col {
+    width: 90%;
+    max-width: 400px;
+    margin: 0 auto;
   }
 
-  .home-container .navbar .nav-link {
-    padding: 0;
-    margin: 0;
-    text-align: left;
+  .home-container .row-use .col h3 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .home-container .row-use .col p {
     font-size: 16px;
+    line-height: 1.5;
+    text-align: center;
   }
 
-  .home-container .navbar .btn-outline-success {
-    margin-top: 10px;
+  .home-container .contact-us-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 80px;
+    height: auto;
+  }
+
+  .home-container .contact-text {
     width: 100%;
-    text-align: left;
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
+  .home-container .contact-form {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-bottom: 60px;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+  }
+
+  .home-container .contact-form input,
+  .home-container .contact-form textarea {
+    width: 100%;
+  }
+
+  .home-container .button-container {
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+  }
+
+  .home-container .contact-button {
+    padding: 10px 30px !important;
+    font-size: 16px;
+    white-space: wrap;
+    min-width: 180px;
+    box-sizing: border-box;
+  }
+
+  .home-container .footer-content {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .home-container .footer-column:first-child,
+  .home-container .footer-column:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .home-container .footer-column:nth-child(2),
+  .home-container .footer-column:nth-child(3) {
+    display: contents;
+  }
+
+  .home-container .solutions-section {
+    grid-column: 1;
+  }
+
+  .home-container .information-section {
+    grid-column: 2;
+  }
+
+  .home-container .company-section {
+    grid-column: 3;
+  }
+
+  .home-container .footer-content .footer-column:last-child {
+    display: none;
+  }
+}
+
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .home-container .navbar {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    background-color: #ffffff; /* Warna latar belakang tetap */
+    min-height: 60px;
+  }
+
+  /* Collapse Background */
+  .home-container .navbar-collapse {
+    background-color: #ffffff; /* Tambahkan latar belakang di dalam collapse */
+  }
+
+  /* Saat Navbar Terbuka */
+  .home-container .collapse.show {
+    background-color: #ffffff;
+  }
+
+  /* Tombol Collapse di pojok kiri atas */
+  .home-container .navbar-toggler {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    z-index: 20;
+  }
+
+  /* Logo berada di samping kanan tombol collapse */
+  .home-container .navbar-brand {
+    position: absolute;
+    top: 8px;
+    left: 70px;
+    display: flex;
+    align-items: center;
+    z-index: 10;
+  }
+
+  .home-container .navbar-brand img {
+    height: 35px;
+  }
+
+  /* Login di pojok kanan atas */
+  .home-container .login-button {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    z-index: 20;
+  }
+
+  /* Navbar Links Rapi dan Terpusat */
+  .home-container .navbar-collapse {
+    margin-top: 45px;
+    text-align: center;
+  }
+
+  .home-container .navbar-nav .nav-link {
+    margin: 0.25rem 0;
+  }
+
+  .home-container .login-button {
+    position: absolute;
+    top: 12px;
+    right: 10px;
+    z-index: 20;
+  }
+
+  /* Ukuran tombol login lebih kecil */
+  .home-container .login-button .btn-outline-success {
+    font-size: 14px !important; /* Ukuran font lebih kecil */
+    padding: 0.3rem 0.3rem !important; /* Padding lebih kecil */
+    border-width: 2px !important; /* Border tetap terlihat */
+  }
+
+  /* Main Content & Input Section */
+  .home-container .main-content {
+    padding: 10px;
+  }
+
+  .home-container .container-option {
+    padding: 0 10px;
+  }
+
+  .home-container .input-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .home-container .container-option ul.nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  .home-container .input-box {
+    width: 100%;
+    max-width: 500px;
+    margin: 10px auto;
+  }
+
+  .home-container .input-box.input-url {
+    margin-bottom: 20px;
+  }
+
+  .home-container .output-container {
+    margin-top: 20px;
+  }
+
+  .home-container .output-textarea {
+    min-height: 200px;
+  }
+
+  .home-container .input-field {
+    width: 100%;
+    font-size: 14px;
+    padding: 12px;
+  }
+
+  .home-container .btn-check {
+    width: 100%;
+    max-width: 200px;
+    padding: 10px;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+
+  .home-container .container-use {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .home-container .row-use {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 20px;
+    width: 100%;
+  }
+
+  .home-container .row-use .col {
+    width: 90%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .home-container .row-use .col h3 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .home-container .row-use .col p {
+    font-size: 16px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .home-container .contact-us-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    margin-bottom: 80px;
+    height: auto;
+  }
+
+  .home-container .contact-text {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .home-container .contact-form {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding-bottom: 60px;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+  }
+
+  .home-container .contact-form input,
+  .home-container .contact-form textarea {
+    width: 100%;
+  }
+
+  .home-container .button-container {
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+  }
+
+  .home-container .contact-button {
+    padding: 10px 30px !important;
+    font-size: 16px;
+    white-space: wrap;
+    min-width: 180px;
+    box-sizing: border-box;
+  }
+
+  .home-container .footer-content {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .home-container .footer-column:first-child,
+  .home-container .footer-column:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .home-container .footer-column:nth-child(2),
+  .home-container .footer-column:nth-child(3) {
+    display: contents;
+  }
+
+  .home-container .solutions-section {
+    grid-column: 1;
+  }
+
+  .home-container .information-section {
+    grid-column: 2;
+  }
+
+  .home-container .company-section {
+    grid-column: 3;
+  }
+
+  .home-container .footer-content .footer-column:last-child {
+    display: none;
+  }
+}
+
+`
+
+@media (min-width: 992px) and (max-width: 1200px) {
+  /* Navbar */
+.home-container .navbar {
+  width: 100%; 
+  background-color: #ffffff; /* Warna latar belakang navbar */
+  padding: 0.5rem 1rem; 
+  position: sticky; 
+  top: 0;
+  z-index: 1000;
+  min-height: 60px; /* Menambah tinggi minimum agar tidak hilang */
+}
+
+.home-container .navbar-brand img {
+  height: 50px;
+  margin-right: 10px;
+}
+
+/* Navbar Links */
+.home-container .navbar-nav .nav-link {
+  color: #333;
+  font-size: 20px;
+  font-weight: 700;
+  margin-right: 1rem;
+  transition: color 0.2s ease;
+}
+
+.home-container .navbar-nav .nav-link:hover {
+  color: #007bff;
+}
+
+/* Login Button di Pojok Kanan */
+.home-container .login-button {
+  position: absolute;
+  top: 8px;
+  right: 20px;
+}
   /* Main Content & Input Section */
   .home-container .main-content {
     padding: 10px;
