@@ -1,5 +1,8 @@
 <template>
   <div class="body">
+    <!-- close button -->
+    <button type="button" class="btn-close" aria-label="Close" @click="goToPlagiarismChecker"></button>
+    
     <div class="container" :class="{ active: isActive }">
       <!-- Form Login -->
       <div class="form-box login" v-if="!isActive">
@@ -105,6 +108,9 @@
         </div>
       </div>
     </div>
+    <div v-if="showNotification" class="notification" :class="{ success: successMessage, error: !successMessage }">
+      {{ successMessage }}
+    </div>
   </div>
 </template>
 
@@ -116,11 +122,13 @@ import { signInWithPopup } from 'firebase/auth';
 export default {
   data() {
     return {
-      isAuthenticated: !!localStorage.getItem('token'), // Cek token
+      isAuthenticated: !!localStorage.getItem('token'),
       user: JSON.parse(localStorage.getItem('user')) || { username: '', avatar: '' },
-      isActive: false, // Untuk toggle form login/register
+      isActive: false,
       loading: false,
       errorMessage: '',
+      successMessage: '',  // Tambahkan ini
+      showNotification: false, // Kontrol visibilitas notifikasi
       loginForm: {
         email: '',
         password: ''
@@ -133,165 +141,114 @@ export default {
     };
   },
   methods: {
+    goToPlagiarismChecker() {
+    this.$router.push('/plagiarism-checker');
+  },
+
+    showNotificationMessage(message, isSuccess) {
+    this.successMessage = message;
+    this.showNotification = true;
+
+    // Otomatis sembunyikan setelah 3 detik
+    setTimeout(() => {
+      this.showNotification = false;
+    }, 3000);
+  },
+
     toggleForm() {
       this.isActive = !this.isActive;
       this.errorMessage = '';
     },
 
-    // LOGIN
-    // async login() {
-    //   if (!this.loginForm.email || !this.loginForm.password) {
-    //     this.errorMessage = 'Please fill in all fields';
-    //     return;
-    //   }
-    //   try {
-    //     this.loading = true;
-    //     const response = await axios.post('/login', this.loginForm);
-    //     localStorage.setItem('token', response.data.token);
-    //     alert('Login berhasil!');
-    //     this.$router.push('/');
-    //   } catch (error) {
-    //     this.handleAuthError(error);
-    //   } finally {
-    //     this.loading = false;
-    //   }
-    // },
-
 
     async login() {
-  if (!this.loginForm.email || !this.loginForm.password) {
-    this.errorMessage = 'Please fill in all fields';
-    return;
-  }
-  try {
-    this.loading = true;
-    const response = await axios.post('/login', this.loginForm);
-    // Simpan token dan data user ke Vuex store
-    this.$store.commit('setAuth', {
-      token: response.data.token,
-      user: response.data.user
-    });
-    alert('Login berhasil!');
-    this.$router.push('/');
-  } catch (error) {
-    this.handleAuthError(error);
-  } finally {
-    this.loading = false;
-  }
-},
-
-
-async loginWithGoogle() {
-  try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-
-    const userData = {
-      username: user.displayName,
-      email: user.email,
-      avatar: user.photoURL, // Simpan foto profil dari Google
-      password: 'google_auth'
-    };
-
-    try {
-      await axios.post('/register', userData);
-      console.log('User baru berhasil didaftarkan.');
-    } catch (registerError) {
-      if (
-        (registerError.response && registerError.response.status === 409) ||
-        (registerError.response.data?.error?.code === 'ER_DUP_ENTRY')
-      ) {
-        console.log('User sudah ada di database, lanjut login.');
-      } else {
-        console.error('Error saat registrasi user:', registerError);
-        alert('Gagal memproses data user Google.');
-        return;
-      }
+    if (!this.loginForm.email || !this.loginForm.password) {
+      this.showNotificationMessage('Please fill in all fields', false);
+      return;
     }
+    try {
+      this.loading = true;
+      const response = await axios.post('/login', this.loginForm);
+      this.$store.commit('setAuth', {
+        token: response.data.token,
+        user: response.data.user
+      });
+      this.showNotificationMessage('Login berhasil!', true);
+      this.$router.push('/');
+    } catch (error) {
+      this.showNotificationMessage('Login gagal! Periksa email dan password Anda.', false);
+    } finally {
+      this.loading = false;
+    }
+  },
 
-    const loginResponse = await axios.post('/login', {
-      email: user.email,
-      password: 'google_auth'
-    });
 
-    localStorage.setItem('token', loginResponse.data.token);
-    localStorage.setItem('user', JSON.stringify({ // Simpan data pengguna
-      username: user.displayName,
-      avatar: user.photoURL
-    }));
-    alert('Login dengan Google berhasil!');
-    this.$router.push('/');
-  } catch (error) {
-    console.error(error);
-    alert('Login dengan Google gagal.');
-  }
-},
+
+  async loginWithGoogle() {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      const userData = {
+        username: user.displayName,
+        email: user.email,
+        avatar: user.photoURL,
+        password: 'google_auth'
+      };
+
+      try {
+        await axios.post('/register', userData);
+        this.showNotificationMessage('Registrasi berhasil!', true);
+      } catch (registerError) {
+        if (
+          (registerError.response && registerError.response.status === 409) ||
+          (registerError.response.data?.error?.code === 'ER_DUP_ENTRY')
+        ) {
+          this.showNotificationMessage('Pengguna sudah terdaftar, lanjut login!', true);
+        } else {
+          this.showNotificationMessage('Gagal memproses data.', false);
+          return;
+        }
+      }
+
+      const loginResponse = await axios.post('/login', {
+        email: user.email,
+        password: 'google_auth'
+      });
+
+      localStorage.setItem('token', loginResponse.data.token);
+      localStorage.setItem('user', JSON.stringify({
+        username: user.displayName,
+        avatar: user.photoURL
+      }));
+      this.showNotificationMessage('Login dengan Google berhasil!', true);
+      this.$router.push('/');
+    } catch (error) {
+      console.error(error);
+      this.showNotificationMessage('Login dengan Google gagal.', false);
+    }
+  },
+
 
     // REGISTER
     async register() {
       if (!this.registerForm.username || !this.registerForm.email || !this.registerForm.password) {
-        this.errorMessage = 'Please fill in all fields';
+        this.showNotificationMessage('Please fill in all fields', false);
         return;
       }
       try {
         this.loading = true;
         const response = await axios.post('/register', this.registerForm);
-        alert(response.data.message);
+        this.showNotificationMessage(response.data.message, true);
         this.toggleForm();
       } catch (error) {
-        this.errorMessage = error.response?.data?.message || 'Registrasi gagal.';
+        this.showNotificationMessage(error.response?.data?.message || 'Registrasi gagal.', false);
       } finally {
         this.loading = false;
       }
     },
 
-    // LOGIN DENGAN GOOGLE (dengan pengecualian duplicate entry)
-    // async loginWithGoogle() {
-    //   try {
-    //     // Otentikasi ke Firebase dengan Google
-    //     const result = await signInWithPopup(auth, googleProvider);
-    //     const user = result.user;
 
-    //     // Data user untuk dikirim ke backend
-    //     const userData = {
-    //       username: user.displayName,
-    //       email: user.email,
-    //       // Gunakan password dummy untuk proses backend
-    //       password: 'google_auth'
-    //     };
-
-    //     // Coba registrasi user ke backend
-    //     try {
-    //       await axios.post('/register', userData);
-    //       console.log('User baru berhasil didaftarkan.');
-    //     } catch (registerError) {
-    //       // Jika error karena user sudah ada (status 409 atau error duplicate entry)
-    //       if (
-    //         (registerError.response && registerError.response.status === 409) ||
-    //         (registerError.response && registerError.response.data && registerError.response.data.error && registerError.response.data.error.code === 'ER_DUP_ENTRY')
-    //       ) {
-    //         console.log('User sudah ada di database, lanjut login.');
-    //       } else {
-    //         console.error('Error saat registrasi user:', registerError);
-    //         alert('Gagal memproses data user Google.');
-    //         return;
-    //       }
-    //     }
-
-    //     // Lakukan login ke backend
-    //     const loginResponse = await axios.post('/login', {
-    //       email: user.email,
-    //       password: 'google_auth'
-    //     });
-
-    //     localStorage.setItem('token', loginResponse.data.token);
-    //     alert('Login dengan Google berhasil!');
-    //     this.$router.push('/');
-    //   } catch (error) {
-    //     console.error(error);
-    //     alert('Login dengan Google gagal.');
-    //   }
-    // },
 
     // Menangani error autentikasi
     handleAuthError(error) {
@@ -323,6 +280,17 @@ async loginWithGoogle() {
   align-items: center;
   min-height: 100vh;
   background: linear-gradient(90deg, #ffffff, #abdeff);
+}
+
+.btn-close {
+  position: absolute;
+  top: 0;
+  left: 5px;
+  margin: 10px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
 }
 
 .container {
@@ -461,21 +429,18 @@ form {
 }
 
 .btn-switch {
-    width: 100%;
-    padding: 10px;
-    font-size: 14px;
     color: #18A0FB;
     background: transparent;
     border: none;
-    cursor: pointer;
-    margin-top: 10px;
-    text-align: center;
-    text-decoration: underline;
-  }
+    font-size: 14px;
+}
 
-  .btn-switch:hover {
-    color: #1167c2;
-  }
+.btn-switch:hover {
+    color: #a2a5a8;
+    background: transparent;
+    border: none;
+    font-size: 14px;
+}
 
   .toggle-box { 
     position: absolute; 
@@ -549,6 +514,27 @@ form {
     background: #fff;
     color: #18A0FB;
   }
+
+  .notification {
+  position: fixed;
+  top: 20px; /* Ubah dari 50% ke 20px */
+  left: 50%;
+  transform: translateX(-50%); /* Hanya geser secara horizontal */
+  background-color: #4caf50;
+  color: white;
+  padding: 15px 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-size: 18px;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+}
+
+.notification.error {
+  background-color: #f44336; /* Warna merah untuk gagal */
+}
+
 
   /* Responsive Design untuk Layar Kecil */
   @media screen and (max-width: 768px) {

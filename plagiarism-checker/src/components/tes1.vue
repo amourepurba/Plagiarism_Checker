@@ -3,53 +3,68 @@
     <div class="container">
     <!-- Header Section -->
     <header class="header">
-  <nav class="navbar navbar-expand-lg bg-body-tertiary">
-    <div class="container-fluid">
-      <!-- Tombol Navbar Toggler -->
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-              data-bs-target="#navbarSupportedContent"
-              aria-controls="navbarSupportedContent" aria-expanded="false"
-              aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+          <!-- Tombol Navbar Toggler -->
+          <button 
+            class="navbar-toggler" 
+            type="button" 
+            @click="toggleNavbar" 
+            aria-controls="navbarSupportedContent" 
+            :aria-expanded="isNavbarOpen" 
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
 
-      <!-- Logo -->
-      <router-link to="/" @click.native="closeNavbar" class="navbar-brand">
-        <img src="../assets/logo-blue.png" alt="cmlabs logo" class="logo" />
-      </router-link>
+          <!-- Logo -->
+          <router-link to="/" @click.native="closeNavbar" class="navbar-brand">
+            <img src="../assets/logo-blue.png" alt="cmlabs logo" class="logo" />
+          </router-link>
 
-      <!-- Login di Pojok Kanan Atas -->
-      <div class="login-button">
-        <router-link to="/auth" class="btn btn-outline-success ms-2" @click.native="closeNavbar">
-          Login
-          <i class="fa-solid fa-arrow-right-to-bracket" style="padding-left: 5px;"></i>
-        </router-link>
-      </div>
+          <!-- User Profile / Login -->
+          <div class="user d-flex align-items-center ms-auto">
+            <div v-if="isAuthenticated" class="user-profile d-flex align-items-center" 
+                :class="{ active: showDropdown }" @click="toggleDropdown">
+              <img :src="user.avatar" alt="User Avatar" class="rounded-circle me-2" style="width: 40px; height: 40px;" />
+              <span class="me-2">{{ user.username }}</span>
+              <!-- Dropdown Logout -->
+              <div v-if="showDropdown" class="dropdown-menu">
+                <button class="btn btn-outline-danger" @click.stop="logout">Logout</button>
+              </div>
+            </div>
+            <router-link v-else to="/auth" class="btn btn-outline-success ms-2" @click.native="closeNavbar">
+              Login
+              <i class="fa-solid fa-arrow-right-to-bracket" style="padding-left: 5px;"></i>
+            </router-link>
+          </div>
 
-      <!-- Menu Collapse -->
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="#plagiarism-checker" @click="closeNavbar">
-              Plagiarism Checker
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#how-to-use" @click="closeNavbar">
-              How To Use
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#contact-us" @click="closeNavbar">
-              Contact Us
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-</header>
-
+          <!-- Menu Collapse -->
+          <div 
+            :class="['collapse navbar-collapse', { show: isNavbarOpen }]" 
+            id="navbarSupportedContent"
+          >
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link" href="#plagiarism-checker" @click="closeNavbar">
+                  Plagiarism Checker
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#how-to-use" @click="closeNavbar">
+                  How To Use
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#contact-us" @click="closeNavbar">
+                  Contact Us
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </header>
 
 
     
@@ -120,7 +135,7 @@
             type="file"
             @change="handleFileUpload"
             class="form-control input-field"
-            accept=".pdf, .doc, .docx"
+            accept=".pdf"
           />
         </template>
         <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
@@ -331,6 +346,7 @@ export default {
 
   data() {
     return {
+      isNavbarOpen: false,
       isLoading: false,
       activeTab: 'text',
       textInput: '',
@@ -363,6 +379,12 @@ export default {
 
 
   methods: {
+    toggleNavbar() {
+      this.isNavbarOpen = !this.isNavbarOpen;
+    },
+    closeNavbar() {
+      this.isNavbarOpen = false;
+    },
 
     toggleDropdown() {
       this.showDropdown = !this.showDropdown;
@@ -478,11 +500,8 @@ export default {
       const file = event.target.files[0];
       if (!file) return;
 
-      const allowedExtensions = ['pdf', 'doc', 'docx'];
-      const fileExtension = file.name.split('.').pop().toLowerCase();
-      if (!allowedExtensions.includes(fileExtension)) {
-        this.errorMessage = 'Format file tidak valid!';
-        this.fileInput = null;
+      if (file.type !== "application/pdf") {
+        this.errorMessage = "Hanya file PDF yang diperbolehkan!";
         return;
       }
 

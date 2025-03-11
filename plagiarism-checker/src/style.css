@@ -50,22 +50,30 @@ color-grey: #979797; */
 
 /* Header */
 .home-container .header {
-  background-color: #ffffff;
-  width: 100%;
   position: sticky; 
   top: 0; 
+  width: 100%;
+  background-color: #ffffff;
   z-index: 1000;
 }
 
 /* Navbar */
 .home-container .navbar {
   width: 100%; 
-  background-color: #ffffff; /* Warna latar belakang navbar */
+  background-color: #ffffff !important; /* Warna latar belakang navbar */
   padding: 0.5rem 1rem; 
   position: sticky; 
   top: 0;
   z-index: 1000;
   min-height: 60px; /* Menambah tinggi minimum agar tidak hilang */
+}
+
+/* Navbar Profile & Login Button */
+.home-container .navbar .user {
+  position: absolute;
+  top: 8px;
+  right: 20px;
+  z-index: 1000;
 }
 
 .home-container .navbar-brand img {
@@ -87,11 +95,11 @@ color-grey: #979797; */
 }
 
 /* Login Button di Pojok Kanan */
-.home-container .login-button {
+/* .home-container .login-button {
   position: absolute;
   top: 8px;
   right: 20px;
-}
+} */
 
 /* Tombol Login */
 .home-container .btn-outline-success {
@@ -891,15 +899,10 @@ color-grey: #979797; */
     min-height: 60px;
   }
 
-  /* Collapse Background */
-  .home-container .navbar-collapse {
-    background-color: #ffffff; /* Tambahkan latar belakang di dalam collapse */
+  .home-containe .collapse {
+    transition: height 0.3s ease, opacity 0.3s ease;
   }
-
-  /* Saat Navbar Terbuka */
-  .home-container .collapse.show {
-    background-color: #ffffff;
-  }
+  
 
   /* Tombol Collapse di pojok kiri atas */
   .home-container .navbar-toggler {
@@ -924,17 +927,17 @@ color-grey: #979797; */
   }
 
   /* Login di pojok kanan atas */
-  .home-container .login-button {
+  /* .home-container .login-button {
     position: absolute;
     top: 8px;
     right: 10px;
     z-index: 20;
-  }
+  } */
 
   /* Navbar Links Rapi dan Terpusat */
   .home-container .navbar-collapse {
     margin-top: 45px;
-    text-align: center;
+    text-align: left;
   }
 
   .home-container .navbar-nav .nav-link {
@@ -948,12 +951,21 @@ color-grey: #979797; */
     z-index: 20;
   }
 
-  /* Ukuran tombol login lebih kecil */
-  .home-container .login-button .btn-outline-success {
-    font-size: 14px !important; /* Ukuran font lebih kecil */
-    padding: 0.3rem 0.3rem !important; /* Padding lebih kecil */
-    border-width: 2px !important; /* Border tetap terlihat */
+  .home-container .navbar .btn.btn-outline-success {
+    font-size: 13px !important;
+    padding: 0.3rem 0.4rem !important;
+    margin-top: 5px !important;
+    right: 0;
+    border-width: 2px !important;
   }
+
+  .home-container .navbar .user-profile {
+    font-size: 14px !important;
+    padding: 0.1rem 0.1rem !important;
+    border-width: 2px !important;
+  }
+
+
 
   /* Main Content & Input Section */
   .home-container .main-content {
@@ -1133,15 +1145,10 @@ color-grey: #979797; */
     min-height: 60px;
   }
 
-  /* Collapse Background */
-  .home-container .navbar-collapse {
-    background-color: #ffffff; /* Tambahkan latar belakang di dalam collapse */
+  .home-containe .collapse {
+    transition: height 0.3s ease, opacity 0.3s ease;
   }
-
-  /* Saat Navbar Terbuka */
-  .home-container .collapse.show {
-    background-color: #ffffff;
-  }
+  
 
   /* Tombol Collapse di pojok kiri atas */
   .home-container .navbar-toggler {
@@ -1166,17 +1173,17 @@ color-grey: #979797; */
   }
 
   /* Login di pojok kanan atas */
-  .home-container .login-button {
+  /* .home-container .login-button {
     position: absolute;
     top: 8px;
     right: 10px;
     z-index: 20;
-  }
+  } */
 
   /* Navbar Links Rapi dan Terpusat */
   .home-container .navbar-collapse {
     margin-top: 45px;
-    text-align: center;
+    text-align: left;
   }
 
   .home-container .navbar-nav .nav-link {
@@ -1190,11 +1197,18 @@ color-grey: #979797; */
     z-index: 20;
   }
 
-  /* Ukuran tombol login lebih kecil */
-  .home-container .login-button .btn-outline-success {
-    font-size: 14px !important; /* Ukuran font lebih kecil */
-    padding: 0.3rem 0.3rem !important; /* Padding lebih kecil */
-    border-width: 2px !important; /* Border tetap terlihat */
+  .home-container .navbar .btn.btn-outline-success {
+    font-size: 13px !important;
+    padding: 0.3rem 0.4rem !important;
+    margin-top: 5px !important;
+    right: 0;
+    border-width: 2px !important;
+  }
+
+  .home-container .navbar .user-profile {
+    font-size: 14px !important;
+    padding: 0.1rem 0.1rem !important;
+    border-width: 2px !important;
   }
 
   /* Main Content & Input Section */
