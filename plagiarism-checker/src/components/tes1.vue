@@ -104,21 +104,21 @@
         </ul>
 
         <!-- Dynamic Input Section -->
-    <div class="input-container d-flex flex-column align-items-center">
-      <!-- Tab Text -->
-      <div v-if="activeTab === 'text'" class="input-box input-text">
-        <textarea
-          v-model="textInput"
-          class="form-control input-field"
-          rows="6"
-          placeholder="Enter your text here..."
-        ></textarea>
-        <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
-        <button class="btn btn-check mt-2" @click="checkAction" :disabled="isLoading">
-          <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          <span v-else>Check Plagiarism</span>
-        </button>
-      </div>
+        <div class="input-container d-flex flex-column align-items-center">
+          <!-- Tab Text -->
+          <div v-if="activeTab === 'text'" class="input-box input-text">
+            <textarea
+              v-model="textInput"
+              class="form-control input-field"
+              rows="6"
+              placeholder="Enter your text here..."
+            ></textarea>
+            <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
+            <button class="btn btn-check mt-2" @click="checkAction" :disabled="isLoading">
+              <span v-if="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              <span v-else>Check Plagiarism</span>
+            </button>
+          </div>
 
       <!-- Tab File -->
       <div v-else-if="activeTab === 'file'" class="input-box input-file">
@@ -249,14 +249,32 @@
         {{ notification.message }}
       </div>
 
-      <form class="contact-form" :class="{ 'shake': isShaking }" @submit.prevent="validateForm">
-        <input type="text" class="contact-input" v-model="name" placeholder="Your Name" :class="{'error-border': showError.name}">
-        <input type="email" class="contact-input" v-model="email" placeholder="Your Email" :class="{'error-border': showError.email}">
-        <textarea class="contact-textarea" v-model="message" placeholder="Your Message" :class="{'error-border': showError.message}"></textarea>
+      <form class="contact-form" @submit.prevent="validateForm">
+        <input 
+          type="text" 
+          class="contact-input" 
+          v-model="name" 
+          placeholder="Your Name" 
+          :class="{'error-border': showError.name}"
+        />
+        <input 
+          type="email" 
+          class="contact-input" 
+          v-model="email" 
+          placeholder="Your Email" 
+          :class="{'error-border': showError.email}"
+        />
+        <textarea 
+          class="contact-textarea" 
+          v-model="message" 
+          placeholder="Your Message" 
+          :class="{'error-border': showError.message}"
+        ></textarea>
         <div class="button-container">
           <button type="submit" class="contact-button">Send Message</button>
         </div>
       </form>
+
     </div>
 
     <!-- Footer Section -->
@@ -363,20 +381,23 @@ export default {
       fileOutput: '',
       urlOutput: '',
       selectedLanguage: 'english',
-      showDropdown: false
+      showDropdown: false,
+      name: '',
+      email: '',
+      message: '',
+      notification: { message: '', type: '' },
+      showError: { name: false, email: false, message: false }
     };
   },
 
-
   computed: {
-  isAuthenticated() {
-    return !!localStorage.getItem('token');
+    isAuthenticated() {
+      return !!localStorage.getItem('token');
+    },
+    user() {
+      return JSON.parse(localStorage.getItem('user')) || { username: '', avatar: '' };
+    }
   },
-  user() {
-    return JSON.parse(localStorage.getItem('user')) || { username: '', avatar: '' };
-  }
-},
-
 
   methods: {
     toggleNavbar() {
@@ -385,223 +406,109 @@ export default {
     closeNavbar() {
       this.isNavbarOpen = false;
     },
-
     toggleDropdown() {
       this.showDropdown = !this.showDropdown;
     },
-    logout() {
-      // Implementasikan fungsi logout di sini
-      console.log("Logout");
-    },
-
-    toggleDropdown() {
-      this.showDropdown = !this.showDropdown;
-    },
-
     logout() {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       this.$router.push('/auth');
     },
-
     validateInput() {
-    if (this.activeTab === 'text' && this.textInput.trim().length < 50) {
-      this.errorMessage = 'Konten harus lebih dari 50 karakter!';
-      return false;
-    }
-    if (this.activeTab === 'url' && !this.urlInput.match(/^https?:\/\/[^\s$.?#].[^\s]*$/)) {
-      this.errorMessage = 'URL tidak valid!';
-      return false;
-    }
-    if (this.activeTab === 'file' && !this.fileInput) {
-      this.errorMessage = 'Silakan unggah file!';
-      return false;
-    }
-    this.errorMessage = '';
-    return true;
-  },
-
-    checkAction() {
-      if (!this.validateInput()) return;
-
-      this.isLoading = true;
-      this.showOutput = false;
-      this.errorMessage = "";
-
-      const apiUrl = "http://localhost:5001/analyze";
-      let requestOptions = {};
-
-      if (this.activeTab === 'text') {
-        requestOptions = {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            input_type: 'text', 
-            text: this.textInput,
-            language: this.selectedLanguage 
-          })
-        };
-      } else if (this.activeTab === 'url') {
-        requestOptions = {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            input_type: 'url', 
-            url: this.urlInput,
-            language: this.selectedLanguage 
-          })
-        };
-      } else if (this.activeTab === 'file') {
-        const formData = new FormData();
-        formData.append("file", this.fileInput);
-        formData.append("input_type", "file");
-        formData.append("language", this.selectedLanguage);
-        requestOptions = { method: 'POST', body: formData };
+      if (this.activeTab === 'text' && this.textInput.trim().length < 50) {
+        this.errorMessage = 'Konten harus lebih dari 50 karakter!';
+        return false;
       }
-
-      fetch(apiUrl, requestOptions)
-        .then(response => response.json())
-        .then(data => {
-          if (data.error) {
-            this.errorMessage = data.error;
-          } else {
-            this.uniqueScore = data.uniqueness_score;
-            this.similarityScore = 100 - data.uniqueness_score;
-            this.readabilityScore = data.readability_score;
-            this.topKeywords = Object.entries(data.top_keywords).map(
-              ([word, percentage]) => `${word} (${percentage.toFixed(2)}%)`
-            );
-            this.sources = data.plagiarized_sites.map(item => item.url);
-            if (this.activeTab === 'text') {
-              this.textOutput = data.processed_text || '';
-            } else if (this.activeTab === 'file') {
-              this.fileOutput = data.processed_text || '';
-            } else if (this.activeTab === 'url') {
-              this.urlOutput = data.processed_text || '';
-            }
-            this.showOutput = true;
-            this.$nextTick(() => {
-              if (this.$refs.resultSection) {
-                this.$refs.resultSection.scrollIntoView({ behavior: "smooth" });
-              }
-            });
-          }
-        })
-        .catch(error => {
-          console.error("Error:", error);
-          this.errorMessage = "Terjadi kesalahan saat melakukan analisis.";
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
-    },
-
-    handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      if (file.type !== "application/pdf") {
-        this.errorMessage = "Hanya file PDF yang diperbolehkan!";
-        return;
+      if (this.activeTab === 'url' && !this.urlInput.match(/^https?:\/\/[^\s$.?#].[^\s]*$/)) {
+        this.errorMessage = 'URL tidak valid!';
+        return false;
       }
-
-      if (file.size > 5 * 1024 * 1024) {
-        this.errorMessage = 'Ukuran file terlalu besar! Maksimal 5MB.';
-        this.fileInput = null;
-        return;
+      if (this.activeTab === 'file' && !this.fileInput) {
+        this.errorMessage = 'Silakan unggah file!';
+        return false;
       }
-
-      this.fileInput = file;
       this.errorMessage = '';
+      return true;
     },
 
-    resetOutput() {
-      this.showOutput = false;
-      this.textOutput = '';
-      this.fileOutput = '';
-      this.urlOutput = '';
-      this.similarityScore = 0;
-      this.uniqueScore = 0;
-      this.readabilityScore = 0;
-      this.topKeywords = [];
-      this.sources = [];
-      this.errorMessage = ''; // Tambahkan ini untuk reset error message
-    },
-
-    changeLanguage(event) {
-      console.log('Bahasa diubah ke:', this.selectedLanguage);
-    }
-  },
-
-    watch: {
-    activeTab() {
-      this.resetOutput();
-      this.errorMessage = ''; // Tambahkan ini untuk memastikan error di-reset
-    }
-  },
-
-  setup() {
-    const selectedLanguage = ref('english');
-    const isVisible = ref(true);
-    const isShaking = ref(false);
-    const howToUseSection = ref(null);
-    const contactSection = ref(null);
-    const name = ref('');
-    const email = ref('');
-    const message = ref('');
-    const notification = ref({ message: "", type: "" });
-    const showError = ref({ name: false, email: false, message: false });
-    let observer;
-
-    const validateForm = () => {
+    validateForm() {
       let hasError = false;
-      showError.value = { name: false, email: false, message: false };
+      this.showError = { name: false, email: false, message: false };
 
-      if (!name.value.trim()) {
-        showError.value.name = true;
+      if (!this.name.trim()) {
+        this.showError.name = true;
         hasError = true;
       }
-      if (!email.value.trim()) {
-        showError.value.email = true;
+      if (!this.email.trim()) {
+        this.showError.email = true;
         hasError = true;
       }
-      if (!message.value.trim()) {
-        showError.value.message = true;
+      if (!this.message.trim()) {
+        this.showError.message = true;
         hasError = true;
       }
 
       if (hasError) {
-        isShaking.value = true;
-        notification.value = { message: "Please fill out all fields!", type: "error" };
-        setTimeout(() => { isShaking.value = false; }, 500);
-      } else {
-        notification.value = { message: "Message sent successfully!", type: "success" };
-        name.value = "";
-        email.value = "";
-        message.value = "";
+        // Tampilkan notifikasi error
+        this.notification = { message: "Please fill out all fields correctly.", type: "error" };
+        // Efek getaran
+        this.shakeForm();
+        // Hilangkan notifikasi error setelah 3 detik
         setTimeout(() => {
-          notification.value = { message: "", type: "" };
+          this.notification = { message: "", type: "" };
         }, 3000);
+        return;
       }
-    };
+
+      // Jika tidak ada error, tampilkan notifikasi sukses
+      this.notification = { message: "Message sent successfully!", type: "success" };
+      setTimeout(() => {
+        this.notification = { message: "", type: "" };
+      }, 3000);
+
+      // Reset form setelah sukses
+      this.name = "";
+      this.email = "";
+      this.message = "";
+    },
 
 
-    return {
-      selectedLanguage,
-      isVisible,
-      isShaking,
-      contactSection,
-      howToUseSection,
-      name,
-      email,
-      message,
-      notification,
-      showError,
-      validateForm
-    };
+    shakeForm() {
+      const form = document.querySelector(".contact-form");
+      if (form) {
+        form.classList.add("shake");
+        setTimeout(() => {
+          form.classList.remove("shake");
+        }, 500); // Animasi getar selama 0.5 detik
+      }
+    },
+
+    sendMessage() {
+      setTimeout(() => {
+        const isSuccess = Math.random() > 0.3;
+        if (isSuccess) {
+          this.showNotification('Message sent successfully!', 'success');
+          this.resetForm();
+        } else {
+          this.showNotification('Failed to send message. Please try again.', 'error');
+        }
+      }, 1000);
+    },
+    showNotification(message, type) {
+      this.notification = { message, type };
+      setTimeout(() => {
+        this.notification = { message: '', type: '' };
+      }, 3000);
+    },
+    resetForm() {
+      this.name = '';
+      this.email = '';
+      this.message = '';
+    }
   }
 };
 </script>
+
 
 
 

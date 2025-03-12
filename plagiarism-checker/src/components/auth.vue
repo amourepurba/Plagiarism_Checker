@@ -26,9 +26,6 @@
             />
             <i class="bx bxs-lock-alt"></i>
           </div>
-          <div class="error-message" v-if="errorMessage">
-            {{ errorMessage }}
-          </div>
           <div class="forgot-link">
             <a href="#">Forgot Password?</a>
           </div>
@@ -77,9 +74,6 @@
             />
             <i class="bx bxs-lock-alt"></i>
           </div>
-          <div class="error-message" v-if="errorMessage">
-            {{ errorMessage }}
-          </div>
           <button type="submit" class="btn" :disabled="loading">
             {{ loading ? 'Processing...' : 'Register' }}
           </button>
@@ -108,9 +102,10 @@
         </div>
       </div>
     </div>
-    <div v-if="showNotification" class="notification" :class="{ success: successMessage, error: !successMessage }">
-      {{ successMessage }}
+    <div v-if="showNotification" class="notification" :class="{'success': successMessage, 'error': errorMessage}">
+      {{ successMessage || errorMessage }}
     </div>
+
   </div>
 </template>
 
@@ -127,7 +122,8 @@ export default {
       isActive: false,
       loading: false,
       errorMessage: '',
-      successMessage: '',  // Tambahkan ini
+      successMessage: '', 
+      errorMessage: '',
       showNotification: false, // Kontrol visibilitas notifikasi
       loginForm: {
         email: '',
@@ -146,8 +142,18 @@ export default {
   },
 
     showNotificationMessage(message, isSuccess) {
-    this.successMessage = message;
-    this.showNotification = true;
+      if (isSuccess) {
+        this.successMessage = message;
+        this.errorMessage = ''; // Hapus pesan error
+      } else {
+        this.errorMessage = message;
+        this.successMessage = ''; // Hapus pesan sukses
+      }
+      this.showNotification = true;
+
+      setTimeout(() => {
+        this.showNotification = false;
+      }, 3000);
 
     // Otomatis sembunyikan setelah 3 detik
     setTimeout(() => {
@@ -531,9 +537,15 @@ form {
   z-index: 1000;
 }
 
+
+.notification.success {
+  background-color: #4caf50; /* Hijau untuk sukses */
+}
+
 .notification.error {
   background-color: #f44336; /* Warna merah untuk gagal */
 }
+
 
 
   /* Responsive Design untuk Layar Kecil */
