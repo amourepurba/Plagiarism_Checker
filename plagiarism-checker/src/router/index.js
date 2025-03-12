@@ -1,12 +1,14 @@
-import { createRouter, createWebHistory } from "vue-router/dist/vue-router.esm-bundler.js";
-import Home from '../components/tes1.vue';
-import Auth from '../components/auth.vue';
-import tes from '../components/SEOChecker.vue';
+import {
+  createRouter,
+  createWebHistory,
+} from "vue-router/dist/vue-router.esm-bundler.js";
+import Home from "../components/home.vue";
+import Auth from "../components/auth.vue";
 
 const routes = [
-    { path: '/', component: Home },
-    { path: '/auth', component: Auth },
-    {path: '/tes',component:tes},
+  { path: "/auth", component: Auth },
+  { path: "/home", component: Home },
+  { path: "/plagiarism-checker", name: "PlagiarismChecker", component: Home }, // Tambahan route baru
 ];
 
 const router = createRouter({
