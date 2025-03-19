@@ -1409,8 +1409,7 @@ color-grey: #979797; */
     display: none;
   }
 }
-
-` @media (min-width: 992px) and (max-width: 1200px) {
+ @media (min-width: 992px) and (max-width: 1200px) {
   /* Navbar */
   .home-container .navbar {
     width: 100%;
