@@ -8,7 +8,7 @@ import Auth from "../components/auth.vue";
 const routes = [
   { path: "/auth", component: Auth },
   { path: "/", component: Home },
-  { path: "/plagiarism-checker", name: "PlagiarismChecker", component: Home }, // Tambahan route baru
+  { path: "/plagiarism-checker", name: "PlagiarismChecker", component: Home },
 ];
 
 const router = createRouter({
