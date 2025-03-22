@@ -238,7 +238,7 @@
             <h2>Result</h2>
             <div class="row">
               <div class="output-plagiarism">
-                <div class="url">{{ url }}</div>
+                <div class="url">{{ url || "Source URL" }}</div>
                 <div class="stats">
                   <div class="stat-item">
                     Skor Plagiasi: {{ similarityScore }}%
@@ -249,6 +249,15 @@
                   <div class="stat-item">
                     Jumlah Kalimat Terdeteksi: {{ detectedCount }}
                   </div>
+                </div>
+                <!-- Tampilkan daftar sumber -->
+                <div v-if="sources.length" class="sources-list mt-3">
+                  <h5>Detected Sources:</h5>
+                  <ul>
+                    <li v-for="(source, index) in sources" :key="index">
+                      {{ source }}
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -450,6 +459,9 @@ export default {
       showDropdown: false,
       isVisible: true,
 
+      // ... properti lainnya
+      url: "",
+
       // Contact form
       name: "",
       email: "",
@@ -458,6 +470,7 @@ export default {
       showError: { name: false, email: false, message: false },
     };
   },
+
   computed: {
     // Authentication status
     isAuthenticated() {
@@ -478,6 +491,7 @@ export default {
       }
     },
   },
+
   methods: {
     // Navigation
     toggleNavbar() {
@@ -529,14 +543,17 @@ export default {
         if (this.activeTab === "text") {
           endpoint = "/check-text";
           payload = { text: this.textInput };
+          this.url = "Text Input"; // Atau kosongkan jika tidak perlu
         } else if (this.activeTab === "url") {
           endpoint = "/check-url";
           payload = { url: this.urlInput };
+          this.url = this.urlInput; // Simpan URL yang diinput
         } else if (this.activeTab === "file") {
           endpoint = "/check-file";
           const formData = new FormData();
           formData.append("file", this.fileInput);
           payload = formData;
+          this.url = this.fileInput.name; // Tampilkan nama file
         }
 
         // Konfigurasi request
@@ -591,12 +608,10 @@ export default {
 
     // Contact Form
     validateForm() {
-      // let hasError = false;
+      let hasError = false;
 
       // Reset error state
       this.showError = { name: false, email: false, message: false };
-      // Validasi field
-      const hasError = ![this.name, this.email, this.message].every(Boolean);
       if (!this.name.trim()) {
         this.showError.name = true;
         hasError = true;
@@ -633,6 +648,7 @@ export default {
       this.email = "";
       this.message = "";
     },
+
     shakeForm() {
       const form = document.querySelector(".contact-form");
       if (form) {
@@ -642,6 +658,7 @@ export default {
         }, 500);
       }
     },
+
     sendMessage() {
       setTimeout(() => {
         const isSuccess = Math.random() > 0.3;
@@ -656,12 +673,14 @@ export default {
         }
       }, 1000);
     },
+
     showNotification(message, type) {
       this.notification = { message, type };
       setTimeout(() => {
         this.notification = { message: "", type: "" };
       }, 3000);
     },
+
     resetForm() {
       this.name = "";
       this.email = "";

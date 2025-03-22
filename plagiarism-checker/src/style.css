@@ -416,6 +416,25 @@ color-grey: #979797; */
   margin-bottom: 20px;
 }
 
+.home-container .sources-list {
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+  margin-top: 15px;
+}
+
+.home-container .sources-list ul {
+  list-style-type: none;
+  padding-left: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.home-container .sources-list li {
+  font-size: 0.9rem;
+  padding: 5px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
 .home-container .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
