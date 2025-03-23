@@ -234,30 +234,49 @@
           </div>
 
           <!-- Result Section -->
-          <div v-if="showOutput" class="output-container" ref="resultSection">
+          <div v-if="showOutput" class="output-container">
             <h2>Result</h2>
-            <div class="row">
-              <div class="output-plagiarism">
-                <div class="url">{{ url || "Source URL" }}</div>
-                <div class="stats">
-                  <div class="stat-item">
-                    Skor Plagiasi: {{ similarityScore }}%
-                  </div>
-                  <div class="stat-item">
-                    Jumlah Kalimat Input: {{ sentenceCount }}
-                  </div>
-                  <div class="stat-item">
-                    Jumlah Kalimat Terdeteksi: {{ detectedCount }}
+            <div class="result-content">
+              <!-- URL Section -->
+              <div class="url-section">
+                <div class="url">{{ inputUrl || "Source URL" }}</div>
+              </div>
+
+              <!-- Detected Sources -->
+              <div class="sources-section">
+                <!-- <h4>Detected Sources</h4> -->
+                <div class="sources-list">
+                  <div
+                    v-for="(source, index) in sources"
+                    :key="index"
+                    class="source-item"
+                  >
+                    <span class="source-index">{{ index + 1 }}.</span>
+                    <a :href="source.url" target="_blank" class="source-url">{{
+                      source.url
+                    }}</a>
+                    <span class="source-percentage"
+                      >{{ source.percentage }}%</span
+                    >
                   </div>
                 </div>
-                <!-- Tampilkan daftar sumber -->
-                <div v-if="sources.length" class="sources-list mt-3">
-                  <h5>Detected Sources:</h5>
-                  <ul>
-                    <li v-for="(source, index) in sources" :key="index">
-                      {{ source }}
-                    </li>
-                  </ul>
+              </div>
+
+              <!-- Stats Section -->
+              <div class="stats-section">
+                <div class="stat-item">
+                  <span class="stat-label">Skor Plagiasi:</span>
+                  <span class="stat-value text-danger"
+                    >{{ similarityScore }}%</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Jumlah Kalimat Input:</span>
+                  <span class="stat-value">{{ sentenceCount }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Jumlah Kalimat Terdeteksi:</span>
+                  <span class="stat-value">{{ detectedCount }}</span>
                 </div>
               </div>
             </div>
@@ -447,11 +466,15 @@ export default {
       // Result data
       showOutput: false,
       errorMessage: "",
-      similarityScore: 0,
-      uniqueScore: 0,
-      readabilityScore: 0,
-      topKeywords: [],
-      sources: [],
+      inputUrl: "https://example.com/submitted-url",
+      sources: [
+        { url: "https://example.com/source1", percentage: 35 },
+        { url: "https://sample-site.org/article", percentage: 25 },
+        { url: "https://testblog.com/content", percentage: 15 },
+      ],
+      similarityScore: 75,
+      sentenceCount: 15,
+      detectedCount: 11,
       textOutput: "",
       fileOutput: "",
       urlOutput: "",
@@ -493,6 +516,10 @@ export default {
   },
 
   methods: {
+    checkAction() {
+      this.showOutput = true;
+    },
+
     // Navigation
     toggleNavbar() {
       this.isNavbarOpen = !this.isNavbarOpen;
