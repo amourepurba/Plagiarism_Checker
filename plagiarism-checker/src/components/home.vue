@@ -270,12 +270,15 @@
                       <span class="source-index badge bg-light me-2">{{ index + 1 }}</span>
                       <a :href="source.url" target="_blank" class="source-url flex-grow-1">{{ source.url }}</a>
                       <span class="source-percentage badge" 
-                            :class="{
-                              'bg': source.plagiarismScore >= 70,
-                              'bg': source.plagiarismScore >= 30 && source.plagiarismScore < 70,
-                              'bg': source.plagiarismScore < 30
-                            }"> skor: {{ source.plagiarismScore }}%
-                      </span>
+                              :class="{
+                                'bg': source.plagiarismScore >= 70,
+                                'bg': source.plagiarismScore >= 30 && source.plagiarismScore < 70,
+                                'bg': source.plagiarismScore < 30
+                              }">
+                          Similarity: {{ (source.details.avgSimilarity * 100).toFixed(1) }}%<br>
+                          Plagiarized: {{ source.details.plagiarizedFraction }}
+                        </span>
+                       
                     </div>
                     
                     <!-- Detail Kalimat -->
@@ -298,11 +301,11 @@
                         <div class="progress">
                           <div class="progress-bar" 
                               role="progressbar" 
-                              :style="{ width: source.details.avgSimilarity * 100 + '%' }"
-                              :aria-valuenow="source.details.avgSimilarity * 100"
+                              :style="{ width: source.plagiarismScore + '%' }"
+                              :aria-valuenow="source.plagiarismScore"
                               aria-valuemin="0" 
                               aria-valuemax="100">
-                            {{ (source.details.avgSimilarity * 100).toFixed(1) }}% Similarity
+                            {{ source.plagiarismScore }}% Skor Plagiasi
                           </div>
                         </div>
                       </div>
