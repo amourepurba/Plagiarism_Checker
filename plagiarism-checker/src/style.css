@@ -4,10 +4,29 @@ color-dark: #000000;
 color-grey: #979797; */
 
 /* HOME STYLES */
-
-.home-container * {
-  box-sizing: border-box;
+.original-text-content {
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  max-height: 400px;
+  overflow-y: auto;
+  /* white-space: pre-wrap; */
+  word-break: break-word;
 }
+
+.original-text-content pre {
+  margin: 0;
+  font-family: poppins;
+  white-space: pre-wrap;
+}
+
+
+:root{
+  font-family: poppins;
+}
+
+
 
 /* Container utama */
 .home-container .container {

@@ -236,53 +236,100 @@
           <!-- Result Section -->
           <div v-if="showOutput" class="output-container">
             <h2>Result</h2>
-            <div class="result-content">
-              <!-- URL Section -->
-              <div class="url-section">
-                <div class="url">{{ inputUrl || "Source URL" }}</div>
-              </div>
+            <!-- 1. Tampilkan Teks Input -->
+          <div class="original-text-section mb-4">
+            <h4>Teks yang Diinputkan</h4>
+            <div class="original-text-content">
+              <!-- Untuk semua jenis input -->
+              <template v-if="processedText">
+                <pre>{{ processedText }}</pre>
+              </template>
+              
+              <!-- Fallback jika processedText kosong -->
+              <template v-else>
+                <div v-if="activeTab === 'text'" class="text-muted">
+                  {{ textInput || "Tidak ada teks yang diinputkan" }}
+                </div>
+                <div v-else-if="activeTab === 'file'" class="text-muted">
+                  {{ fileOutput || "Konten file tidak tersedia" }}
+                </div>
+                <div v-else class="text-muted">
+                  {{ urlOutput || "Konten URL tidak tersedia" }}
+                </div>
+              </template>
+            </div>
+          </div>
 
-              <!-- Detected Sources -->
-              <div class="sources-section">
-                <!-- <h4>Detected Sources</h4> -->
-                <div class="sources-list">
-                  <div
-                    v-for="(source, index) in sources"
-                    :key="index"
-                    class="source-item"
-                  >
-                    <span class="source-index">{{ index + 1 }}.</span>
-                    <a :href="source.url" target="_blank" class="source-url">{{
-                      source.url
-                    }}</a>
-                    <span class="source-percentage"
-                      >{{ source.percentage }}%</span
-                    >
+            <!-- 2. Daftar URL dengan Detail -->
+            <div class="sources-section mb-4">
+              <h4>Hasil Deteksi Plagiasi</h4>
+              <div class="sources-list">
+                <div v-for="(source, index) in sources" :key="index" class="source-item card mb-3">
+                  <div class="card-body">
+                    <div class="source-header d-flex align-items-center mb-2">
+                      <span class="source-index badge bg-light me-2">{{ index + 1 }}</span>
+                      <a :href="source.url" target="_blank" class="source-url flex-grow-1">{{ source.url }}</a>
+                      <span class="source-percentage badge" 
+                            :class="{
+                              'bg': source.plagiarismScore >= 70,
+                              'bg': source.plagiarismScore >= 30 && source.plagiarismScore < 70,
+                              'bg': source.plagiarismScore < 30
+                            }"> skor: {{ source.plagiarismScore }}%
+                      </span>
+                    </div>
+                    
+                    <!-- Detail Kalimat -->
+                    <div class="sentences-detail">
+                      <div class="row">
+                        <div class="col-md-6">
+                          <div class="detail-item">
+                            <span class="detail-label">Kalimat Input:</span>
+                            <div class="detail-value">{{ source.details.totalInputSentences }}</div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="detail-item">
+                            <span class="detail-label">Kalimat Terdeteksi:</span>
+                            <div class="detail-value text-danger">{{ source.details.plagiarizedCount }}</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="similarity-progress mt-2">
+                        <div class="progress">
+                          <div class="progress-bar" 
+                              role="progressbar" 
+                              :style="{ width: source.details.avgSimilarity * 100 + '%' }"
+                              :aria-valuenow="source.details.avgSimilarity * 100"
+                              aria-valuemin="0" 
+                              aria-valuemax="100">
+                            {{ (source.details.avgSimilarity * 100).toFixed(1) }}% Similarity
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <!-- Stats Section -->
-              <div class="stats-section">
-                <div class="stat-item">
-                  <span class="stat-label">Skor Plagiasi:</span>
-                  <span class="stat-value text-danger"
-                    >{{ similarityScore }}%</span
-                  >
-                </div>
-                <div class="stat-item">
-                  <span class="stat-label">Jumlah Kalimat Input:</span>
-                  <span class="stat-value">{{ sentenceCount }}</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-label">Jumlah Kalimat Terdeteksi:</span>
-                  <span class="stat-value">{{ detectedCount }}</span>
+            <!-- 3. 3 Keyword Terbesar -->
+            <div class="keywords-section card">
+              <div class="card-body">
+                <h4 class="card-title">5 Keyword Utama</h4>
+                <div class="keywords-list d-flex justify-content-around">
+                  <div v-for="(keyword, index) in topKeywords" :key="index" 
+                      class="keyword-item text-center p-2">
+                    <div class="keyword-badge fs-5 badge bg-primary rounded-pill">
+                      {{ keyword.keyword }}
+                    </div>
+                    <div class="keyword-percentage small text-muted mt-1">
+                      {{ keyword.percentage }}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
       <!-- How To Use Section -->
       <div
@@ -444,6 +491,8 @@
       </footer>
     </div>
   </div>
+  </div>
+  </div>
 </template>
 
 <script>
@@ -453,54 +502,41 @@ export default {
   name: "Home",
   data() {
     return {
-      // State management
       isNavbarOpen: false,
       isLoading: false,
       activeTab: "text",
-
-      // Form data
+      
+      // Inputs
       textInput: "",
       fileInput: null,
       urlInput: "",
-
-      // Result data
+      
+      // Results
       showOutput: false,
       errorMessage: "",
-      inputUrl: "https://example.com/submitted-url",
-      sources: [
-        { url: "https://example.com/source1", percentage: 35 },
-        { url: "https://sample-site.org/article", percentage: 25 },
-        { url: "https://testblog.com/content", percentage: 15 },
-      ],
-      similarityScore: 75,
-      sentenceCount: 15,
-      detectedCount: 11,
-      textOutput: "",
-      fileOutput: "",
-      urlOutput: "",
+      processedText: "",
+      sources: [],
+      topKeywords: [],
+      similarityScore: 0,
+      sentenceCount: 0,
+      detectedCount: 0,
+      
+      // Lainnya
       selectedLanguage: "english",
       showDropdown: false,
       isVisible: true,
-
-      // ... properti lainnya
-      url: "",
-
-      // Contact form
       name: "",
       email: "",
       message: "",
       notification: { message: "", type: "" },
-      showError: { name: false, email: false, message: false },
+      showError: { name: false, email: false, message: false }
     };
   },
 
   computed: {
-    // Authentication status
     isAuthenticated() {
       return !!localStorage.getItem("token");
     },
-
-    // User data
     user() {
       try {
         return (
@@ -513,6 +549,12 @@ export default {
         return { username: "", avatar: "" };
       }
     },
+    formattedKeywords() {
+      return this.topKeywords.slice(0, 3).map(k => ({
+        keyword: k.keyword,
+        percentage: k.percentage
+      }));
+    }
   },
 
   methods: {
@@ -520,7 +562,6 @@ export default {
       this.showOutput = true;
     },
 
-    // Navigation
     toggleNavbar() {
       this.isNavbarOpen = !this.isNavbarOpen;
     },
@@ -539,7 +580,6 @@ export default {
       this.$router.push("/auth");
     },
 
-    // Plagiarism Check
     validateInput() {
       if (this.activeTab === "text" && this.textInput.trim().length < 50) {
         this.errorMessage = "Konten harus lebih dari 50 karakter!";
@@ -561,64 +601,59 @@ export default {
     },
 
     async submitPlagiarismCheck() {
-      // Validasi input
       if (!this.validateInput()) return;
       this.isLoading = true;
+      
       let endpoint = "";
       let payload;
       try {
         if (this.activeTab === "text") {
           endpoint = "/check-text";
           payload = { text: this.textInput };
-          this.url = "Text Input"; // Atau kosongkan jika tidak perlu
         } else if (this.activeTab === "url") {
           endpoint = "/check-url";
           payload = { url: this.urlInput };
-          this.url = this.urlInput; // Simpan URL yang diinput
         } else if (this.activeTab === "file") {
           endpoint = "/check-file";
           const formData = new FormData();
           formData.append("file", this.fileInput);
           payload = formData;
-          this.url = this.fileInput.name; // Tampilkan nama file
         }
 
-        // Konfigurasi request
-        const config =
-          this.activeTab === "file"
-            ? { headers: { "Content-Type": "multipart/form-data" } }
-            : { headers: { "Content-Type": "application/json" } };
+        const config = this.activeTab === "file"
+          ? { headers: { "Content-Type": "multipart/form-data" } }
+          : { headers: { "Content-Type": "application/json" } };
 
         const response = await axios.post(endpoint, payload, config);
-        const results = response.data.results;
+        const data = response.data;
+        
+        // Update data hasil
+        this.processedText = data.processedText;
+        this.topKeywords = data.topKeywords;
+        this.sources = data.results.map(result => ({
+          url: result.url,
+          plagiarismScore: result.plagiarismScore,
+          details: {
+            totalInputSentences: result.details.totalInputSentences,
+            plagiarizedCount: result.details.plagiarizedCount,
+            avgSimilarity: parseFloat(result.details.avgSimilarity),
+            plagiarizedFraction: result.details.plagiarizedFraction
+          }
+        }));
+        
+        // Hitung skor tertinggi
+        this.similarityScore = this.sources.length > 0 
+          ? Math.max(...this.sources.map(s => s.plagiarismScore))
+          : 0;
+          
+        // Update statistik
+        this.sentenceCount = this.sources.length > 0
+          ? this.sources[0].details.totalInputSentences
+          : 0;
+        this.detectedCount = this.sources.length > 0
+          ? this.sources[0].details.plagiarizedCount
+          : 0;
 
-        if (results && results.length) {
-          // Mengambil skor tertinggi dari hasil
-          const highestScore = Math.max(
-            ...results.map((r) => r.plagiarismScore)
-          );
-          this.similarityScore = highestScore;
-          this.uniqueScore = 100 - highestScore;
-          this.readabilityScore = Math.floor(Math.random() * 100);
-
-          // Placeholder untuk top keywords
-          // this.topKeywords = [
-          //   "keyword1",
-          //   "keyword2",
-          //   "keyword3",
-          //   "keyword4",
-          //   "keyword5",
-          // ];
-
-          // Menampilkan daftar URL beserta skor plagiasi
-          this.sources = results.map(
-            (result) => `${result.url} - Score: ${result.plagiarismScore}%`
-          );
-        } else {
-          this.similarityScore = 0;
-          this.uniqueScore = 100;
-          this.sources = [];
-        }
         this.showOutput = true;
       } catch (error) {
         this.errorMessage =
@@ -631,7 +666,13 @@ export default {
 
     handleFileUpload(event) {
       this.fileInput = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.fileOutput = e.target.result;
+      };
+      reader.readAsText(event.target.files[0]);
     },
+
 
     // Contact Form
     validateForm() {
