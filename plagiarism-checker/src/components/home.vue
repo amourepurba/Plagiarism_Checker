@@ -164,6 +164,7 @@
                 @change="handleFileUpload"
                 class="form-control input-field"
                 accept=".pdf"
+                ref="fileInput"
               />
               <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
               <button
@@ -681,10 +682,16 @@ export default {
 
     handleFileUpload(event) {
       this.fileInput = event.target.files[0];
-      reader.onload = (e) => {
-        this.fileOutput = e.target.result;
-      };
-      reader.readAsText(event.target.files[0]);
+      // Hapus reader.onload jika tidak diperlukan
+      if (event.target.files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.fileOutput = e.target.result;
+        };
+        reader.readAsText(event.target.files[0]);
+      } else {
+        this.fileOutput = "";
+      }
     },
 
     // Contact Form
@@ -770,8 +777,24 @@ export default {
   },
 
   watch: {
-    activeTab() {
-      // Reset hasil saat berpindah tab
+    activeTab(newTab, oldTab) {
+      // Reset input dari tab sebelumnya
+      switch (oldTab) {
+        case "text":
+          this.textInput = "";
+          break;
+        case "file":
+          this.fileInput = null;
+          if (this.$refs.fileInput) {
+            this.$refs.fileInput.value = ""; // Reset input file
+          }
+          break;
+        case "url":
+          this.urlInput = "";
+          break;
+      }
+
+      // Reset hasil pencarian
       this.processedText = "";
       this.sources = [];
       this.topKeywords = [];
