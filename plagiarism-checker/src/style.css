@@ -1,32 +1,6 @@
-/* color-blue: #18A0FB;
-color-white: #FFFFFF;
-color-dark: #000000;
-color-grey: #979797; */
-
-/* HOME STYLES */
-.original-text-content {
-  border: 1px solid #dee2e6;
-  border-radius: 5px;
-  padding: 15px;
-  background-color: #f8f9fa;
-  max-height: 400px;
-  overflow-y: auto;
-  /* white-space: pre-wrap; */
-  word-break: break-word;
-}
-
-.original-text-content pre {
-  margin: 0;
-  font-family: poppins;
-  white-space: pre-wrap;
-}
-
-
-:root{
+* {
   font-family: poppins;
 }
-
-
 
 /* Container utama */
 .home-container .container {
@@ -347,14 +321,14 @@ color-grey: #979797; */
 }
 
 .home-container textarea::-webkit-scrollbar-thumb {
-  background: #888; /* Warna thumb scrollbar */
-  border-radius: 10px; /* Border radius thumb scrollbar */
-  border: 2px solid transparent; /* Tambahkan border transparan */
+  background: #888;
+  border-radius: 10px;
+  border: 2px solid transparent;
   background-clip: content-box;
 }
 
 .home-container textarea::-webkit-scrollbar-thumb:hover {
-  background: #007bff; /* Warna thumb scrollbar saat dihover */
+  background: #007bff;
   border: 1px solid #f1f1f1;
 }
 
@@ -416,6 +390,7 @@ color-grey: #979797; */
 }
 
 /* Output Section */
+
 .home-container .output-container {
   width: 100%;
   max-width: 900px;
@@ -429,36 +404,35 @@ color-grey: #979797; */
 
 .home-container .output-container h2 {
   color: #2d2d2d;
-  font-size: 1.75rem;
+  font-size: 33px;
   font-weight: 700;
   text-align: center;
   margin-bottom: 25px;
 }
 
-.home-container .url-section {
+.home-container .original-text-section h4,
+.home-container .sources-section h4,
+.home-container .keywords-section h4 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.home-container .original-text-content {
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
   padding: 15px;
   background-color: #f8f9fa;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+  /* white-space: pre-wrap; */
+  word-break: break-word;
 }
 
-.home-container .url {
-  color: #18a0fb;
-  font-weight: 600;
-  font-size: 1.1rem;
-  text-align: center;
+.home-container .original-text-content pre {
+  margin: 0;
+  font-family: poppins;
+  white-space: pre-wrap;
 }
-
-/* .home-container .sources-section {
-  margin-bottom: 5px;
-} */
-
-/* .home-container .sources-section h4 {
-  color: #2d2d2d;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 15px;
-} */
 
 .home-container .sources-list {
   border: 1px solid #e5e7eb;
@@ -499,157 +473,127 @@ color-grey: #979797; */
 .home-container .source-percentage {
   color: #dc3545;
   font-weight: 600;
-  /* margin-left: 5px; */
 }
 
-.home-container .stats-section {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  padding: 10px;
-  margin: 10px 0;
-}
-
-.home-container .stat-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: white;
-}
-
-.home-container .stat-label {
-  color: #5f5f5f;
-  font-size: 0.95rem;
-}
-
-.home-container .stat-value {
-  font-weight: 600;
-  font-size: 1rem;
-  margin-right: 15px;
-}
-
-@media (max-width: 768px) {
-  .home-container .output-container {
-    padding: 20px;
-  }
-
-  .home-container .source-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .home-container .source-percentage {
-    margin-left: 0;
-  }
-
-  .home-container .stats-section {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* .home-container .output-container {
-  width: 100%;
-  max-width: 700px;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: #f8fafc;
-  border-radius: 12px;
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-  clear: both;
-}
-
-.home-container .output-textarea {
-  width: 100%;
-  height: auto;
-  min-height: 150px;
-  resize: vertical;
-  box-sizing: border-box;
-  margin-bottom: 20px;
-  padding: 15px;
-  border: 2px solid #007bff;
-  border-radius: 25px;
+.home-container .keywords-section .keyword-badge {
   font-size: 15px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.home-container .output-textarea:focus {
-  border-color: #007bff;
-  outline: none;
-  transform: scale(1.02);
-  box-shadow: 0 0 10px rgba(24, 160, 251, 0.5);
+/* Mobile: max-width 767px */
+@media (max-width: 767px) {
+  .home-container {
+    /* Result Section */
+    .output-container {
+      padding: 15px;
+      margin: 20px 0;
+
+      h2 {
+        font-size: 24px;
+      }
+
+      .source-header {
+        flex-wrap: wrap;
+
+        .source-url {
+          width: 100%;
+          margin: 5px 0;
+          font-size: 14px;
+        }
+
+        .source-percentage {
+          margin-top: 5px;
+        }
+      }
+
+      .keywords-list {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+    }
+  }
 }
 
-.home-container .input-url.show-output {
-  height: auto !important;
-  width: 70% !important;
-} */
+/* Tablet: 768px - 991px */
+@media (min-width: 768px) and (max-width: 991px) {
+  .home-container {
+    /* Result Section */
+    .output-container {
+      padding: 20px;
 
-/* Duplikat .output-container (jika memang dibutuhkan) */
-/* .home-container .output-container.show { */
-/* display: block; Tampilkan saat output ada */
-/* flex-grow: 1; Output akan mengisi ruang yang tersedia */
-/* } */
+      .source-header {
+        flex-wrap: nowrap;
 
-/* .home-container h2 {
-  text-align: center;
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 20px;
+        .source-url {
+          font-size: 15px;
+        }
+      }
+
+      .keywords-list {
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+    }
+  }
 }
 
-.home-container .row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px;
-  border-top: 2px solid #d1d5db;
-  padding-top: 16px;
+/* Small Desktop: 992px - 1200px */
+@media (min-width: 992px) and (max-width: 1200px) {
+  .home-container {
+    /* Result Section */
+    .output-container {
+      max-width: 800px;
+
+      .source-header .source-url {
+        font-size: 16px;
+      }
+    }
+  }
 }
 
-.home-container .left-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-}
+/* Common Responsive Adjustments */
+@media (max-width: 1200px) {
+  .home-container {
+    /* Navigation Toggler */
+    .navbar-toggler {
+      order: -1;
+      margin-right: 10px;
+    }
 
-.home-container .right-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-}
+    /* User Profile */
+    .user-profile span {
+      display: none;
+    }
 
-.home-container .text-xl {
-  font-size: 1.4rem;
-  font-weight: 600;
-}
+    /* Input Section */
+    .input-text {
+      width: 100%;
+    }
 
-.home-container .text-red-600 {
-  color: #dc2626;
-}
+    /* Result Progress Bar */
+    .progress-bar {
+      font-size: 12px;
+    }
 
-.home-container .text-green-600 {
-  color: #16a34a;
-}
+    /* Contact Form */
+    .contact-input,
+    .contact-textarea {
+      width: 90%;
+    }
 
-.home-container .text-blue-600 {
-  color: #2563eb;
-}
+    /* Footer */
+    .footer {
+      padding: 30px 15px;
 
-.home-container .list-disc {
-  list-style-type: disc;
-  padding-left: 10px;
-}
+      .footer-title {
+        font-size: 16px;
+      }
 
-.home-container .list-inside {
-  list-style-position: inside;
+      .footer-links a {
+        font-size: 14px;
+      }
+    }
+  }
 }
-
-.home-container .text-red-500 {
-  color: #ef4444;
-} */
 
 /* How To Use */
 .home-container .container-use {
@@ -887,29 +831,6 @@ color-grey: #979797; */
   flex-direction: column;
   gap: 10px;
   margin-right: 20px;
-}
-
-.home-container .language-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-
-.home-container .language-btn {
-  background: #ffffff;
-  color: #2d2d2d;
-  border: 1px solid #ddd;
-  padding: 8px 8px;
-  border-radius: 10px;
-  font-size: 12px;
-  text-align: center;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.home-container .language-btn:hover {
-  background: #18a0fb;
-  color: white;
-  transform: scale(1.05);
 }
 
 .home-container .supervene-section {

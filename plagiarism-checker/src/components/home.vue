@@ -159,22 +159,12 @@
 
             <!-- File Input -->
             <div v-else-if="activeTab === 'file'" class="input-box input-file">
-              <template v-if="showOutput && activeTab === 'file'">
-                <textarea
-                  v-model="fileOutput"
-                  class="form-control input-field output-textarea"
-                  rows="6"
-                  readonly
-                ></textarea>
-              </template>
-              <template v-else>
-                <input
-                  type="file"
-                  @change="handleFileUpload"
-                  class="form-control input-field"
-                  accept=".pdf"
-                />
-              </template>
+              <input
+                type="file"
+                @change="handleFileUpload"
+                class="form-control input-field"
+                accept=".pdf"
+              />
               <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
               <button
                 class="btn btn-check mt-2"
@@ -193,23 +183,13 @@
 
             <!-- URL Input -->
             <div v-else-if="activeTab === 'url'" class="input-box input-url">
-              <template v-if="showOutput && activeTab === 'url'">
-                <textarea
-                  v-model="urlOutput"
-                  class="form-control input-field output-textarea"
-                  rows="6"
-                  readonly
-                ></textarea>
-              </template>
-              <template v-else>
-                <input
-                  v-model="urlInput"
-                  type="url"
-                  class="form-control input-field"
-                  style="text-align: center"
-                  placeholder="Enter your URL here..."
-                />
-              </template>
+              <input
+                v-model="urlInput"
+                type="url"
+                class="form-control input-field"
+                style="text-align: center"
+                placeholder="Enter your URL here..."
+              />
               <p v-if="errorMessage" class="error-text">{{ errorMessage }}</p>
               <button
                 class="btn btn-check mt-2"
@@ -237,74 +217,102 @@
           <div v-if="showOutput" class="output-container">
             <h2>Result</h2>
             <!-- 1. Tampilkan Teks Input -->
-          <div class="original-text-section mb-4">
-            <h4>Teks yang Diinputkan</h4>
-            <div class="original-text-content">
-              <!-- Untuk semua jenis input -->
-              <template v-if="processedText">
-                <pre>{{ processedText }}</pre>
-              </template>
-              
-              <!-- Fallback jika processedText kosong -->
-              <template v-else>
-                <div v-if="activeTab === 'text'" class="text-muted">
-                  {{ textInput || "Tidak ada teks yang diinputkan" }}
-                </div>
-                <div v-else-if="activeTab === 'file'" class="text-muted">
-                  {{ fileOutput || "Konten file tidak tersedia" }}
-                </div>
-                <div v-else class="text-muted">
-                  {{ urlOutput || "Konten URL tidak tersedia" }}
-                </div>
-              </template>
+            <div class="original-text-section mb-4">
+              <h4>Teks yang Diinputkan</h4>
+              <div class="original-text-content">
+                <!-- Untuk semua jenis input -->
+                <template v-if="processedText">
+                  <pre>{{ processedText }}</pre>
+                </template>
+
+                <!-- Fallback jika processedText kosong -->
+                <template v-else>
+                  <div v-if="activeTab === 'text'" class="text-muted">
+                    {{ textInput || "Tidak ada teks yang diinputkan" }}
+                  </div>
+                  <div v-else-if="activeTab === 'file'" class="text-muted">
+                    {{ fileOutput || "Konten file tidak tersedia" }}
+                  </div>
+                  <div v-else class="text-muted">
+                    {{ urlOutput || "Konten URL tidak tersedia" }}
+                  </div>
+                </template>
+              </div>
             </div>
-          </div>
 
             <!-- 2. Daftar URL dengan Detail -->
             <div class="sources-section mb-4">
               <h4>Hasil Deteksi Plagiasi</h4>
               <div class="sources-list">
-                <div v-for="(source, index) in sources" :key="index" class="source-item card mb-3">
+                <div
+                  v-for="(source, index) in sources"
+                  :key="index"
+                  class="source-item card mb-3"
+                >
                   <div class="card-body">
                     <div class="source-header d-flex align-items-center mb-2">
-                      <span class="source-index badge bg-light me-2">{{ index + 1 }}</span>
-                      <a :href="source.url" target="_blank" class="source-url flex-grow-1">{{ source.url }}</a>
-                      <span class="source-percentage badge" 
-                              :class="{
-                                'bg': source.plagiarismScore >= 70,
-                                'bg': source.plagiarismScore >= 30 && source.plagiarismScore < 70,
-                                'bg': source.plagiarismScore < 30
-                              }">
-                          Similarity: {{ (source.details.avgSimilarity * 100).toFixed(1) }}%<br>
-                          Plagiarized: {{ source.details.plagiarizedFraction }}
-                        </span>
-                       
+                      <span class="source-index badge bg-light me-2">{{
+                        index + 1
+                      }}</span>
+                      <a
+                        :href="source.url"
+                        target="_blank"
+                        class="source-url flex-grow-1"
+                        >{{ source.url }}</a
+                      >
+                      <span
+                        class="source-percentage badge"
+                        :class="{
+                          bg: source.plagiarismScore >= 70,
+                          bg:
+                            source.plagiarismScore >= 30 &&
+                            source.plagiarismScore < 70,
+                          bg: source.plagiarismScore < 30,
+                        }"
+                      >
+                        Similarity:
+                        {{
+                          (source.details.avgSimilarity * 100).toFixed(1)
+                        }}%<br />
+                        Plagiarized: {{ source.details.plagiarizedFraction }}
+                      </span>
                     </div>
-                    
+
                     <!-- Detail Kalimat -->
                     <div class="sentences-detail">
                       <div class="row">
                         <div class="col-md-6">
                           <div class="detail-item">
-                            <span class="detail-label">Kalimat Input:</span>
-                            <div class="detail-value">{{ source.details.totalInputSentences }}</div>
+                            <span class="detail-label fw-semibold"
+                              >Kalimat Input:</span
+                            >
+                            <div class="detail-value">
+                              {{ source.details.totalInputSentences }}
+                            </div>
                           </div>
                         </div>
                         <div class="col-md-6">
                           <div class="detail-item">
-                            <span class="detail-label">Kalimat Terdeteksi:</span>
-                            <div class="detail-value text-danger">{{ source.details.plagiarizedCount }}</div>
+                            <span class="detail-label fw-semibold"
+                              >Kalimat Terdeteksi:</span
+                            >
+                            <div class="detail-value text-danger">
+                              {{ source.details.plagiarizedCount }}
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div class="similarity-progress mt-2">skor overall:
-                        <div class="progress"> 
-                          <div class="progress-bar" 
-                              role="progressbar" 
-                              :style="{ width: source.plagiarismScore + '%' }"
-                              :aria-valuenow="source.plagiarismScore"
-                              aria-valuemin="0" 
-                              aria-valuemax="100">
+                      <div class="similarity-progress mt-2 fw-semibold">
+                        skor overall:
+                        <div class="progress">
+                          <div
+                            class="progress-bar"
+                            role="progressbar"
+                            :style="{ width: source.plagiarismScore + '%' }"
+                            :aria-valuenow="source.plagiarismScore"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                          >
                             {{ source.plagiarismScore }}% Skor Plagiasi
                           </div>
                         </div>
@@ -320,9 +328,12 @@
               <div class="card-body">
                 <h4 class="card-title">5 Keyword Utama</h4>
                 <div class="keywords-list d-flex justify-content-around">
-                  <div v-for="(keyword, index) in topKeywords" :key="index" 
-                      class="keyword-item text-center p-2">
-                    <div class="keyword-badge fs-5 badge bg-primary rounded-pill">
+                  <div
+                    v-for="(keyword, index) in topKeywords"
+                    :key="index"
+                    class="keyword-item text-center p-2"
+                  >
+                    <div class="keyword-badge badge bg-primary rounded-pill">
                       {{ keyword.keyword }}
                     </div>
                     <div class="keyword-percentage small text-muted mt-1">
@@ -334,167 +345,159 @@
             </div>
           </div>
 
-      <!-- How To Use Section -->
-      <div
-        class="container-use text-center"
-        id="how-to-use"
-        ref="howToUseSection"
-        :class="{ visible: isVisible, hidden: !isVisible }"
-      >
-        <h1 class="title">How to Use Plagiarism Checker</h1>
-        <div class="row-use align-items-start">
-          <div class="col">
-            <h3>1</h3>
-            <p>
-              <strong>Get a subscription</strong><br />
-              Choose any premium plan to enjoy all of JustDone's tools and
-              features, including our Plagiarism Checker.
-            </p>
-          </div>
-          <div class="col">
-            <h3>2</h3>
-            <p>
-              <strong>Provide details</strong><br />
-              Paste your text, URL, or upload a file in PDF, DOC, or DOCX
-              format.
-            </p>
-          </div>
-          <div class="col">
-            <h3>3</h3>
-            <p>
-              <strong>View the report</strong><br />
-              Receive an extensive report in just minutes to view any potential
-              plagiarism and relevant source links.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Contact Form -->
-      <div
-        class="contact-us-container"
-        id="contact-us"
-        ref="contactSection"
-        :class="{ visible: isVisible }"
-      >
-        <div class="contact-text">
-          <h1 class="contact-title">Contact Us</h1>
-          <p class="contact-description">
-            Have questions or need help? Reach out to us!
-          </p>
-        </div>
-        <!-- Notifikasi -->
-        <div
-          v-if="notification.message"
-          :class="['notification', notification.type]"
-        >
-          {{ notification.message }}
-        </div>
-        <form class="contact-form" @submit.prevent="validateForm">
-          <input
-            type="text"
-            class="contact-input"
-            v-model="name"
-            placeholder="Your Name"
-            :class="{ 'error-border': showError.name }"
-          />
-          <input
-            type="email"
-            class="contact-input"
-            v-model="email"
-            placeholder="Your Email"
-            :class="{ 'error-border': showError.email }"
-          />
-          <textarea
-            class="contact-textarea"
-            v-model="message"
-            placeholder="Your Message"
-            :class="{ 'error-border': showError.message }"
-          ></textarea>
-          <div class="button-container">
-            <button type="submit" class="contact-button">Send Message</button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Footer -->
-      <footer class="footer">
-        <div class="footer-content">
-          <!-- Column 1: Languages & Supervene -->
-          <div class="footer-column">
-            <div class="language-section">
-              <div class="language-list">
-                <button class="language-btn">Indonesian</button>
-                <button class="language-btn">English</button>
-                <button class="language-btn">Turkish</button>
-                <button class="language-btn">Spanish</button>
-                <button class="language-btn">French</button>
-                <button class="language-btn">German</button>
-              </div>
-            </div>
-            <div class="supervene-section">
-              <h4 class="footer-title">SUPERVENE SEARCH ODYSSEY</h4>
-              <div class="contact-address">
+          <!-- How To Use Section -->
+          <div
+            class="container-use text-center"
+            id="how-to-use"
+            ref="howToUseSection"
+            :class="{ visible: isVisible, hidden: !isVisible }"
+          >
+            <h1 class="title">How to Use Plagiarism Checker</h1>
+            <div class="row-use align-items-start">
+              <div class="col">
+                <h3>1</h3>
                 <p>
-                  cmlabs Jakarta Jl. Pluit Kencana Raya No.63, Pluit,
-                  Penjaringan, Jakarta Utara, DKI Jakarta, 14450, Indonesia
+                  <strong>Get a subscription</strong><br />
+                  Choose any premium plan to enjoy all of JustDone's tools and
+                  features, including our Plagiarism Checker.
                 </p>
-                <p class="phone-number">(+62) 21-666-04470</p>
+              </div>
+              <div class="col">
+                <h3>2</h3>
+                <p>
+                  <strong>Provide details</strong><br />
+                  Paste your text, URL, or upload a file in PDF, DOC, or DOCX
+                  format.
+                </p>
+              </div>
+              <div class="col">
+                <h3>3</h3>
+                <p>
+                  <strong>View the report</strong><br />
+                  Receive an extensive report in just minutes to view any
+                  potential plagiarism and relevant source links.
+                </p>
               </div>
             </div>
           </div>
-          <!-- Column 2: Solutions & Information -->
-          <div class="footer-column">
-            <div class="solutions-section">
-              <h4 class="footer-title">Solutions</h4>
-              <div class="footer-links">
-                <a href="#">SEO Services</a>
-                <a href="#">SEO Writing</a>
-                <a href="#">Media Buying</a>
-              </div>
+
+          <!-- Contact Form -->
+          <div
+            class="contact-us-container"
+            id="contact-us"
+            ref="contactSection"
+            :class="{ visible: isVisible }"
+          >
+            <div class="contact-text">
+              <h1 class="contact-title">Contact Us</h1>
+              <p class="contact-description">
+                Have questions or need help? Reach out to us!
+              </p>
             </div>
-            <div class="information-section">
-              <h4 class="footer-title">Information</h4>
-              <div class="footer-links">
-                <a href="#">Notification Center</a>
-                <a href="#">Client's Testimony</a>
-                <a href="#">FAQ of cmlabs Services</a>
-              </div>
+            <!-- Notifikasi -->
+            <div
+              v-if="notification.message"
+              :class="['notification', notification.type]"
+            >
+              {{ notification.message }}
             </div>
+            <form class="contact-form" @submit.prevent="validateForm">
+              <input
+                type="text"
+                class="contact-input"
+                v-model="name"
+                placeholder="Your Name"
+                :class="{ 'error-border': showError.name }"
+              />
+              <input
+                type="email"
+                class="contact-input"
+                v-model="email"
+                placeholder="Your Email"
+                :class="{ 'error-border': showError.email }"
+              />
+              <textarea
+                class="contact-textarea"
+                v-model="message"
+                placeholder="Your Message"
+                :class="{ 'error-border': showError.message }"
+              ></textarea>
+              <div class="button-container">
+                <button type="submit" class="contact-button">
+                  Send Message
+                </button>
+              </div>
+            </form>
           </div>
-          <!-- Column 3: Company -->
-          <div class="footer-column">
-            <div class="company-section">
-              <h4 class="footer-title">Company</h4>
-              <div class="footer-links">
-                <a href="#">About cmlabs</a>
-                <a href="#">Career</a>
-                <a href="#">Press Release</a>
-                <a href="#">Whistleblower Protection</a>
+
+          <!-- Footer -->
+          <footer class="footer">
+            <div class="footer-content">
+              <!-- Column 1: Languages & Supervene -->
+              <div class="footer-column">
+                <div class="supervene-section">
+                  <h4 class="footer-title">SUPERVENE SEARCH ODYSSEY</h4>
+                  <div class="contact-address">
+                    <p>
+                      cmlabs Jakarta Jl. Pluit Kencana Raya No.63, Pluit,
+                      Penjaringan, Jakarta Utara, DKI Jakarta, 14450, Indonesia
+                    </p>
+                    <p class="phone-number">(+62) 21-666-04470</p>
+                  </div>
+                </div>
+              </div>
+              <!-- Column 2: Solutions & Information -->
+              <div class="footer-column">
+                <div class="solutions-section">
+                  <h4 class="footer-title">Solutions</h4>
+                  <div class="footer-links">
+                    <a href="#">SEO Services</a>
+                    <a href="#">SEO Writing</a>
+                    <a href="#">Media Buying</a>
+                  </div>
+                </div>
+                <div class="information-section">
+                  <h4 class="footer-title">Information</h4>
+                  <div class="footer-links">
+                    <a href="#">Notification Center</a>
+                    <a href="#">Client's Testimony</a>
+                    <a href="#">FAQ of cmlabs Services</a>
+                  </div>
+                </div>
+              </div>
+              <!-- Column 3: Company -->
+              <div class="footer-column">
+                <div class="company-section">
+                  <h4 class="footer-title">Company</h4>
+                  <div class="footer-links">
+                    <a href="#">About cmlabs</a>
+                    <a href="#">Career</a>
+                    <a href="#">Press Release</a>
+                    <a href="#">Whistleblower Protection</a>
+                  </div>
+                </div>
+              </div>
+              <!-- Column 4: Cost-Effective Fees -->
+              <div class="footer-column">
+                <div class="partnership-section">
+                  <h4 class="footer-title">COST-EFECTIVE FEES, UP TO 5%</h4>
+                  <h4 class="footer-subtitle">
+                    WE ARE OPEN TO PARTNERSHIP WITH VARIOUS NICHES
+                  </h4>
+                  <div class="partnership-list">
+                    <a href="#">Franchise Organizations</a>
+                    <a href="#">Educational Institutions</a>
+                    <a href="#">Professional Services Firms</a>
+                    <a href="#">Startup Incubators / Accelerators</a>
+                    <a href="#">...and 34 more</a>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-          <!-- Column 4: Cost-Effective Fees -->
-          <div class="footer-column">
-            <div class="partnership-section">
-              <h4 class="footer-title">COST-EFECTIVE FEES, UP TO 5%</h4>
-              <h4 class="footer-subtitle">
-                WE ARE OPEN TO PARTNERSHIP WITH VARIOUS NICHES
-              </h4>
-              <div class="partnership-list">
-                <a href="#">Franchise Organizations</a>
-                <a href="#">Educational Institutions</a>
-                <a href="#">Professional Services Firms</a>
-                <a href="#">Startup Incubators / Accelerators</a>
-                <a href="#">...and 34 more</a>
-              </div>
-            </div>
-          </div>
+          </footer>
         </div>
-      </footer>
+      </div>
     </div>
-  </div>
-  </div>
   </div>
 </template>
 
@@ -508,12 +511,12 @@ export default {
       isNavbarOpen: false,
       isLoading: false,
       activeTab: "text",
-      
+
       // Inputs
       textInput: "",
       fileInput: null,
       urlInput: "",
-      
+
       // Results
       showOutput: false,
       errorMessage: "",
@@ -523,7 +526,7 @@ export default {
       similarityScore: 0,
       sentenceCount: 0,
       detectedCount: 0,
-      
+
       // Lainnya
       selectedLanguage: "english",
       showDropdown: false,
@@ -532,7 +535,7 @@ export default {
       email: "",
       message: "",
       notification: { message: "", type: "" },
-      showError: { name: false, email: false, message: false }
+      showError: { name: false, email: false, message: false },
     };
   },
 
@@ -553,11 +556,11 @@ export default {
       }
     },
     formattedKeywords() {
-      return this.topKeywords.slice(0, 3).map(k => ({
+      return this.topKeywords.slice(0, 3).map((k) => ({
         keyword: k.keyword,
-        percentage: k.percentage
+        percentage: k.percentage,
       }));
-    }
+    },
   },
 
   methods: {
@@ -606,7 +609,7 @@ export default {
     async submitPlagiarismCheck() {
       if (!this.validateInput()) return;
       this.isLoading = true;
-      
+
       let endpoint = "";
       let payload;
       try {
@@ -623,39 +626,43 @@ export default {
           payload = formData;
         }
 
-        const config = this.activeTab === "file"
-          ? { headers: { "Content-Type": "multipart/form-data" } }
-          : { headers: { "Content-Type": "application/json" } };
+        const config =
+          this.activeTab === "file"
+            ? { headers: { "Content-Type": "multipart/form-data" } }
+            : { headers: { "Content-Type": "application/json" } };
 
         const response = await axios.post(endpoint, payload, config);
         const data = response.data;
-        
+
         // Update data hasil
         this.processedText = data.processedText;
         this.topKeywords = data.topKeywords;
-        this.sources = data.results.map(result => ({
+        this.sources = data.results.map((result) => ({
           url: result.url,
           plagiarismScore: result.plagiarismScore,
           details: {
             totalInputSentences: result.details.totalInputSentences,
             plagiarizedCount: result.details.plagiarizedCount,
             avgSimilarity: parseFloat(result.details.avgSimilarity),
-            plagiarizedFraction: result.details.plagiarizedFraction
-          }
+            plagiarizedFraction: result.details.plagiarizedFraction,
+          },
         }));
-        
+
         // Hitung skor tertinggi
-        this.similarityScore = this.sources.length > 0 
-          ? Math.max(...this.sources.map(s => s.plagiarismScore))
-          : 0;
-          
+        this.similarityScore =
+          this.sources.length > 0
+            ? Math.max(...this.sources.map((s) => s.plagiarismScore))
+            : 0;
+
         // Update statistik
-        this.sentenceCount = this.sources.length > 0
-          ? this.sources[0].details.totalInputSentences
-          : 0;
-        this.detectedCount = this.sources.length > 0
-          ? this.sources[0].details.plagiarizedCount
-          : 0;
+        this.sentenceCount =
+          this.sources.length > 0
+            ? this.sources[0].details.totalInputSentences
+            : 0;
+        this.detectedCount =
+          this.sources.length > 0
+            ? this.sources[0].details.plagiarizedCount
+            : 0;
 
         this.showOutput = true;
       } catch (error) {
@@ -669,13 +676,11 @@ export default {
 
     handleFileUpload(event) {
       this.fileInput = event.target.files[0];
-      const reader = new FileReader();
       reader.onload = (e) => {
         this.fileOutput = e.target.result;
       };
       reader.readAsText(event.target.files[0]);
     },
-
 
     // Contact Form
     validateForm() {
