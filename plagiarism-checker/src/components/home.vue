@@ -244,10 +244,10 @@
               </div>
             </div>
 
-            <!-- 2. Daftar URL dengan Detail -->
+           <!-- 2. Daftar URL dengan Detail -->
             <div class="sources-section mb-4">
               <h4>Hasil Deteksi Plagiasi</h4>
-              <div class="sources-list">
+              <div v-if="sources.length > 0" class="sources-list">
                 <div
                   v-for="(source, index) in sources"
                   :key="index"
@@ -255,9 +255,7 @@
                 >
                   <div class="card-body">
                     <div class="source-header d-flex align-items-center mb-2">
-                      <span class="source-index bg-light me-2">{{
-                        index + 1
-                      }}</span>
+                      <span class="source-index bg-light me-2">{{ index + 1 }}</span>
                       <a
                         :href="source.url"
                         target="_blank"
@@ -267,16 +265,13 @@
                       <span
                         class="source-percentage badge"
                         :class="{
-                          bg: source.plagiarismScore >= 70,
-                          bg:
+                          'bg': source.plagiarismScore >= 70,
+                          'bg': 
                             source.plagiarismScore >= 30 &&
                             source.plagiarismScore < 70,
-                          bg: source.plagiarismScore < 30,
+                          'bg': source.plagiarismScore < 30,
                         }">
-                        Similarity:
-                        {{
-                          (source.details.avgSimilarity * 100).toFixed(1)
-                        }}%
+                        Similarity: {{ (source.details.avgSimilarity * 100).toFixed(1) }}%
                         <br />
                         Plagiarized: {{ source.details.plagiarizedFraction }}
                       </span>
@@ -287,9 +282,7 @@
                       <div class="row">
                         <div class="col-md-6">
                           <div class="detail-item">
-                            <span class="detail-label fw-medium"
-                              >Kalimat Input:</span
-                            >
+                            <span class="detail-label fw-medium">Kalimat Input:</span>
                             <div class="detail-value">
                               {{ source.details.totalInputSentences }}
                             </div>
@@ -297,9 +290,7 @@
                         </div>
                         <div class="col-md-6">
                           <div class="detail-item">
-                            <span class="detail-label fw-medium"
-                              >Kalimat Terdeteksi:</span
-                            >
+                            <span class="detail-label fw-medium">Kalimat Terdeteksi:</span>
                             <div class="detail-value text-danger">
                               {{ source.details.plagiarizedCount }}
                             </div>
@@ -316,15 +307,19 @@
                             :aria-valuenow="source.plagiarismScore"
                             aria-valuemin="0"
                             aria-valuemax="100"
-                          >
-                            
-                          </div>
-                          <div class="bar"> {{ source.plagiarismScore }}%  Skor Plagiasi</div>
+                          ></div>
+                          <div class="bar">{{ source.plagiarismScore }}% Skor Plagiasi</div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+              
+              <!-- Tambahkan kondisi ketika tidak ada hasil -->
+              <div v-else class="alert alert-info mt-3">
+                <i class="fas fa-check-circle me-2"></i>
+                Tidak terdeteksi plagiasi. Dokumen ini original!
               </div>
             </div>
 
@@ -342,7 +337,7 @@
                       {{ keyword.keyword }}
                     </div>
                     <div class="keyword-percentage small text-muted mt-1">
-                      {{ (keyword.percentage * 10) | int }}%
+                      {{ (keyword.percentage ) | int }}%
                     </div>
                   </div>
                 </div>
