@@ -30,7 +30,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ================== 1. Preprocessing Teks ==================
-const stopwords = new Set(["dan", "atau", "ke", "di", "dari", "yang", "dengan", "untuk", "dalam"]);
+const stopwords = new Set([
+  "dan", "atau", "ke", "di", "dari", "yang", "dengan", "untuk", "dalam",
+  "itu", "ini", "saya", "kamu", "dia", "mereka", "kita", "adalah", "tidak",
+  "juga", "bisa", "pada", "sebagai", "agar", "supaya", "jika", "karena",
+  "sehingga", "oleh", "bahwa", "dll", "tsb", "dalam"
+]);
 
 const tokenizeText = text => {
   const tokens = (text || '')
@@ -247,14 +252,17 @@ async function checkPlagiarismPerURL(queryText) {
         }
       };
     }));
+    
+      const validResults = resultsPerURL.filter(result => result !== null);
+      // sorting output
+      validResults.sort((a, b) => b.plagiarismScore - a.plagiarismScore);
 
-    const validResults = resultsPerURL.filter(result => result !== null);
-    return { 
-      results: validResults,
-      processedText,
-      topKeywords,
-      error: null 
-    };
+      return { 
+        results: validResults,
+        processedText,
+        topKeywords,
+        error: null 
+      };
 
   } catch (error) {
     return { 

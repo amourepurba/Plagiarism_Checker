@@ -272,12 +272,12 @@
                             source.plagiarismScore >= 30 &&
                             source.plagiarismScore < 70,
                           bg: source.plagiarismScore < 30,
-                        }"
-                      >
+                        }">
                         Similarity:
                         {{
                           (source.details.avgSimilarity * 100).toFixed(1)
-                        }}%<br />
+                        }}%
+                        <br />
                         Plagiarized: {{ source.details.plagiarizedFraction }}
                       </span>
                     </div>
@@ -287,7 +287,7 @@
                       <div class="row">
                         <div class="col-md-6">
                           <div class="detail-item">
-                            <span class="detail-label fw-semibold"
+                            <span class="detail-label fw-medium"
                               >Kalimat Input:</span
                             >
                             <div class="detail-value">
@@ -297,7 +297,7 @@
                         </div>
                         <div class="col-md-6">
                           <div class="detail-item">
-                            <span class="detail-label fw-semibold"
+                            <span class="detail-label fw-medium"
                               >Kalimat Terdeteksi:</span
                             >
                             <div class="detail-value text-danger">
@@ -308,7 +308,7 @@
                       </div>
                       <div class="similarity-progress mt-2 fw-semibold">
                         skor overall:
-                        <div class="progress">
+                        <div class="progress gap-2">
                           <div
                             class="progress-bar"
                             role="progressbar"
@@ -317,8 +317,9 @@
                             aria-valuemin="0"
                             aria-valuemax="100"
                           >
-                            {{ source.plagiarismScore }}% Skor Plagiasi
+                            
                           </div>
+                          <div class="bar"> {{ source.plagiarismScore }}%  Skor Plagiasi</div>
                         </div>
                       </div>
                     </div>
@@ -341,7 +342,7 @@
                       {{ keyword.keyword }}
                     </div>
                     <div class="keyword-percentage small text-muted mt-1">
-                      {{ (keyword.percentage * 100) | int }}%
+                      {{ (keyword.percentage * 10) | int }}%
                     </div>
                   </div>
                 </div>
@@ -526,6 +527,7 @@ export default {
       showOutput: false,
       errorMessage: "",
       processedText: "",
+      originalText:"",
       sources: [],
       topKeywords: [],
       similarityScore: 0,
@@ -640,7 +642,7 @@ export default {
         const data = response.data;
 
         // Update data hasil
-        this.processedText = data.processedText;
+        this.processedText = data.originalText;
         this.topKeywords = data.topKeywords;
         this.sources = data.results.map((result) => ({
           url: result.url,

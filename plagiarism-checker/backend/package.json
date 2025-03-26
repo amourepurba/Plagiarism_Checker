@@ -39,7 +39,7 @@
     "puppeteer-cluster": "^0.24.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
-    "sastrawijs": "^1.1.0",
+    "sastrawijs": "^1.0.4",
     "sbd": "^1.0.19",
     "sequelize": "^6.37.5",
     "sequelize-cli": "^6.6.2",
