@@ -297,8 +297,8 @@
                           </div>
                         </div>
                       </div>
-                      <div class="similarity-progress mt-2">
-                        <div class="progress">
+                      <div class="similarity-progress mt-2">skor overall:
+                        <div class="progress"> 
                           <div class="progress-bar" 
                               role="progressbar" 
                               :style="{ width: source.plagiarismScore + '%' }"
@@ -326,7 +326,7 @@
                       {{ keyword.keyword }}
                     </div>
                     <div class="keyword-percentage small text-muted mt-1">
-                      {{ keyword.percentage }}
+                      {{ (keyword.percentage * 100) | int }}%
                     </div>
                   </div>
                 </div>

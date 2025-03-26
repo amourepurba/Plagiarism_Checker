@@ -176,8 +176,8 @@ async function checkPlagiarismPerURL(queryText) {
   const topKeywords = sortedTerms.slice(0, 5).map(([term, count]) => ({
     keyword: term,
     percentage: totalTerms > 0 
-      ? ((count / totalTerms) * 100).toFixed(2) + '%' 
-      : '0%'
+      ? ((count / totalTerms) * 100).toFixed(2)
+      : '0'
   }));
 
   // Validasi input
