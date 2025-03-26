@@ -214,7 +214,10 @@
           </div>
 
           <!-- Result Section -->
-          <div v-if="showOutput" class="output-container">
+          <div
+            v-if="showOutput && resultTab === activeTab"
+            class="output-container"
+          >
             <h2>Result</h2>
             <!-- 1. Tampilkan Teks Input -->
             <div class="original-text-section mb-4">
@@ -251,7 +254,7 @@
                 >
                   <div class="card-body">
                     <div class="source-header d-flex align-items-center mb-2">
-                      <span class="source-index badge bg-light me-2">{{
+                      <span class="source-index bg-light me-2">{{
                         index + 1
                       }}</span>
                       <a
@@ -429,74 +432,74 @@
               </div>
             </form>
           </div>
-
-          <!-- Footer -->
-          <footer class="footer">
-            <div class="footer-content">
-              <!-- Column 1: Languages & Supervene -->
-              <div class="footer-column">
-                <div class="supervene-section">
-                  <h4 class="footer-title">SUPERVENE SEARCH ODYSSEY</h4>
-                  <div class="contact-address">
-                    <p>
-                      cmlabs Jakarta Jl. Pluit Kencana Raya No.63, Pluit,
-                      Penjaringan, Jakarta Utara, DKI Jakarta, 14450, Indonesia
-                    </p>
-                    <p class="phone-number">(+62) 21-666-04470</p>
-                  </div>
-                </div>
-              </div>
-              <!-- Column 2: Solutions & Information -->
-              <div class="footer-column">
-                <div class="solutions-section">
-                  <h4 class="footer-title">Solutions</h4>
-                  <div class="footer-links">
-                    <a href="#">SEO Services</a>
-                    <a href="#">SEO Writing</a>
-                    <a href="#">Media Buying</a>
-                  </div>
-                </div>
-                <div class="information-section">
-                  <h4 class="footer-title">Information</h4>
-                  <div class="footer-links">
-                    <a href="#">Notification Center</a>
-                    <a href="#">Client's Testimony</a>
-                    <a href="#">FAQ of cmlabs Services</a>
-                  </div>
-                </div>
-              </div>
-              <!-- Column 3: Company -->
-              <div class="footer-column">
-                <div class="company-section">
-                  <h4 class="footer-title">Company</h4>
-                  <div class="footer-links">
-                    <a href="#">About cmlabs</a>
-                    <a href="#">Career</a>
-                    <a href="#">Press Release</a>
-                    <a href="#">Whistleblower Protection</a>
-                  </div>
-                </div>
-              </div>
-              <!-- Column 4: Cost-Effective Fees -->
-              <div class="footer-column">
-                <div class="partnership-section">
-                  <h4 class="footer-title">COST-EFECTIVE FEES, UP TO 5%</h4>
-                  <h4 class="footer-subtitle">
-                    WE ARE OPEN TO PARTNERSHIP WITH VARIOUS NICHES
-                  </h4>
-                  <div class="partnership-list">
-                    <a href="#">Franchise Organizations</a>
-                    <a href="#">Educational Institutions</a>
-                    <a href="#">Professional Services Firms</a>
-                    <a href="#">Startup Incubators / Accelerators</a>
-                    <a href="#">...and 34 more</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </footer>
         </div>
       </div>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <div class="footer-content">
+          <!-- Column 1: Languages & Supervene -->
+          <div class="footer-column">
+            <div class="supervene-section">
+              <h4 class="footer-title">SUPERVENE SEARCH ODYSSEY</h4>
+              <div class="contact-address">
+                <p>
+                  cmlabs Jakarta Jl. Pluit Kencana Raya No.63, Pluit,
+                  Penjaringan, Jakarta Utara, DKI Jakarta, 14450, Indonesia
+                </p>
+                <p class="phone-number">(+62) 21-666-04470</p>
+              </div>
+            </div>
+          </div>
+          <!-- Column 2: Solutions & Information -->
+          <div class="footer-column">
+            <div class="solutions-section">
+              <h4 class="footer-title">Solutions</h4>
+              <div class="footer-links">
+                <a href="#">SEO Services</a>
+                <a href="#">SEO Writing</a>
+                <a href="#">Media Buying</a>
+              </div>
+            </div>
+            <div class="information-section">
+              <h4 class="footer-title">Information</h4>
+              <div class="footer-links">
+                <a href="#">Notification Center</a>
+                <a href="#">Client's Testimony</a>
+                <a href="#">FAQ of cmlabs Services</a>
+              </div>
+            </div>
+          </div>
+          <!-- Column 3: Company -->
+          <div class="footer-column">
+            <div class="company-section">
+              <h4 class="footer-title">Company</h4>
+              <div class="footer-links">
+                <a href="#">About cmlabs</a>
+                <a href="#">Career</a>
+                <a href="#">Press Release</a>
+                <a href="#">Whistleblower Protection</a>
+              </div>
+            </div>
+          </div>
+          <!-- Column 4: Cost-Effective Fees -->
+          <div class="footer-column">
+            <div class="partnership-section">
+              <h4 class="footer-title">COST-EFECTIVE FEES, UP TO 5%</h4>
+              <h4 class="footer-subtitle">
+                WE ARE OPEN TO PARTNERSHIP WITH VARIOUS NICHES
+              </h4>
+              <div class="partnership-list">
+                <a href="#">Franchise Organizations</a>
+                <a href="#">Educational Institutions</a>
+                <a href="#">Professional Services Firms</a>
+                <a href="#">Startup Incubators / Accelerators</a>
+                <a href="#">...and 34 more</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   </div>
 </template>
@@ -511,6 +514,7 @@ export default {
       isNavbarOpen: false,
       isLoading: false,
       activeTab: "text",
+      resultTab: null,
 
       // Inputs
       textInput: "",
@@ -664,6 +668,7 @@ export default {
             ? this.sources[0].details.plagiarizedCount
             : 0;
 
+        this.resultTab = this.activeTab;
         this.showOutput = true;
       } catch (error) {
         this.errorMessage =
@@ -761,6 +766,16 @@ export default {
       this.name = "";
       this.email = "";
       this.message = "";
+    },
+  },
+
+  watch: {
+    activeTab() {
+      // Reset hasil saat berpindah tab
+      this.processedText = "";
+      this.sources = [];
+      this.topKeywords = [];
+      this.showOutput = false;
     },
   },
 };
