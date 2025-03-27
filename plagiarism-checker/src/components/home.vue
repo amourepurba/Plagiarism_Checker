@@ -244,7 +244,7 @@
               </div>
             </div>
 
-           <!-- 2. Daftar URL dengan Detail -->
+            <!-- 2. Daftar URL dengan Detail -->
             <div class="sources-section mb-4">
               <h4>Hasil Deteksi Plagiasi</h4>
               <div v-if="sources.length > 0" class="sources-list">
@@ -255,7 +255,9 @@
                 >
                   <div class="card-body">
                     <div class="source-header d-flex align-items-center mb-2">
-                      <span class="source-index bg-light me-2">{{ index + 1 }}</span>
+                      <span class="source-index bg-light me-2">{{
+                        index + 1
+                      }}</span>
                       <a
                         :href="source.url"
                         target="_blank"
@@ -265,13 +267,15 @@
                       <span
                         class="source-percentage badge"
                         :class="{
-                          'bg': source.plagiarismScore >= 70,
-                          'bg': 
+                          bg: source.plagiarismScore >= 70,
+                          bg:
                             source.plagiarismScore >= 30 &&
                             source.plagiarismScore < 70,
-                          'bg': source.plagiarismScore < 30,
-                        }">
-                        Similarity: {{ (source.details.avgSimilarity * 100).toFixed(1) }}%
+                          bg: source.plagiarismScore < 30,
+                        }"
+                      >
+                        Similarity:
+                        {{ (source.details.avgSimilarity * 100).toFixed(1) }}%
                         <br />
                         Plagiarized: {{ source.details.plagiarizedFraction }}
                       </span>
@@ -282,7 +286,9 @@
                       <div class="row">
                         <div class="col-md-6">
                           <div class="detail-item">
-                            <span class="detail-label fw-medium">Kalimat Input:</span>
+                            <span class="detail-label fw-medium"
+                              >Kalimat Input:</span
+                            >
                             <div class="detail-value">
                               {{ source.details.totalInputSentences }}
                             </div>
@@ -290,7 +296,9 @@
                         </div>
                         <div class="col-md-6">
                           <div class="detail-item">
-                            <span class="detail-label fw-medium">Kalimat Terdeteksi:</span>
+                            <span class="detail-label fw-medium"
+                              >Kalimat Terdeteksi:</span
+                            >
                             <div class="detail-value text-danger">
                               {{ source.details.plagiarizedCount }}
                             </div>
@@ -299,7 +307,7 @@
                       </div>
                       <div class="similarity-progress mt-2 fw-semibold">
                         skor overall:
-                        <div class="progress gap-2">
+                        <div class="progress gap-2 position-relative">
                           <div
                             class="progress-bar"
                             role="progressbar"
@@ -307,15 +315,35 @@
                             :aria-valuenow="source.plagiarismScore"
                             aria-valuemin="0"
                             aria-valuemax="100"
-                          ></div>
-                          <div class="bar">{{ source.plagiarismScore }}% Skor Plagiasi</div>
+                          >
+                            <!-- Tambahkan persentase di dalam progress bar untuk score tinggi -->
+                            <span
+                              v-if="source.plagiarismScore > 60"
+                              class="position-absolute start-50 translate-x text-white"
+                            >
+                              {{ source.plagiarismScore }}% Skor Plagiasi
+                            </span>
+                          </div>
+
+                          <!-- Teks untuk kondisi <= 60% -->
+                          <div v-if="source.plagiarismScore <= 60" class="bar">
+                            {{ source.plagiarismScore }}% Skor Plagiasi
+                          </div>
+                        </div>
+
+                        <!-- Teks terpisah untuk kondisi > 60% -->
+                        <div
+                          v-if="source.plagiarismScore > 60"
+                          class="text-center text-white mt-1"
+                        >
+                          Skor Plagiasi
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              
+
               <!-- Tambahkan kondisi ketika tidak ada hasil -->
               <div v-else class="alert alert-info mt-3">
                 <i class="fas fa-check-circle me-2"></i>
@@ -337,7 +365,7 @@
                       {{ keyword.keyword }}
                     </div>
                     <div class="keyword-percentage small text-muted mt-1">
-                      {{ (keyword.percentage ) | int }}%
+                      {{ keyword.percentage | int }}%
                     </div>
                   </div>
                 </div>
@@ -522,7 +550,7 @@ export default {
       showOutput: false,
       errorMessage: "",
       processedText: "",
-      originalText:"",
+      originalText: "",
       sources: [],
       topKeywords: [],
       similarityScore: 0,
