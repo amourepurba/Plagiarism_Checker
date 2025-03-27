@@ -5,28 +5,15 @@ const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const sbd = require('sbd');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
-const { Stemmer } = require('sastrawijs');
-const { URL } = require('url');
+const { Stemmer } = require('sastrawijs');  // TAMBAHKAN BARIS INI
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
-const stemmer = new Stemmer();
-const upload = multer({ storage: multer.memoryStorage() });
+const stemmer = new Stemmer();  // TAMBAHKAN BARIS INI
 
-// ================== VALIDASI URL ==================
-const isValidUrl = (url) => {
-  try {
-    new URL(url);
-    return true;
-  } catch (err) {
-    return false;
-  }
-};
-
-// ================== KONFIGURASI AWAL ==================
 if (!process.env.API_URL || !process.env.SECRET_CODE) {
-  console.error("Environment variables tidak lengkap!");
+  console.error("API_URL atau SECRET_CODE tidak ditemukan dalam environment variables.");
   process.exit(1);
 }
 
@@ -39,37 +26,42 @@ let browser;
   });
 })();
 
-// ================== TEXT PROCESSING ==================
+const upload = multer({ storage: multer.memoryStorage() });
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ================== 1. Preprocessing Teks ==================
 const stopwords = new Set([
-  "dan", "atau", "ke", "di", "dari", "yang", "dengan", "untuk", "dalam", "itu",
-  "ini", "saya", "kamu", "dia", "mereka", "kita", "adalah", "tidak", "juga", "bisa",
-  "pada", "sebagai", "agar", "supaya", "jika", "karena", "sehingga", "oleh", "bahwa",
-  "dll", "tsb", "bukan", "ada", "akan", "sebuah", "tak", "sudah", "telah", "lagi",
-  "hanya", "saja", "apakah", "mengapa", "bagaimana", "kemudian", "saat", "sejak",
-  "sebelum", "sesudah", "antara", "dapat", "hal", "wah", "sih", "nih", "mah", "deh"
+  "dan", "atau", "ke", "di", "dari", "yang", "dengan", "untuk", "dalam",
+  "itu", "ini", "saya", "kamu", "dia", "mereka", "kita", "adalah", "tidak",
+  "juga", "bisa", "pada", "sebagai", "agar", "supaya", "jika", "karena",
+  "sehingga", "oleh", "bahwa", "dll", "tsb", "dalam", "telah", "sudah",
+  "lagi", "hanya", "saja", "apakah", "mengapa", "bagaimana", "kemudian",
+  "saat", "sejak", "sebelum", "sesudah", "antara", "dapat", "ini", "itu"
 ]);
 
 const tokenizeText = text => {
   const tokens = (text || '')
     .toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^\w\s]/g, '')
-    .replace(/\b(\w{1,3})\b/g, '')
     .split(/\s+/)
     .filter(token => token && !stopwords.has(token));
     
-  return tokens.map(token => stemmer.stem(token));
+  // Ganti Porter Stemmer dengan Sastrawi
+  return tokens.map(token => stemmer.stem(token));  // MODIFIKASI BARIS INI
 };
 
-// ================== N-GRAM OPTIMIZATION ==================
-const getNGrams = (tokens, minN = 2, maxN = 4) => {
-  const ngrams = new Set();
+// ================== 2. N-Gram Fleksibel ==================
+const getNGrams = (tokens, minN = 2, maxN = 5) => {
+  const ngrams = [];
   for (let n = minN; n <= maxN; n++) {
-    for (let i = 0; i <= tokens.length - n; i++) {
-      ngrams.add(tokens.slice(i, i + n).join(' '));
+    if (tokens.length >= n) {
+      for (let i = 0; i <= tokens.length - n; i++) {
+        ngrams.push(tokens.slice(i, i + n).join(' '));
+      }
     }
   }
-  return Array.from(ngrams);
+  return ngrams;
 };
 
 const getTokensAndNGrams = text => {
@@ -78,254 +70,252 @@ const getTokensAndNGrams = text => {
   return tokens.concat(ngrams);
 };
 
-// ================== TF-IDF & SIMILARITY CALCULATION ==================
-const computeTF = tokens => tokens.reduce((acc, token) => {
-  acc[token] = (acc[token] || 0) + 1;
-  return acc;
-}, {});
+// ================== 3. Fungsi TF, TF-IDF, dan Normalisasi ==================
+const computeTF = tokens =>
+  tokens.reduce((acc, token) => {
+    acc[token] = (acc[token] || 0) + 1;
+    return acc;
+  }, {});
 
 const normalizeTF = tf => {
   const maxFreq = Math.max(...Object.values(tf));
-  return maxFreq === 0 ? tf : Object.keys(tf).reduce((acc, key) => {
-    acc[key] = tf[key] / maxFreq;
-    return acc;
-  }, {});
+  if (maxFreq === 0) return tf;
+  Object.keys(tf).forEach(word => {
+    tf[word] /= maxFreq;
+  });
+  return tf;
 };
 
 const computeTFIDFForPair = (tokens1, tokens2) => {
   let tf1 = computeTF(tokens1);
   let tf2 = computeTF(tokens2);
   const allTokens = new Set([...Object.keys(tf1), ...Object.keys(tf2)]);
-  
   const idf = {};
   allTokens.forEach(token => {
-    const count = [tokens1, tokens2].filter(arr => arr.includes(token)).length;
+    let count = 0;
+    if (tokens1.includes(token)) count++;
+    if (tokens2.includes(token)) count++;
     idf[token] = Math.log((2 + 1) / (count + 1)) + 1;
   });
-
-  tf1 = normalizeTF(Object.keys(tf1).reduce((acc, key) => {
-    acc[key] = tf1[key] * idf[key];
-    return acc;
-  }, {}));
-
-  tf2 = normalizeTF(Object.keys(tf2).reduce((acc, key) => {
-    acc[key] = tf2[key] * idf[key];
-    return acc;
-  }, {}));
-
+  for (let token in tf1) {
+    tf1[token] *= idf[token];
+  }
+  for (let token in tf2) {
+    tf2[token] *= idf[token];
+  }
+  tf1 = normalizeTF(tf1);
+  tf2 = normalizeTF(tf2);
   return [tf1, tf2];
 };
 
+// ================== 4. Cosine Similarity ==================
 const cosineSimilarityTF = (tf1, tf2) => {
-  let dotProduct = 0, mag1 = 0, mag2 = 0;
+  let dotProduct = 0;
+  let mag1 = 0;
+  let mag2 = 0;
   const allTokens = new Set([...Object.keys(tf1), ...Object.keys(tf2)]);
-  
   allTokens.forEach(token => {
     const a = tf1[token] || 0;
     const b = tf2[token] || 0;
     dotProduct += a * b;
-    mag1 += a ** 2;
-    mag2 += b ** 2;
+    mag1 += a * a;
+    mag2 += b * b;
   });
-
-  return mag1 && mag2 ? dotProduct / (Math.sqrt(mag1) * Math.sqrt(mag2)) : 0;
+  return (mag1 === 0 || mag2 === 0) ? 0 : dotProduct / (Math.sqrt(mag1) * Math.sqrt(mag2));
 };
 
+// ================== 5. Adaptive Threshold ==================
 const determineThreshold = (similarities) => {
-  if (!similarities.length) return 0.5;
-  const avgSim = similarities.reduce((a, b) => a + b, 0) / similarities.length;
+  if (similarities.length === 0) return 0.5;
+  const avgSim = similarities.reduce((sum, val) => sum + val, 0) / similarities.length;
   return Math.max(0.3, Math.min(avgSim, 0.7));
 };
 
-// ================== FETCH CONTENT IMPROVED ==================
+// ================== 6. Pengambilan Konten Web ==================
 async function fetchPageContent(url) {
-  try {
-    if (url.toLowerCase().endsWith('.pdf')) {
-      const response = await axios.get(url, {
-        responseType: 'arraybuffer',
-        timeout: 15000,
-        validateStatus: (status) => status >= 200 && status < 500
-      });
-
-      if (response.status !== 200 || !response.data) return null;
-      
-      const pdfData = await pdfParse(response.data);
-      return pdfData.text?.length > 50 ? pdfData.text : null;
-    }
-
-    const page = await browser.newPage();
-    await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
-    
+  if (url.toLowerCase().endsWith('.pdf')) {
     try {
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    } catch (err) {
-      await page.close();
+      const response = await axios.get(url, { responseType: 'arraybuffer', timeout: 60000 });
+      const pdfData = await pdfParse(response.data);
+      const text = pdfData.text;
+      return (text && text.length > 10) ? text : null;
+    } catch (error) {
       return null;
     }
-
-    const content = await page.evaluate(() => {
-      const selectors = ['article', 'main', '.content', 'body'];
-      for (const selector of selectors) {
-        const element = document.querySelector(selector);
-        if (element?.innerText?.length > 100) return element.innerText;
-      }
-      return document.body.innerText;
-    });
-
-    await page.close();
-    return content?.length > 100 ? content : null;
-
-  } catch (error) {
-    console.error(`Error fetching content: ${error.message}`);
-    return null;
+  } else {
+    let page;
+    try {
+      page = await browser.newPage();
+      await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0");
+      await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+      await page.waitForSelector('p', { timeout: 5000 }).catch(() => {});
+      
+      const content = await page.evaluate(() => {
+        const paragraphs = Array.from(document.querySelectorAll('p')).map(el => el.innerText);
+        return paragraphs.join(' ').trim();
+      });
+      
+      return (content && content.length > 10) ? content : null;
+    } catch (error) {
+      return null;
+    } finally {
+      if (page) await page.close();
+    }
   }
 }
 
-// ================== PLAGIARISM CORE LOGIC ==================
-async function checkPlagiarismPerURL(queryText) {
-  if (!queryText?.trim() || queryText.trim().length < 10) {
-    return { results: [], error: "Input teks tidak valid", processedText: "", topKeywords: [] };
-  }
+// ================== 7. Pemisahan Kalimat ==================
+const splitIntoSentences = text =>
+  sbd.sentences(text, {
+    newline_boundaries: true,
+    sanitize: true,
+    allowed_tags: false,
+  }).filter(s => s.trim().length > 0);
 
-  const processedTokens = tokenizeText(queryText);
-  const processedText = processedTokens.join(' ');
-  const allInputTerms = [...processedTokens, ...getNGrams(processedTokens)];
+// ================== 8. Fungsi Pengecekan Plagiasi ==================
+async function checkPlagiarismPerURL(queryText) {
+  // Simpan teks asli untuk output
+  const originalText = queryText || '';
   
-  const keywordScores = computeKeywordScores(allInputTerms);
-  const sortedKeywords = processKeywords(keywordScores);
+  // Proses teks untuk internal processing
+  const processedTokens = tokenizeText(originalText); // Sudah include stemming
+  const tf = computeTF(processedTokens);
+  const totalTerms = processedTokens.length;
+  
+  // Hitung keyword dengan persentase
+  const sortedTerms = Object.entries(tf).sort((a, b) => b[1] - a[1]);
+  const topKeywords = sortedTerms.slice(0, 5).map(([term, count]) => ({
+    keyword: term,
+    percentage: totalTerms > 0 
+      ? ((count / totalTerms) * 100).toFixed(2)
+      : '0'
+  }));
+
+  // Validasi input
+  if (!queryText || typeof queryText !== 'string' || queryText.trim().length < 10) {
+    return { 
+      results: [], 
+      error: "Teks harus lebih dari 10 karakter",
+      originalText: originalText,
+      topKeywords 
+    };
+  }
 
   try {
     const apiResponse = await axios.post(process.env.API_URL, {
       secretCode: process.env.SECRET_CODE,
-      payload: [{ language_name: "Indonesian", location_code: 1002353, keyword: queryText.substring(0, 255) }]
+      payload: [{
+        language_name: "Indonesian",
+        location_code: 1002353,
+        keyword: originalText.substring(0, 255)
+      }]
     });
 
-    const urls = extractUrlsFromResponse(apiResponse);
-    const results = await processUrls(urls, queryText);
-    
-    return {
-      results: results.filter(r => r).sort((a, b) => b.plagiarismScore - a.plagiarismScore),
-      processedText,
-      topKeywords: sortedKeywords,
-      error: null
+    const tasks = apiResponse.data?.tasks;
+    if (!tasks || tasks.length === 0) return { results: [], originalText: originalText, topKeywords };
+    const resultsApi = tasks[0]?.result;
+    if (!resultsApi || resultsApi.length === 0) return { results: [], originalText: originalText, topKeywords };
+
+    const urls = resultsApi
+      .flatMap(result => result.items.map(item => item.url))
+      .filter(url => url);
+    if (urls.length === 0) return { results: [], originalText: originalText, topKeywords };
+
+    const inputSentences = splitIntoSentences(originalText);
+    const inputVectors = inputSentences.map(sentence => getTokensAndNGrams(sentence));
+
+    const resultsPerURL = await Promise.all(urls.map(async (url) => {
+      const content = await fetchPageContent(url);
+      if (!content) return null;
+
+      const targetSentences = splitIntoSentences(content);
+      const targetVectors = targetSentences.map(sentence => getTokensAndNGrams(sentence));
+
+      const maxSims = inputVectors.map(inputTokens => {
+        let maxSim = 0;
+        targetVectors.forEach(targetTokens => {
+          const [tfInput, tfTarget] = computeTFIDFForPair(inputTokens, targetTokens);
+          const sim = cosineSimilarityTF(tfInput, tfTarget);
+          if (sim > maxSim) maxSim = sim;
+        });
+        return maxSim;
+      });
+
+      const plagiarizedCount = maxSims.filter(sim => sim >= determineThreshold(maxSims)).length;
+      const sumSimilarity = maxSims.reduce((sum, sim) => sum + sim, 0);
+      const avgSimilarity = maxSims.length > 0 ? sumSimilarity / maxSims.length : 0;
+      const plagiarizedFraction = inputSentences.length > 0 ? plagiarizedCount / inputSentences.length : 0;
+      const compositeScore = Math.min(Math.round(((plagiarizedFraction + avgSimilarity) / 2) * 100), 100);
+
+      return {
+        url,
+        plagiarismScore: compositeScore,
+        details: {
+          totalInputSentences: inputSentences.length,
+          plagiarizedCount,
+          avgSimilarity: avgSimilarity.toFixed(2),
+          plagiarizedFraction: (plagiarizedFraction * 100).toFixed(2) + '%'
+        }
+      };
+    }));
+
+      const validResults = resultsPerURL.filter(result => result !== null);
+      // sorting output
+      validResults.sort((a, b) => b.plagiarismScore - a.plagiarismScore);
+
+    return { 
+      results: validResults,
+      originalText: originalText,
+      topKeywords,
+      error: null 
     };
 
   } catch (error) {
-    return {
-      results: [],
+    return { 
+      results: [], 
       error: error.message,
-      processedText,
-      topKeywords: sortedKeywords
+      originalText: originalText,
+      topKeywords 
     };
   }
 }
 
-// ================== HELPER FUNCTIONS ==================
-const computeKeywordScores = (tokens) => {
-  const tf = computeTF(tokens);
-  return Object.entries(tf).map(([term, freq]) => ({
-    term,
-    score: freq * Math.log(1 / 1) // Simple IDF calculation
-  }));
-};
-
-const processKeywords = (keywordScores) => 
-  keywordScores
-    .sort((a, b) => b.score - a.score)
-    .filter(({term}) => term.length > 3 && !/\d/.test(term) && !/^(dll|tsb|yg|dg|sdh)$/i.test(term))
-    .slice(0, 5)
-    .map(({term, score}) => ({
-      keyword: term,
-      percentage: ((score / keywordScores.length) * 100).toFixed(2)
-    }));
-
-const extractUrlsFromResponse = (apiResponse) => 
-  apiResponse.data?.tasks?.[0]?.result?.[0]?.items
-    ?.map(item => item.url)
-    ?.filter(url => url) || [];
-
-const processUrls = async (urls, queryText) => 
-  Promise.all(urls.map(async url => {
-    const content = await fetchPageContent(url);
-    if (!content) return null;
-
-    const inputVectors = splitIntoSentences(queryText).map(getTokensAndNGrams);
-    const targetVectors = splitIntoSentences(content).map(getTokensAndNGrams);
-
-    const maxSims = inputVectors.map(input => 
-      Math.max(...targetVectors.map(target => 
-        cosineSimilarityTF(...computeTFIDFForPair(input, target))
-      ))
-    );
-
-    const threshold = determineThreshold(maxSims);
-    const plagiarizedCount = maxSims.filter(s => s >= threshold).length;
-    const avgSim = maxSims.reduce((a, b) => a + b, 0) / maxSims.length || 0;
-
-    return {
-      url,
-      plagiarismScore: Math.min(Math.round(((plagiarizedCount / inputVectors.length) + avgSim) * 50), 100),
-      details: {
-        totalSentences: inputVectors.length,
-        matchedSentences: plagiarizedCount,
-        averageSimilarity: avgSim.toFixed(2)
-      }
-    };
-  }));
-
-// ================== ENDPOINTS IMPROVED ==================
-app.post('/check-url', async (req, res) => {
-  try {
-    let url = req.body?.url?.trim();
-    
-    if (!url || !isValidUrl(url)) {
-      return res.status(400).json({
-        error: "Format URL tidak valid",
-        example: "https://example.com",
-        received: url
-      });
-    }
-
-    if (!url.startsWith('http')) url = `http://${url}`;
-
-    const content = await Promise.race([
-      fetchPageContent(url),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout setelah 35 detik')), 35000)
-      )
-    ]);
-
-    if (!content) {
-      return res.status(404).json({
-        error: "Konten tidak dapat diakses",
-        solutions: [
-          "Periksa koneksi internet",
-          "Pastikan URL benar dan aktif",
-          "Coba lagi beberapa saat"
-        ]
-      });
-    }
-
-    const result = await checkPlagiarismPerURL(content);
-    res.json(result);
-
-  } catch (error) {
-    res.status(500).json({
-      error: "Terjadi kesalahan saat memproses URL",
-      detail: error.message,
-      ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-    });
-  }
+// ================== Endpoint ==================
+app.post('/check-text', async (req, res) => {
+  const text = req.body?.text?.trim();
+  const result = await checkPlagiarismPerURL(text);
+  res.json(result);
 });
 
-// ================== ERROR HANDLER ==================
-app.use((err, req, res, next) => {
-  console.error('Global Error:', err);
-  res.status(500).json({
-    error: "Terjadi kesalahan sistem",
-    requestId: req.headers['x-request-id'],
-    timestamp: new Date().toISOString()
-  });
+app.post('/check-file', upload.single('file'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "File tidak ditemukan" });
+  
+  let fileContent = '';
+  if (req.file.mimetype === 'application/pdf') {
+    try {
+      const pdfData = await pdfParse(req.file.buffer);
+      fileContent = pdfData.text;
+    } catch (error) {
+      return res.status(500).json({ error: "Gagal memproses file PDF" });
+    }
+  } else {
+    fileContent = req.file.buffer.toString('utf-8');
+  }
+
+  const result = await checkPlagiarismPerURL(fileContent);
+  res.json(result);
+});
+
+app.post('/check-url', async (req, res) => {
+  let url = req.body?.url?.trim();
+  if (!url) return res.status(400).json({ error: "URL tidak valid" });
+  if (!/^https?:\/\//i.test(url)) {
+    url = 'http://' + url;
+  }
+  const content = await fetchPageContent(url);
+  if (!content) return res.status(500).json({ error: "Tidak dapat mengambil konten dari URL" });
+  const result = await checkPlagiarismPerURL(content);
+  res.json(result);
 });
 
 process.on('SIGINT', async () => {
