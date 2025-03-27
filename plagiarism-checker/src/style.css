@@ -444,17 +444,24 @@
   font-size: 0.95rem;
 }
 
-.home-container .source-url:hover {
+.home-container .output-container .source-url:hover {
   color: #18a0fb;
   text-decoration: underline;
 }
 
-.home-container .source-percentage {
+.home-container .output-container .source-percentage {
   color: #dc3545;
   font-weight: 600;
 }
 
-.home-container .keywords-section .keyword-badge {
+/* Untuk posisi persentase di tengah progress bar */
+.home-container .output-container .progress-bar span {
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 600;
+}
+
+.home-container .output-container .keyword-badge {
   font-size: 15px;
 }
 
@@ -480,13 +487,6 @@
   max-width: 1200px;
   margin: 0 auto;
 }
-
-/* .home-container .row-use {
-  display: grid;
-  grid-template-columns: auto auto auto;
-  gap: 100px;
-  justify-content: center;
-} */
 
 .home-container .row-use .col {
   background: white;
