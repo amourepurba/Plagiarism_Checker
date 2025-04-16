@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "develop": "nodemon server.js",
+    "migrate-dev" : "npx knex migrate:latest --env development",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

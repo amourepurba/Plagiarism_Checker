@@ -1,140 +1,152 @@
-const db = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { auth } = require("../config/firebase");
-
+// const { auth } = require("../config/firebase");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const db = global.GlobalDatabase;
 
 // Register dengan Email/Password
-exports.register = async (req, res) =>  {
-  try {
-    const { username, email, password } = req.body;
-    
-    // Validasi input
-    if (!username || !email || !password) {
-      return res.status(400).json({ success: false, message: "Semua field wajib diisi" });
-    }
+exports.register = async (req, res) => {
+	const { username, email, password } = req.body;
+	if (!username || !email || !password) {
+		return res.status(400).json({ message: "Semua field harus diisi." });
+	}
 
-    // Cek email sudah terdaftar
-    const [existingUser] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
-    if (existingUser.length > 0) {
-      return res.status(400).json({ success: false, message: "Email sudah terdaftar" });
-    }
+	// Cek apakah user sudah ada
+	const checkSql = "SELECT id FROM users WHERE email = ?";
+	db.query(checkSql, [email], async (checkErr, checkResults) => {
+		if (checkErr) {
+			console.error(checkErr);
+			return res.status(500).json({ message: "Terjadi kesalahan pada database", error: checkErr });
+		}
+		if (checkResults.length > 0) {
+			// Jika user sudah ada, kembalikan status conflict (409)
+			return res.status(409).json({ message: "Email already exist" });
+		}
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Simpan ke database
-    await db.query(
-      "INSERT INTO users (username, email, password, provider) VALUES (?, ?, ?, 'local')",
-      [username, email, hashedPassword]
-    );
-
-    res.status(201).json({ success: true, message: "Registrasi berhasil" });
-  } catch (error) {
-    console.error("Register error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
+		try {
+			// Hash password sebelum disimpan
+			const hashedPassword = await bcrypt.hash(password, 10);
+			const sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
+			db.query(sql, [username, email, hashedPassword], (err, result) => {
+				if (err) {
+					// Jika terjadi duplicate entry meskipun sudah dicek
+					if (err.code === "ER_DUP_ENTRY") {
+						return res.status(409).json({ message: "Email already exist" });
+					}
+					console.error(err);
+					return res.status(500).json({ message: "Terjadi kesalahan pada database", error: err });
+				}
+				res.status(201).json({ message: "User berhasil didaftarkan" });
+			});
+		} catch (error) {
+			console.error(error);
+			res.status(500).json({ message: "Server error" });
+		}
+	});
 };
 
 // Login dengan Email/Password
 exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Cek user
-    const [users] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
-    if (users.length === 0) {
-      return res.status(401).json({ success: false, message: "Email tidak terdaftar" });
-    }
-
-    const user = users[0];
-    
-    // Verifikasi password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: "Password salah" });
-    }
-
-    // Generate JWT
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    res.json({
-      success: true,
-      message: "Login berhasil",
-      token,
-      user: { id: user.id, username: user.username, email: user.email }
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
+	const { email, password } = req.body;
+	if (!email || !password) {
+		return res.status(400).json({ message: "Email dan password harus diisi." });
+	}
+	const sql = "SELECT * FROM users WHERE email = ?";
+	db.query(sql, [email], async (err, results) => {
+		if (err) {
+			console.error(err);
+			return res.status(500).json({ message: "Terjadi kesalahan pada database", error: err });
+		}
+		if (results.length === 0) {
+			return res.status(401).json({ message: "User tidak ditemukan" });
+		}
+		const user = results[0];
+		// Cek kesesuaian password
+		const validPassword = await bcrypt.compare(password, user.password);
+		if (!validPassword) {
+			return res.status(401).json({ message: "Kredensial tidak valid" });
+		}
+		// Buat token JWT (kadaluarsa 1 jam)
+		const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+		res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
+	});
 };
 
 // Login/Register dengan Google
-exports.googleAuth = async (req, res) => {
-  try {
-    const { token } = req.body;
+// exports.googleAuth = async (req, res) => {
+//   try {
+//     const { token } = req.body;
 
-    // Verifikasi token Firebase
-    const decodedToken = await auth.verifyIdToken(token);
-    const { email, name, uid: googleId } = decodedToken;
+//     // Verifikasi token Firebase
+//     const decodedToken = await auth.verifyIdToken(token);
+//     const { email, name, uid: googleId } = decodedToken;
 
-    // Cek user di database
-    const [existingUser] = await db.query(
-      "SELECT * FROM users WHERE email = ? OR google_id = ?",
-      [email, googleId]
-    );
+//     // Cek user di database
+//     const [existingUser] = await db.query(
+//       "SELECT * FROM users WHERE email = ? OR google_id = ?",
+//       [email, googleId]
+//     );
 
-    if (existingUser.length > 0) {
-      // User sudah ada
-      const user = existingUser[0];
-      const jwtToken = jwt.sign(
-        { id: user.id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" }
-      );
-      
-      return res.json({
-        success: true,
-        message: "Login Google berhasil",
-        token: jwtToken,
-        user: { id: user.id, username: user.username, email: user.email }
-      });
-    }
+//     if (existingUser.length > 0) {
+//       // User sudah ada
+//       const user = existingUser[0];
+//       const jwtToken = jwt.sign(
+//         { id: user.id, email: user.email },
+//         process.env.JWT_SECRET,
+//         { expiresIn: "1h" }
+//       );
 
-    // User baru
-    const [result] = await db.query(
-      "INSERT INTO users (username, email, provider, google_id) VALUES (?, ?, 'google', ?)",
-      [name, email, googleId]
-    );
+//       return res.json({
+//         success: true,
+//         message: "Login Google berhasil",
+//         token: jwtToken,
+//         user: { id: user.id, username: user.username, email: user.email }
+//       });
+//     }
 
-    const newUser = {
-      id: result.insertId,
-      username: name,
-      email,
-      provider: "google"
-    };
+//     // User baru
+//     const [result] = await db.query(
+//       "INSERT INTO users (username, email, provider, google_id) VALUES (?, ?, 'google', ?)",
+//       [name, email, googleId]
+//     );
 
-    const jwtToken = jwt.sign(
-      { id: newUser.id, email: newUser.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+//     const newUser = {
+//       id: result.insertId,
+//       username: name,
+//       email,
+//       provider: "google"
+//     };
 
-    res.status(201).json({
-      success: true,
-      message: "Registrasi Google berhasil",
-      token: jwtToken,
-      user: newUser
-    });
-  } catch (error) {
-    console.error("Google auth error:", error);
-    res.status(500).json({ success: false, message: "Gagal autentikasi Google" });
-  }
+//     const jwtToken = jwt.sign(
+//       { id: newUser.id, email: newUser.email },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "1h" }
+//     );
 
-  
+//     res.status(201).json({
+//       success: true,
+//       message: "Registrasi Google berhasil",
+//       token: jwtToken,
+//       user: newUser
+//     });
+//   } catch (error) {
+//     console.error("Google auth error:", error);
+//     res.status(500).json({ success: false, message: "Gagal autentikasi Google" });
+//   }
+
+// };
+
+exports.profile = async (req, res) => {
+	const sql = "SELECT id, username, email FROM users WHERE id = ?";
+	db.query(sql, [req.userId], (err, results) => {
+		if (err) {
+			console.error(err);
+			return res.status(500).json({ message: "Terjadi kesalahan pada database", error: err });
+		}
+		if (results.length === 0) {
+			return res.status(404).json({ message: "User tidak ditemukan" });
+		}
+		res.json({ user: results[0] });
+	});
 };
