@@ -1,8 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 // const { auth } = require("../config/firebase");
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const db = global.GlobalDatabase;
 
 // Register dengan Email/Password
