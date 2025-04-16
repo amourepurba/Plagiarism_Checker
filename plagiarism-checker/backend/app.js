@@ -5,12 +5,12 @@ const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const sbd = require('sbd');
 const multer = require('multer');
 const pdfParse = require('pdf-parse');
-const { Stemmer } = require('sastrawijs');  // TAMBAHKAN BARIS INI
+const { Stemmer } = require('sastrawijs'); 
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
-const stemmer = new Stemmer();  // TAMBAHKAN BARIS INI
+const stemmer = new Stemmer(); 
 
 if (!process.env.API_URL || !process.env.SECRET_CODE) {
   console.error("API_URL atau SECRET_CODE tidak ditemukan dalam environment variables.");

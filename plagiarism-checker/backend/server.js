@@ -123,5 +123,5 @@ app.get('/profile', verifyToken, (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 3306;
+const PORT = process.env.PORT || 3006; 
 app.listen(PORT, () => console.log(`Server berjalan pada port ${PORT}`));
