@@ -1,6 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
@@ -12,21 +11,7 @@ app.use(express.json());
 app.use(cors());
 
 // Konfigurasi koneksi MySQL
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
-
-// Koneksi ke database
-db.connect((err) => {
-  if (err) {
-    console.error("Error connecting to MySQL:", err);
-  } else {
-    console.log("MySQL connected");
-  }
-});
+const db = require('./config/db');
 
 // Endpoint untuk Registrasi User
 app.post('/register', async (req, res) => {
