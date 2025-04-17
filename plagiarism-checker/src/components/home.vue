@@ -394,8 +394,7 @@
                 <h3>2</h3>
                 <p>
                   <strong>Provide details</strong><br />
-                  Paste your text, URL, or upload a file in PDF, DOC, or DOCX
-                  format.
+                  Paste your text, URL, or upload a file in PDF format.
                 </p>
               </div>
               <div class="col">
