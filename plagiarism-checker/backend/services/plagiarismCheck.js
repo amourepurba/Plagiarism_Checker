@@ -67,7 +67,7 @@ class PlagiarismCheck {
 			.toLowerCase()
 			.replace(/[^\w\s]/g, "")
 			.split(/\s+/)
-			.filter((token) => token && !stopwords.has(token));
+			.filter((token) => token && !this.stopwords.has(token));
 
 		// Ganti Porter Stemmer dengan Sastrawi
 		return tokens.map((token) => stemmer.stem(token)); // MODIFIKASI BARIS INI
