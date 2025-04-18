@@ -194,7 +194,7 @@ export default {
       }
       try {
         this.loading = true;
-        const response = await axios.post("/login", this.loginForm);
+        const response = await axios.post("/auth/login", this.loginForm);
         this.$store.commit("setAuth", {
           token: response.data.token,
           user: response.data.user,
@@ -224,7 +224,7 @@ export default {
         };
 
         try {
-          await axios.post("/register", userData);
+          await axios.post("/auth/register", userData);
           this.showNotificationMessage("Registrasi berhasil!", true);
         } catch (registerError) {
           if (
@@ -241,7 +241,7 @@ export default {
           }
         }
 
-        const loginResponse = await axios.post("/login", {
+        const loginResponse = await axios.post("/auth/login", {
           email: user.email,
           password: "google_auth",
         });
@@ -274,7 +274,7 @@ export default {
       }
       try {
         this.loading = true;
-        const response = await axios.post("/register", this.registerForm);
+        const response = await axios.post("/auth/register", this.registerForm);
         this.showNotificationMessage(response.data.message, true);
         this.toggleForm();
       } catch (error) {

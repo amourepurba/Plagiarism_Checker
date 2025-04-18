@@ -72,68 +72,68 @@ exports.login = async (req, res) => {
 };
 
 // Login/Register dengan Google
-// exports.googleAuth = async (req, res) => {
-//   try {
-//     const { token } = req.body;
+exports.googleAuth = async (req, res) => {
+  try {
+    const { token } = req.body;
 
-//     // Verifikasi token Firebase
-//     const decodedToken = await auth.verifyIdToken(token);
-//     const { email, name, uid: googleId } = decodedToken;
+    // Verifikasi token Firebase
+    const decodedToken = await auth.verifyIdToken(token);
+    const { email, name, uid: googleId } = decodedToken;
 
-//     // Cek user di database
-//     const [existingUser] = await db.query(
-//       "SELECT * FROM users WHERE email = ? OR google_id = ?",
-//       [email, googleId]
-//     );
+    // Cek user di database
+    const [existingUser] = await db.query(
+      "SELECT * FROM users WHERE email = ? OR google_id = ?",
+      [email, googleId]
+    );
 
-//     if (existingUser.length > 0) {
-//       // User sudah ada
-//       const user = existingUser[0];
-//       const jwtToken = jwt.sign(
-//         { id: user.id, email: user.email },
-//         process.env.JWT_SECRET,
-//         { expiresIn: "1h" }
-//       );
+    if (existingUser.length > 0) {
+      // User sudah ada
+      const user = existingUser[0];
+      const jwtToken = jwt.sign(
+        { id: user.id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
 
-//       return res.json({
-//         success: true,
-//         message: "Login Google berhasil",
-//         token: jwtToken,
-//         user: { id: user.id, username: user.username, email: user.email }
-//       });
-//     }
+      return res.json({
+        success: true,
+        message: "Login Google berhasil",
+        token: jwtToken,
+        user: { id: user.id, username: user.username, email: user.email }
+      });
+    }
 
-//     // User baru
-//     const [result] = await db.query(
-//       "INSERT INTO users (username, email, provider, google_id) VALUES (?, ?, 'google', ?)",
-//       [name, email, googleId]
-//     );
+    // User baru
+    const [result] = await db.query(
+      "INSERT INTO users (username, email, provider, google_id) VALUES (?, ?, 'google', ?)",
+      [name, email, googleId]
+    );
 
-//     const newUser = {
-//       id: result.insertId,
-//       username: name,
-//       email,
-//       provider: "google"
-//     };
+    const newUser = {
+      id: result.insertId,
+      username: name,
+      email,
+      provider: "google"
+    };
 
-//     const jwtToken = jwt.sign(
-//       { id: newUser.id, email: newUser.email },
-//       process.env.JWT_SECRET,
-//       { expiresIn: "1h" }
-//     );
+    const jwtToken = jwt.sign(
+      { id: newUser.id, email: newUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-//     res.status(201).json({
-//       success: true,
-//       message: "Registrasi Google berhasil",
-//       token: jwtToken,
-//       user: newUser
-//     });
-//   } catch (error) {
-//     console.error("Google auth error:", error);
-//     res.status(500).json({ success: false, message: "Gagal autentikasi Google" });
-//   }
+    res.status(201).json({
+      success: true,
+      message: "Registrasi Google berhasil",
+      token: jwtToken,
+      user: newUser
+    });
+  } catch (error) {
+    console.error("Google auth error:", error);
+    res.status(500).json({ success: false, message: "Gagal autentikasi Google" });
+  }
 
-// };
+};
 
 exports.profile = async (req, res) => {
 	const sql = "SELECT id, username, email FROM users WHERE id = ?";

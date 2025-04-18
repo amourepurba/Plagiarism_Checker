@@ -365,7 +365,7 @@
                       {{ keyword.keyword }}
                     </div>
                     <div class="keyword-percentage small text-muted mt-1">
-                      {{ keyword.percentage | int }}%
+                      {{ toInt(keyword.percentage) }}%
                     </div>
                   </div>
                 </div>
@@ -529,7 +529,7 @@
 </template>
 
 <script>
-import axios from "axios";
+import axios from "../axios.js";
 
 export default {
   name: "Home",
@@ -593,6 +593,10 @@ export default {
   },
 
   methods: {
+    toInt(val) {
+      return parseInt(val, 10)
+    },
+    
     checkAction() {
       this.showOutput = true;
     },
@@ -643,13 +647,13 @@ export default {
       let payload;
       try {
         if (this.activeTab === "text") {
-          endpoint = "/check-text";
+          endpoint = "/check/check-text";
           payload = { text: this.textInput };
         } else if (this.activeTab === "url") {
-          endpoint = "/check-url";
+          endpoint = "/check/check-url";
           payload = { url: this.urlInput };
         } else if (this.activeTab === "file") {
-          endpoint = "/check-file";
+          endpoint = "/check/check-file";
           const formData = new FormData();
           formData.append("file", this.fileInput);
           payload = formData;

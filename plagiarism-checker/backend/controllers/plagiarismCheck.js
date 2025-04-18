@@ -1,9 +1,9 @@
-const plagiarsimCheckService = require("../services/plagiarismCheck");
+const plagiarismCheckService = require("../services/plagiarismCheck");
 const pdfParse = require("pdf-parse");
 
 exports.checkText = async (req, res) => {
 	const text = req.body?.text?.trim();
-	const result = await plagiarsimCheckService.checkPlagiarismPerURL(text);
+	const result = await plagiarismCheckService.checkPlagiarismPerURL(text);
 	res.json(result);
 };
 
@@ -22,7 +22,7 @@ exports.checkFile = async (req, res) => {
 		fileContent = req.file.buffer.toString("utf-8");
 	}
 
-	const result = await plagiarsimCheckService.checkPlagiarismPerURL(fileContent);
+	const result = await plagiarismCheckService.checkPlagiarismPerURL(fileContent);
 	res.json(result);
 };
 
@@ -32,8 +32,8 @@ exports.checkUrl = async (req, res) => {
 	if (!/^https?:\/\//i.test(url)) {
 		url = "http://" + url;
 	}
-	const content = await plagiarsimCheckService.fetchPageContent(url);
+	const content = await plagiarismCheckService.fetchPageContent(url);
 	if (!content) return res.status(500).json({ error: "Tidak dapat mengambil konten dari URL" });
-	const result = await plagiarsimCheckService.checkPlagiarismPerURL(content);
+	const result = await plagiarismCheckService.checkPlagiarismPerURL(content);
 	res.json(result);
 };

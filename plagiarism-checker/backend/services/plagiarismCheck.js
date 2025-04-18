@@ -87,14 +87,14 @@ class PlagiarismCheck {
 	}
 
 	getTokensAndNGrams = (text) => {
-		const tokens = tokenizeText(text);
-		const ngrams = getNGrams(tokens);
+		const tokens = this.tokenizeText(text);
+		const ngrams = this.getNGrams(tokens);
 		return tokens.concat(ngrams);
 	};
 
 	// ================== 3. Fungsi TF, TF-IDF, dan Normalisasi ==================
 	computeTF(tokens) {
-		tokens.reduce((acc, token) => {
+		return tokens.reduce((acc, token) => {
 			acc[token] = (acc[token] || 0) + 1;
 			return acc;
 		}, {});
@@ -110,8 +110,8 @@ class PlagiarismCheck {
 	}
 
 	computeTFIDFForPair(tokens1, tokens2) {
-		let tf1 = computeTF(tokens1);
-		let tf2 = computeTF(tokens2);
+		let tf1 = this.computeTF(tokens1);
+		let tf2 = this.computeTF(tokens2);
 		const allTokens = new Set([...Object.keys(tf1), ...Object.keys(tf2)]);
 		const idf = {};
 		allTokens.forEach((token) => {
@@ -126,8 +126,8 @@ class PlagiarismCheck {
 		for (let token in tf2) {
 			tf2[token] *= idf[token];
 		}
-		tf1 = normalizeTF(tf1);
-		tf2 = normalizeTF(tf2);
+		tf1 = this.normalizeTF(tf1);
+		tf2 = this.normalizeTF(tf2);
 		return [tf1, tf2];
 	}
 
@@ -199,7 +199,7 @@ class PlagiarismCheck {
 
 	// ================== 7. Pemisahan Kalimat ==================
 	splitIntoSentences(text) {
-		sbd
+		return sbd
 			.sentences(text, {
 				newline_boundaries: true,
 				sanitize: true,
@@ -213,8 +213,8 @@ class PlagiarismCheck {
 		const originalText = queryText || "";
 
 		// Proses teks untuk internal processing
-		const processedTokens = tokenizeText(originalText); // Sudah include stemming
-		const tf = computeTF(processedTokens);
+		const processedTokens = this.tokenizeText(originalText); // Sudah include stemming
+		const tf = this.computeTF(processedTokens);
 		const totalTerms = processedTokens.length;
 
 		// Hitung keyword dengan persentase
@@ -258,21 +258,21 @@ class PlagiarismCheck {
 				.filter((url) => url);
 			if (urls.length === 0) return { results: [], originalText: originalText, topKeywords };
 
-			const inputSentences = splitIntoSentences(originalText);
-			const inputVectors = inputSentences.map((sentence) => getTokensAndNGrams(sentence));
+			const inputSentences = this.splitIntoSentences(originalText);
+			const inputVectors = inputSentences.map((sentence) => this.getTokensAndNGrams(sentence));
 
 			const resultsPerURL = await Promise.all(
 				urls.map(async (url) => {
 					const content = await fetchPageContent(url);
 					if (!content) return null;
 
-					const targetSentences = splitIntoSentences(content);
-					const targetVectors = targetSentences.map((sentence) => getTokensAndNGrams(sentence));
+					const targetSentences = this.splitIntoSentences(content);
+					const targetVectors = targetSentences.map((sentence) => this.getTokensAndNGrams(sentence));
 
 					const maxSims = inputVectors.map((inputTokens) => {
 						let maxSim = 0;
 						targetVectors.forEach((targetTokens) => {
-							const [tfInput, tfTarget] = computeTFIDFForPair(inputTokens, targetTokens);
+							const [tfInput, tfTarget] = this.computeTFIDFForPair(inputTokens, targetTokens);
 							const sim = cosineSimilarityTF(tfInput, tfTarget);
 							if (sim > maxSim) maxSim = sim;
 						});
