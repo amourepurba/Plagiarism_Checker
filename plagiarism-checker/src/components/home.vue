@@ -1,104 +1,18 @@
 <template>
   <div class="home-container">
     <div class="container">
-      <!-- Header -->
-      <header class="header">
-        <nav class="navbar navbar-expand-lg bg-body-tertiary">
-          <div class="container-fluid">
-            <!-- Navbar Toggler -->
-            <button
-              class="navbar-toggler"
-              type="button"
-              @click="toggleNavbar"
-              aria-controls="navbarSupportedContent"
-              :aria-expanded="isNavbarOpen"
-              aria-label="Toggle navigation"
-            >
-              <span class="navbar-toggler-icon"></span>
-            </button>
+      <Header
+        :is-navbar-open="isNavbarOpen"
+        :is-authenticated="isAuthenticated"
+        :user="user"
+        @toggle-navbar="toggleNavbar"
+        @close-navbar="closeNavbar"
+        @logout="logout"
+      />
 
-            <!-- Logo -->
-            <router-link to="/" @click="closeNavbar" class="navbar-brand">
-              <img
-                src="../assets/logo-blue.png"
-                alt="cmlabs logo"
-                class="logo"
-              />
-            </router-link>
-
-            <!-- User Profile / Login -->
-            <div class="user d-flex align-items-center ms-auto">
-              <div
-                v-if="isAuthenticated"
-                class="user-profile d-flex align-items-center"
-                :class="{ active: showDropdown }"
-                @click="toggleDropdown"
-              >
-                <img
-                  :src="user.avatar"
-                  alt="User Avatar"
-                  class="rounded-circle me-2"
-                  style="width: 40px; height: 40px"
-                />
-                <span class="me-2">{{ user.username }}</span>
-                <!-- Dropdown Logout -->
-                <div v-if="showDropdown" class="dropdown-menu">
-                  <button class="btn btn-outline-danger" @click.stop="logout">
-                    Logout
-                  </button>
-                </div>
-              </div>
-              <router-link
-                v-else
-                to="/auth"
-                class="btn btn-outline-success ms-2"
-                @click="closeNavbar"
-              >
-                Login
-                <i
-                  class="fa-solid fa-arrow-right-to-bracket"
-                  style="padding-left: 5px"
-                ></i>
-              </router-link>
-            </div>
-
-            <!-- Menu Collapse -->
-            <div
-              :class="['collapse navbar-collapse', { show: isNavbarOpen }]"
-              id="navbarSupportedContent"
-            >
-              <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                  <a
-                    class="nav-link"
-                    href="#plagiarism-checker"
-                    @click="closeNavbar"
-                  >
-                    Plagiarism Checker
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#how-to-use" @click="closeNavbar">
-                    How To Use
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#contact-us" @click="closeNavbar">
-                    Contact Us
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </nav>
-      </header>
-
-      <!-- Main Content -->
       <div class="main-content" id="plagiarism-checker">
         <h1>Plagiarism Checker</h1>
-        <!-- Input Section -->
         <div class="container-option mt-4 text-center">
-          <!-- Tabs Navigation -->
           <ul
             class="nav nav-pills d-inline-flex align-items-center justify-content-center mb-3 gap-2"
           >
@@ -131,9 +45,8 @@
             </li>
           </ul>
 
-          <!-- Dynamic Input -->
           <div class="input-container d-flex flex-column align-items-center">
-            <!-- Text Input -->
+            <!-- Dynamic Input -->
             <div v-if="activeTab === 'text'" class="input-box input-text">
               <textarea
                 v-model="textInput"
@@ -157,7 +70,6 @@
               </button>
             </div>
 
-            <!-- File Input -->
             <div v-else-if="activeTab === 'file'" class="input-box input-file">
               <input
                 type="file"
@@ -182,7 +94,6 @@
               </button>
             </div>
 
-            <!-- URL Input -->
             <div v-else-if="activeTab === 'url'" class="input-box input-url">
               <input
                 v-model="urlInput"
@@ -208,28 +119,22 @@
             </div>
           </div>
 
-          <!-- Animasi Loading -->
           <div v-if="isLoading" class="loading-container">
             <div class="spinner"></div>
             <p>Checking for plagiarism...</p>
           </div>
 
-          <!-- Result Section -->
           <div
             v-if="showOutput && resultTab === activeTab"
             class="output-container"
           >
             <h2>Result</h2>
-            <!-- 1. Tampilkan Teks Input -->
             <div class="original-text-section mb-4">
               <h4>Teks yang Diinputkan</h4>
               <div class="original-text-content">
-                <!-- Untuk semua jenis input -->
                 <template v-if="processedText">
                   <pre>{{ processedText }}</pre>
                 </template>
-
-                <!-- Fallback jika processedText kosong -->
                 <template v-else>
                   <div v-if="activeTab === 'text'" class="text-muted">
                     {{ textInput || "Tidak ada teks yang diinputkan" }}
@@ -244,7 +149,6 @@
               </div>
             </div>
 
-            <!-- 2. Daftar URL dengan Detail -->
             <div class="sources-section mb-4">
               <h4>Hasil Deteksi Plagiasi</h4>
               <div v-if="sources.length > 0" class="sources-list">
@@ -281,7 +185,6 @@
                       </span>
                     </div>
 
-                    <!-- Detail Kalimat -->
                     <div class="sentences-detail">
                       <div class="row">
                         <div class="col-md-6">
@@ -316,7 +219,6 @@
                             aria-valuemin="0"
                             aria-valuemax="100"
                           >
-                            <!-- Tambahkan persentase di dalam progress bar untuk score tinggi -->
                             <span
                               v-if="source.plagiarismScore > 60"
                               class="position-absolute start-50 translate-x text-white"
@@ -325,13 +227,11 @@
                             </span>
                           </div>
 
-                          <!-- Teks untuk kondisi <= 60% -->
                           <div v-if="source.plagiarismScore <= 60" class="bar">
                             {{ source.plagiarismScore }}% Skor Plagiasi
                           </div>
                         </div>
 
-                        <!-- Teks terpisah untuk kondisi > 60% -->
                         <div
                           v-if="source.plagiarismScore > 60"
                           class="text-center text-white mt-1"
@@ -344,14 +244,12 @@
                 </div>
               </div>
 
-              <!-- Tambahkan kondisi ketika tidak ada hasil -->
               <div v-else class="alert alert-info mt-3">
                 <i class="fas fa-check-circle me-2"></i>
                 Tidak terdeteksi plagiasi. Dokumen ini original!
               </div>
             </div>
 
-            <!-- 3. 3 Keyword Terbesar -->
             <div class="keywords-section card">
               <div class="card-body">
                 <h4 class="card-title">5 Keyword Utama</h4>
@@ -373,198 +271,47 @@
             </div>
           </div>
 
-          <!-- How To Use Section -->
-          <div
-            class="container-use text-center"
-            id="how-to-use"
-            ref="howToUseSection"
-            :class="{ visible: isVisible, hidden: !isVisible }"
-          >
-            <h1 class="title">How to Use Plagiarism Checker</h1>
-            <div class="row-use align-items-start">
-              <div class="col">
-                <h3>1</h3>
-                <p>
-                  <strong>Get a subscription</strong><br />
-                  Choose any premium plan to enjoy all of JustDone's tools and
-                  features, including our Plagiarism Checker.
-                </p>
-              </div>
-              <div class="col">
-                <h3>2</h3>
-                <p>
-                  <strong>Provide details</strong><br />
-                  Paste your text, URL, or upload a file in PDF format.
-                </p>
-              </div>
-              <div class="col">
-                <h3>3</h3>
-                <p>
-                  <strong>View the report</strong><br />
-                  Receive an extensive report in just minutes to view any
-                  potential plagiarism and relevant source links.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Contact Form -->
-          <div
-            class="contact-us-container"
-            id="contact-us"
-            ref="contactSection"
-            :class="{ visible: isVisible }"
-          >
-            <div class="contact-text">
-              <h1 class="contact-title">Contact Us</h1>
-              <p class="contact-description">
-                Have questions or need help? Reach out to us!
-              </p>
-            </div>
-            <!-- Notifikasi -->
-            <div
-              v-if="notification.message"
-              :class="['notification', notification.type]"
-            >
-              {{ notification.message }}
-            </div>
-            <form class="contact-form" @submit.prevent="validateForm">
-              <input
-                type="text"
-                class="contact-input"
-                v-model="name"
-                placeholder="Your Name"
-                :class="{ 'error-border': showError.name }"
-              />
-              <input
-                type="email"
-                class="contact-input"
-                v-model="email"
-                placeholder="Your Email"
-                :class="{ 'error-border': showError.email }"
-              />
-              <textarea
-                class="contact-textarea"
-                v-model="message"
-                placeholder="Your Message"
-                :class="{ 'error-border': showError.message }"
-              ></textarea>
-              <div class="button-container">
-                <button type="submit" class="contact-button">
-                  Send Message
-                </button>
-              </div>
-            </form>
-          </div>
+          <HowToUse :is-visible="isVisible" />
+          <ContactUs :is-visible="isVisible" />
         </div>
       </div>
 
-      <!-- Footer -->
-      <footer class="footer">
-        <div class="footer-content">
-          <!-- Column 1: Languages & Supervene -->
-          <div class="footer-column">
-            <div class="supervene-section">
-              <h4 class="footer-title">SUPERVENE SEARCH ODYSSEY</h4>
-              <div class="contact-address">
-                <p>
-                  cmlabs Jakarta Jl. Pluit Kencana Raya No.63, Pluit,
-                  Penjaringan, Jakarta Utara, DKI Jakarta, 14450, Indonesia
-                </p>
-                <p class="phone-number">(+62) 21-666-04470</p>
-              </div>
-            </div>
-          </div>
-          <!-- Column 2: Solutions & Information -->
-          <div class="footer-column">
-            <div class="solutions-section">
-              <h4 class="footer-title">Solutions</h4>
-              <div class="footer-links">
-                <a href="#">SEO Services</a>
-                <a href="#">SEO Writing</a>
-                <a href="#">Media Buying</a>
-              </div>
-            </div>
-            <div class="information-section">
-              <h4 class="footer-title">Information</h4>
-              <div class="footer-links">
-                <a href="#">Notification Center</a>
-                <a href="#">Client's Testimony</a>
-                <a href="#">FAQ of cmlabs Services</a>
-              </div>
-            </div>
-          </div>
-          <!-- Column 3: Company -->
-          <div class="footer-column">
-            <div class="company-section">
-              <h4 class="footer-title">Company</h4>
-              <div class="footer-links">
-                <a href="#">About cmlabs</a>
-                <a href="#">Career</a>
-                <a href="#">Press Release</a>
-                <a href="#">Whistleblower Protection</a>
-              </div>
-            </div>
-          </div>
-          <!-- Column 4: Cost-Effective Fees -->
-          <div class="footer-column">
-            <div class="partnership-section">
-              <h4 class="footer-title">COST-EFECTIVE FEES, UP TO 5%</h4>
-              <h4 class="footer-subtitle">
-                WE ARE OPEN TO PARTNERSHIP WITH VARIOUS NICHES
-              </h4>
-              <div class="partnership-list">
-                <a href="#">Franchise Organizations</a>
-                <a href="#">Educational Institutions</a>
-                <a href="#">Professional Services Firms</a>
-                <a href="#">Startup Incubators / Accelerators</a>
-                <a href="#">...and 34 more</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   </div>
 </template>
 
 <script>
 import axios from "../axios.js";
+import Header from "./header.vue";
+import Footer from "./footer.vue";
+import HowToUse from "./howToUse.vue";
+import ContactUs from "./contactUs.vue";
 
 export default {
   name: "Home",
+  components: {
+    Header,
+    Footer,
+    HowToUse,
+    ContactUs,
+  },
+
   data() {
     return {
       isNavbarOpen: false,
       isLoading: false,
       activeTab: "text",
       resultTab: null,
-
-      // Inputs
       textInput: "",
       fileInput: null,
       urlInput: "",
-
-      // Results
       showOutput: false,
       errorMessage: "",
       processedText: "",
-      originalText: "",
       sources: [],
       topKeywords: [],
-      similarityScore: 0,
-      sentenceCount: 0,
-      detectedCount: 0,
-
-      // Lainnya
-      selectedLanguage: "english",
-      showDropdown: false,
       isVisible: true,
-      name: "",
-      email: "",
-      message: "",
-      notification: { message: "", type: "" },
-      showError: { name: false, email: false, message: false },
     };
   },
 
@@ -572,6 +319,7 @@ export default {
     isAuthenticated() {
       return !!localStorage.getItem("token");
     },
+
     user() {
       try {
         return (
@@ -584,19 +332,13 @@ export default {
         return { username: "", avatar: "" };
       }
     },
-    formattedKeywords() {
-      return this.topKeywords.slice(0, 3).map((k) => ({
-        keyword: k.keyword,
-        percentage: k.percentage,
-      }));
-    },
   },
 
   methods: {
     toInt(val) {
-      return parseInt(val, 10)
+      return parseInt(val, 10);
     },
-    
+
     checkAction() {
       this.showOutput = true;
     },
@@ -609,15 +351,11 @@ export default {
       this.isNavbarOpen = false;
     },
 
-    toggleDropdown() {
-      this.showDropdown = !this.showDropdown;
-    },
-
-    logout() {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      this.$router.push("/auth");
-    },
+    // logout() {
+    //   localStorage.removeItem("token");
+    //   localStorage.removeItem("user");
+    //   this.$router.push("/auth");
+    // },
 
     validateInput() {
       if (this.activeTab === "text" && this.textInput.trim().length < 50) {
@@ -722,59 +460,6 @@ export default {
       }
     },
 
-    // Contact Form
-    validateForm() {
-      let hasError = false;
-
-      // Reset error state
-      this.showError = { name: false, email: false, message: false };
-      if (!this.name.trim()) {
-        this.showError.name = true;
-        hasError = true;
-      }
-      if (!this.email.trim()) {
-        this.showError.email = true;
-        hasError = true;
-      }
-      if (!this.message.trim()) {
-        this.showError.message = true;
-        hasError = true;
-      }
-
-      if (hasError) {
-        // Tampilkan error
-        this.notification = {
-          message: "Please fill out all fields correctly.",
-          type: "error",
-        };
-        this.shakeForm();
-        setTimeout(() => {
-          this.notification = { message: "", type: "" };
-        }, 3000);
-        return;
-      }
-      this.notification = {
-        message: "Message sent successfully!",
-        type: "success",
-      };
-      setTimeout(() => {
-        this.notification = { message: "", type: "" };
-      }, 3000);
-      this.name = "";
-      this.email = "";
-      this.message = "";
-    },
-
-    shakeForm() {
-      const form = document.querySelector(".contact-form");
-      if (form) {
-        form.classList.add("shake");
-        setTimeout(() => {
-          form.classList.remove("shake");
-        }, 500);
-      }
-    },
-
     sendMessage() {
       setTimeout(() => {
         const isSuccess = Math.random() > 0.3;
@@ -794,13 +479,7 @@ export default {
       this.notification = { message, type };
       setTimeout(() => {
         this.notification = { message: "", type: "" };
-      }, 3000);
-    },
-
-    resetForm() {
-      this.name = "";
-      this.email = "";
-      this.message = "";
+      }, 2000);
     },
   },
 

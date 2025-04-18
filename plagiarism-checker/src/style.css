@@ -567,12 +567,34 @@
   font-weight: bold;
   margin-bottom: 1px;
   padding: 1px;
+  text-align: center;
+}
+
+/* Tambahkan keyframes typing & blink */
+@keyframes typing {
+  from {
+    max-width: 0;
+  }
+  to {
+    max-width: 100%;
+  }
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
+
+.home-container .typing-text {
+  display: inline-block;
   overflow: hidden;
   white-space: nowrap;
-  text-align: center;
-  display: inline-block; /* Supaya tetap di tengah */
-  max-width: 0; /* Awalnya tidak terlihat */
-  animation: typing 7s steps(20) infinite alternate-reverse;
+  border-right: 3px solid #000;
+  font-size: 50px;
+  font-weight: bold;
+  max-width: 100%;
+  animation: typing 4s steps(20, end), blink 0.7s step-end infinite;
 }
 
 .home-container .contact-description {
@@ -643,10 +665,6 @@
 .home-container .contact-us-container .error-border {
   border: 2px solid #dc3545;
   animation: shake 0.3s;
-}
-
-.home-container .shake {
-  animation: shake 0.5s ease-in-out;
 }
 
 /* Footer */
@@ -1523,38 +1541,6 @@
   }
   100% {
     transform: rotate(360deg);
-  }
-}
-
-//Title contact us
-@keyframes typing {
-  from {
-    max-width: 0;
-  }
-  to {
-    max-width: 100%;
-  }
-}
-
-// form contact us
-@keyframes shake {
-  0% {
-    transform: translateX(0);
-  }
-  20% {
-    transform: translateX(-5px);
-  }
-  40% {
-    transform: translateX(5px);
-  }
-  60% {
-    transform: translateX(-5px);
-  }
-  80% {
-    transform: translateX(5px);
-  }
-  100% {
-    transform: translateX(0);
   }
 }
 
