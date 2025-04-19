@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import axios from "axios";
+import axios from "../axios";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -8,14 +8,35 @@ export const useAuthStore = defineStore("auth", {
   }),
   actions: {
     async login(email, password) {
-      const { data } = await axios.post("http://localhost:5000/api/auth/login", { email, password });
-      this.user = data.user;
-      this.token = data.token;
-      localStorage.setItem("token", data.token);
+      try {
+        const { data } = await axios.post("/auth/login", { email, password });
+        
+        // Debugging: Log response
+        console.log("Login response:", data);
+        
+        // Pastikan struktur response benar
+        if (!data.token || !data.user) {
+          throw new Error("Invalid response structure");
+        }
+        
+        this.user = data.user;
+        this.token = data.token;
+        localStorage.setItem("token", data.token);
+        
+        return true;
+      } catch (error) {
+        console.error("Login error details:", {
+          message: error.message,
+          response: error.response?.data
+        });
+        
+        // Lempar error untuk ditangkap di component
+        throw error;
+      }
     },
 
     async register(name, email, password) {
-      await axios.post("http://localhost:5000/api/auth/register", { name, email, password });
+      await axios.post("/auth/register", { name, email, password });
     },
 
     async loginWithGoogle() {
@@ -30,5 +51,8 @@ export const useAuthStore = defineStore("auth", {
       this.token = "";
       localStorage.removeItem("token");
     }
-  }
+  },
+  // getters: {
+  //   isAuthenticated: (state) => !!state.token,
+  // },
 });
