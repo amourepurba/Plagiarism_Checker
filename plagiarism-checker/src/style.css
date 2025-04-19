@@ -142,9 +142,9 @@
   position: absolute;
   top: 50px; /* Dropdown muncul di bawah profile */
   right: 0;
-  background-color: transparent; /* Hilangkan background putih */
+  background-color: transparent;
   border: none;
-  padding: 0; /* Hapus padding */
+  padding: 0;
   display: flex;
   flex-direction: column;
   min-width: 120px;
@@ -154,9 +154,9 @@
 }
 
 .home-container .dropdown-menu button {
-  background-color: #18a0fb00; /* Background tombol sama dengan lingkaran */
+  background-color: #18a0fb00;
   border: none;
-  color: #ffffff; /* Teks putih */
+  color: #ffffff;
   width: 100%;
   text-align: center;
   padding: 5px 10px;
@@ -167,7 +167,7 @@
 }
 
 .home-container .dropdown-menu button:hover {
-  background-color: #18a0fb00; /* Tetap sama saat hover */
+  background-color: #18a0fb00;
   color: #ff0000;
 }
 
@@ -224,7 +224,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center; /* Memastikan tombol tidak tertumpuk */
-  min-height: 200px; /* Berikan cukup ruang untuk tombol */
+  min-height: 200px;
 }
 
 .home-container .input-box {
@@ -570,22 +570,6 @@
   text-align: center;
 }
 
-/* Tambahkan keyframes typing & blink */
-@keyframes typing {
-  from {
-    max-width: 0;
-  }
-  to {
-    max-width: 100%;
-  }
-}
-
-@keyframes blink {
-  50% {
-    border-color: transparent;
-  }
-}
-
 .home-container .typing-text {
   display: inline-block;
   overflow: hidden;
@@ -786,6 +770,75 @@
   text-align: left;
 }
 
+/* Animasi */
+/* Animasi profil */
+@keyframes openDown {
+  0% {
+    transform: perspective(400px) rotateX(-90deg);
+    opacity: 0;
+  }
+  100% {
+    transform: perspective(400px) rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+/* Animasi Loading */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+// Animasi halaman
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-top {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100px);
+  }
+}
+
+@keyframes slide-bottom {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100px);
+  }
+}
+
+/* Contact Us keyframes typing & blink */
+@keyframes typing {
+  from {
+    max-width: 0;
+  }
+  to {
+    max-width: 100%;
+  }
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
+
 /* Responsive Styles */
 @media (max-width: 768px) {
   .home-container .navbar {
@@ -793,7 +846,7 @@
     top: 0;
     width: 100%;
     padding: 0.5rem 1rem;
-    background-color: #ffffff; /* Warna latar belakang tetap */
+    background-color: #ffffff;
     min-height: 60px;
   }
 
@@ -963,7 +1016,7 @@
     padding: 40px 20px;
     margin-left: -20px;
     margin-right: -20px;
-    width: calc(100% + 40px); /* Counteract parent padding */
+    width: calc(100% + 40px);
   }
 
   .home-container .row-use {
@@ -1064,7 +1117,7 @@
     top: 0;
     width: 100%;
     padding: 0.5rem 1rem;
-    background-color: #ffffff; /* Warna latar belakang tetap */
+    background-color: #ffffff;
     min-height: 60px;
   }
 
@@ -1291,12 +1344,12 @@
   /* Navbar */
   .home-container .navbar {
     width: 100%;
-    background-color: #ffffff; /* Warna latar belakang navbar */
+    background-color: #ffffff;
     padding: 0.5rem 1rem;
     position: sticky;
     top: 0;
     z-index: 1000;
-    min-height: 60px; /* Menambah tinggi minimum agar tidak hilang */
+    min-height: 60px;
   }
 
   .home-container .navbar-brand img {
@@ -1381,7 +1434,7 @@
     padding: 40px 20px;
     margin-left: -20px;
     margin-right: -20px;
-    width: calc(100% + 40px); /* Counteract parent padding */
+    width: calc(100% + 40px);
   }
 
   .home-container .row-use {
@@ -1518,59 +1571,6 @@
         font-size: 14px;
       }
     }
-  }
-}
-
-/* Animasi */
-/* Animasi profil */
-@keyframes openDown {
-  0% {
-    transform: perspective(400px) rotateX(-90deg);
-    opacity: 0;
-  }
-  100% {
-    transform: perspective(400px) rotateX(0deg);
-    opacity: 1;
-  }
-}
-
-/* Animasi Loading */
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-// Animasi halaman
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slide-top {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-100px);
-  }
-}
-
-@keyframes slide-bottom {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(100px);
   }
 }
 
