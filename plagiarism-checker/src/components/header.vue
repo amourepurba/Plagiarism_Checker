@@ -98,11 +98,13 @@ export default {
     isAuthenticated: Boolean,
     user: Object,
   },
+
   data() {
     return {
       showDropdown: false,
     };
   },
+
   methods: {
     toggleDropdown() {
       this.showDropdown = !this.showDropdown;

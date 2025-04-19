@@ -351,11 +351,11 @@ export default {
       this.isNavbarOpen = false;
     },
 
-    // logout() {
-    //   localStorage.removeItem("token");
-    //   localStorage.removeItem("user");
-    //   this.$router.push("/auth");
-    // },
+    logout() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      this.$router.push("/auth");
+    },
 
     validateInput() {
       if (this.activeTab === "text" && this.textInput.trim().length < 50) {
