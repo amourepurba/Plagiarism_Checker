@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import axios from "../axios.js";
+import { useAuthStore } from '../store/authStore';
 
 export default {
   data() {
@@ -53,35 +53,43 @@ export default {
 
   methods: {
     async login() {
-      if (!this.loginForm.email || !this.loginForm.password) {
+    try {
+      this.loading = true;
+      const authStore = useAuthStore();
+      
+      await authStore.login(
+        this.loginForm.email,
+        this.loginForm.password
+      );
+      
+      // Jika berhasil
+      this.$emit("notify", {
+        message: "Login berhasil!",
+        type: "success"
+      });
+      this.$router.push("/");
+      
+    } catch (error) {
+      // Ambil pesan error dari backend jika ada
+      const errorMessage = error.response?.data?.message || error.message;
+      
+      // Handle error spesifik
+      if (error.response?.status === 401) {
         this.$emit("notify", {
-          message: "Please fill in all fields",
-          type: "error",
+          message: "Email atau password salah!",
+          type: "error"
         });
-        return;
+      } else {
+        this.$emit("notify", {
+          message: `Login gagal: ${errorMessage}`,
+          type: "error"
+        });
       }
-
-      try {
-        this.loading = true;
-        const response = await axios.post("/auth/login", this.loginForm);
-        this.$store.commit("setAuth", {
-          token: response.data.token,
-          user: response.data.user,
-        });
-        this.$emit("notify", {
-          message: "Login berhasil!",
-          type: "success",
-        });
-        this.$router.push("/");
-      } catch (error) {
-        this.$emit("notify", {
-          message: "Login gagal! Periksa email dan password Anda.",
-          type: "error",
-        });
-      } finally {
-        this.loading = false;
-      }
-    },
-  },
+      
+    } finally {
+      this.loading = false;
+    }
+  }
+  }
 };
 </script>

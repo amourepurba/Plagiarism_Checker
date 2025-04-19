@@ -55,6 +55,7 @@
 <script>
 import LoginForm from "./login.vue";
 import RegisterForm from "./register.vue";
+import axios from "../axios.js";
 import { auth, googleProvider } from "../firebase.js";
 import { signInWithPopup } from "firebase/auth";
 
