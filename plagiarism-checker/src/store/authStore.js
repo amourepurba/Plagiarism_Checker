@@ -10,8 +10,7 @@ export const useAuthStore = defineStore("auth", {
     async login(email, password) {
       try {
         const { data } = await axios.post("/auth/login", { email, password });
-        
-        // Debugging: Log response
+
         console.log("Login response:", data);
         
         // Pastikan struktur response benar
@@ -30,7 +29,6 @@ export const useAuthStore = defineStore("auth", {
           response: error.response?.data
         });
         
-        // Lempar error untuk ditangkap di component
         throw error;
       }
     },
@@ -52,7 +50,4 @@ export const useAuthStore = defineStore("auth", {
       localStorage.removeItem("token");
     }
   },
-  // getters: {
-  //   isAuthenticated: (state) => !!state.token,
-  // },
 });

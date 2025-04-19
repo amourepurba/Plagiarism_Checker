@@ -358,8 +358,8 @@ export default {
     },
 
     validateInput() {
-      if (this.activeTab === "text" && this.textInput.trim().length < 50) {
-        this.errorMessage = "Konten harus lebih dari 50 karakter!";
+      if (this.activeTab === "text" && this.textInput.trim().length < 10) {
+        this.errorMessage = "Konten harus lebih dari 10 karakter!";
         return false;
       }
       if (
@@ -385,13 +385,13 @@ export default {
       let payload;
       try {
         if (this.activeTab === "text") {
-          endpoint = "/check/check-text";
+          endpoint = "check/check-text";
           payload = { text: this.textInput };
         } else if (this.activeTab === "url") {
-          endpoint = "/check/check-url";
+          endpoint = "check/check-url";
           payload = { url: this.urlInput };
         } else if (this.activeTab === "file") {
-          endpoint = "/check/check-file";
+          endpoint = "check/check-file";
           const formData = new FormData();
           formData.append("file", this.fileInput);
           payload = formData;
@@ -405,7 +405,6 @@ export default {
         const response = await axios.post(endpoint, payload, config);
         const data = response.data;
 
-        // Update data hasil
         this.processedText = data.originalText;
         this.topKeywords = data.topKeywords;
         this.sources = data.results.map((result) => ({
@@ -419,13 +418,11 @@ export default {
           },
         }));
 
-        // Hitung skor tertinggi
         this.similarityScore =
           this.sources.length > 0
             ? Math.max(...this.sources.map((s) => s.plagiarismScore))
             : 0;
 
-        // Update statistik
         this.sentenceCount =
           this.sources.length > 0
             ? this.sources[0].details.totalInputSentences
@@ -448,16 +445,6 @@ export default {
 
     handleFileUpload(event) {
       this.fileInput = event.target.files[0];
-      // Hapus reader.onload jika tidak diperlukan
-      if (event.target.files.length > 0) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.fileOutput = e.target.result;
-        };
-        reader.readAsText(event.target.files[0]);
-      } else {
-        this.fileOutput = "";
-      }
     },
 
     sendMessage() {
@@ -485,7 +472,6 @@ export default {
 
   watch: {
     activeTab(newTab, oldTab) {
-      // Reset input dari tab sebelumnya
       switch (oldTab) {
         case "text":
           this.textInput = "";
@@ -493,7 +479,7 @@ export default {
         case "file":
           this.fileInput = null;
           if (this.$refs.fileInput) {
-            this.$refs.fileInput.value = ""; // Reset input file
+            this.$refs.fileInput.value = ""; 
           }
           break;
         case "url":
@@ -501,7 +487,6 @@ export default {
           break;
       }
 
-      // Reset hasil pencarian
       this.processedText = "";
       this.sources = [];
       this.topKeywords = [];

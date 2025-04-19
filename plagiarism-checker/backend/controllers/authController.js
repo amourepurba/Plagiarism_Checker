@@ -1,16 +1,13 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-// const { auth } = require("../config/firebase");
 const db = global.GlobalDatabase;
 
-// Register dengan Email/Password
 exports.register = async (req, res) => {
 	const { username, email, password } = req.body;
 	if (!username || !email || !password) {
 		return res.status(400).json({ message: "Semua field harus diisi." });
 	}
 
-	// Cek apakah user sudah ada
 	const checkSql = "SELECT id FROM users WHERE email = ?";
 	db.query(checkSql, [email], async (checkErr, checkResults) => {
 		if (checkErr) {
@@ -18,17 +15,14 @@ exports.register = async (req, res) => {
 			return res.status(500).json({ message: "Terjadi kesalahan pada database", error: checkErr });
 		}
 		if (checkResults.length > 0) {
-			// Jika user sudah ada, kembalikan status conflict (409)
 			return res.status(409).json({ message: "Email already exist" });
 		}
 
 		try {
-			// Hash password sebelum disimpan
 			const hashedPassword = await bcrypt.hash(password, 10);
 			const sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
 			db.query(sql, [username, email, hashedPassword], (err, result) => {
 				if (err) {
-					// Jika terjadi duplicate entry meskipun sudah dicek
 					if (err.code === "ER_DUP_ENTRY") {
 						return res.status(409).json({ message: "Email already exist" });
 					}
@@ -44,7 +38,7 @@ exports.register = async (req, res) => {
 	});
 };
 
-// Login dengan Email/Password
+// Login 
 exports.login = async (req, res) => {
 	const { email, password } = req.body;
 	if (!email || !password) {
@@ -60,12 +54,10 @@ exports.login = async (req, res) => {
 			return res.status(401).json({ message: "User tidak ditemukan" });
 		}
 		const user = results[0];
-		// Cek kesesuaian password
 		const validPassword = await bcrypt.compare(password, user.password);
 		if (!validPassword) {
 			return res.status(401).json({ message: "Kredensial tidak valid" });
 		}
-		// Buat token JWT (kadaluarsa 1 jam)
 		const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 		res.json({
 			token, 
@@ -78,23 +70,19 @@ exports.login = async (req, res) => {
 	});
 };
 
-// Login/Register dengan Google
 exports.googleAuth = async (req, res) => {
   try {
     const { token } = req.body;
 
-    // Verifikasi token Firebase
     const decodedToken = await auth.verifyIdToken(token);
     const { email, name, uid: googleId } = decodedToken;
 
-    // Cek user di database
     const [existingUser] = await db.query(
       "SELECT * FROM users WHERE email = ? OR google_id = ?",
       [email, googleId]
     );
 
     if (existingUser.length > 0) {
-      // User sudah ada
       const user = existingUser[0];
       const jwtToken = jwt.sign(
         { id: user.id, email: user.email },
@@ -110,7 +98,6 @@ exports.googleAuth = async (req, res) => {
       });
     }
 
-    // User baru
     const [result] = await db.query(
       "INSERT INTO users (username, email, provider, google_id) VALUES (?, ?, 'google', ?)",
       [name, email, googleId]

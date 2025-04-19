@@ -1,12 +1,14 @@
 const { Stemmer } = require("sastrawijs");
 const axios = require("axios");
 const sbd = require("sbd");
-const stemmer = new Stemmer();
 const pdfParse = require("pdf-parse");
 const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 
-class PlagiarismCheck {
+puppeteer.use(StealthPlugin());
+const stemmer = new Stemmer();
+
+class plagiarismCheck{
 	constructor() {
 		this.stopwords = new Set([
 			"dan",
@@ -59,7 +61,20 @@ class PlagiarismCheck {
 			"ini",
 			"itu",
 		]);
+		this.browser = null;
+    	this.initializeBrowser();
 	}
+
+	async initializeBrowser() {
+		try {
+		  this.browser = await puppeteer.launch({
+			headless: true,
+			args: ['--no-sandbox', '--disable-setuid-sandbox']
+		  });
+		} catch (error) {
+		  console.error("Gagal inisialisasi browser:", error);
+		}
+	  }
 
 	// ================== 1. Preprocessing Teks ==================
 	tokenizeText(text) {
@@ -156,46 +171,38 @@ class PlagiarismCheck {
 
 	// ================== 6. Pengambilan Konten Web ==================
 	async fetchPageContent(url) {
-		puppeteer.use(StealthPlugin());
-		let browser;
-		browser = await puppeteer.launch({
-			headless: true,
-			args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
-		});
-
-		if (url.toLowerCase().endsWith(".pdf")) {
-			try {
-				const response = await axios.get(url, { responseType: "arraybuffer", timeout: 60000 });
-				const pdfData = await pdfParse(response.data);
-				const text = pdfData.text;
-				return text && text.length > 10 ? text : null;
-			} catch (error) {
-				return null;
-			}
-		} else {
-			let page;
-			try {
-				page = await browser.newPage();
-				await page.setUserAgent(
-					"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0"
-				);
-				await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
-				await page.waitForSelector("p", { timeout: 5000 }).catch(() => {});
-
-				const content = await page.evaluate(() => {
-					const paragraphs = Array.from(document.querySelectorAll("p")).map((el) => el.innerText);
-					return paragraphs.join(" ").trim();
-				});
-
-				return content && content.length > 10 ? content : null;
-			} catch (error) {
-				return null;
-			} finally {
-				if (page) await page.close();
-				if (browser) await browser.close();
-			}
+		if (url.toLowerCase().endsWith('.pdf')) {
+		  try {
+			const response = await axios.get(url, { 
+			  responseType: 'arraybuffer', 
+			  timeout: 60000 
+			});
+			const pdfData = await pdfParse(response.data);
+			return pdfData.text?.length > 10 ? pdfData.text : null;
+		  } catch (error) {
+			return null;
+		  }
 		}
-	}
+	
+		let page;
+		try {
+		  if (!this.browser) await this.initializeBrowser();
+		  page = await this.browser.newPage();
+		  await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0");
+		  await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+		  
+		  const content = await page.evaluate(() => {
+			const paragraphs = Array.from(document.querySelectorAll('p')).map(el => el.innerText);
+			return paragraphs.join(' ').trim();
+		  });
+		  
+		  return content?.length > 10 ? content : null;
+		} catch (error) {
+		  return null;
+		} finally {
+		  if (page) await page.close();
+		}
+	  }
 
 	// ================== 7. Pemisahan Kalimat ==================
 	splitIntoSentences(text) {
@@ -209,22 +216,16 @@ class PlagiarismCheck {
 	}
 
 	async checkPlagiarismPerURL(queryText) {
-		// Simpan teks asli untuk output
 		const originalText = queryText || "";
-
-		// Proses teks untuk internal processing
 		const processedTokens = this.tokenizeText(originalText); // Sudah include stemming
 		const tf = this.computeTF(processedTokens);
 		const totalTerms = processedTokens.length;
-
-		// Hitung keyword dengan persentase
 		const sortedTerms = Object.entries(tf).sort((a, b) => b[1] - a[1]);
 		const topKeywords = sortedTerms.slice(0, 5).map(([term, count]) => ({
 			keyword: term,
 			percentage: totalTerms > 0 ? ((count / totalTerms) * 100).toFixed(2) : "0",
 		}));
 
-		// Validasi input
 		if (!queryText || typeof queryText !== "string" || queryText.trim().length < 10) {
 			return {
 				results: [],
@@ -263,7 +264,7 @@ class PlagiarismCheck {
 
 			const resultsPerURL = await Promise.all(
 				urls.map(async (url) => {
-					const content = await fetchPageContent(url);
+					const content = await this.fetchPageContent(url);
 					if (!content) return null;
 
 					const targetSentences = this.splitIntoSentences(content);
@@ -273,13 +274,13 @@ class PlagiarismCheck {
 						let maxSim = 0;
 						targetVectors.forEach((targetTokens) => {
 							const [tfInput, tfTarget] = this.computeTFIDFForPair(inputTokens, targetTokens);
-							const sim = cosineSimilarityTF(tfInput, tfTarget);
+							const sim = this.cosineSimilarityTF(tfInput, tfTarget);
 							if (sim > maxSim) maxSim = sim;
 						});
 						return maxSim;
 					});
 
-					const plagiarizedCount = maxSims.filter((sim) => sim >= determineThreshold(maxSims)).length;
+					const plagiarizedCount = maxSims.filter((sim) => sim >= this.determineThreshold(maxSims)).length;
 					const sumSimilarity = maxSims.reduce((sum, sim) => sum + sim, 0);
 					const avgSimilarity = maxSims.length > 0 ? sumSimilarity / maxSims.length : 0;
 					const plagiarizedFraction =
@@ -322,5 +323,12 @@ class PlagiarismCheck {
 		}
 	}
 }
-
-module.exports = new PlagiarismCheck();
+process.on('SIGINT', async () => {
+	const instance = new PlagiarismCheck();
+	if (instance.browser) {
+	  await instance.browser.close();
+	}
+	process.exit(0);
+  });
+	
+module.exports = new plagiarismCheck();

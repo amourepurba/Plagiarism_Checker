@@ -70,7 +70,6 @@ export default {
       this.$router.push("/");
       
     } catch (error) {
-      // Ambil pesan error dari backend jika ada
       const errorMessage = error.response?.data?.message || error.message;
       
       // Handle error spesifik
