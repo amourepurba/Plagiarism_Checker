@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const db = global.GlobalDatabase;
+// const db = global.GlobalDatabase;
+const db = require("../config/db");
 
 exports.register = async (req, res) => {
 	const { username, email, password } = req.body;

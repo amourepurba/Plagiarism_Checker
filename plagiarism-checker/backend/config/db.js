@@ -18,4 +18,5 @@ db.connect((err) => {
   }
 });
 
-global.GlobalDatabase = db;
+// global.GlobalDatabase = db;
+module.exports = db;
