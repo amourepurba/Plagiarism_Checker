@@ -11,6 +11,7 @@ const randomUseragent = require("random-useragent");
 const RATE_LIMIT = 1000; 
 const tokenCache = new Map();
 
+
 puppeteer.use(StealthPlugin());
 puppeteer.use(AdblockerPlugin({ blockTrackers: true }))
 
@@ -72,7 +73,8 @@ class plagiarismCheck{
 		this.browser = null;
 		this.userAgent = randomUseragent.getRandom();
 		this.maxConcurrentPages = 5; 
-		this.activePages = 0
+		this.activePages = 0;
+		// this.lastRequest = 0;
     	this.initializeBrowser();
 	}
 
@@ -205,10 +207,10 @@ class plagiarismCheck{
 
 	// ================== 6. Pengambilan Konten Web ==================
 	async fetchPageContent(url) {
-		const now = Date.now();
-		const delay = Math.max(0, RATE_LIMIT - (now - lastRequest));
-		await new Promise(resolve => setTimeout(resolve, delay));
-		lastRequest = Date.now();
+		// const now = Date.now();
+		// const delay = Math.max(0, RATE_LIMIT - (now - lastRequest));
+		// await new Promise(resolve => setTimeout(resolve, delay));
+		// lastRequest = Date.now();
 		if (url.toLowerCase().endsWith('.pdf')) {
 		  try {
 			const response = await axios.get(url, { 
