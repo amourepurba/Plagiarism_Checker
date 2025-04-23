@@ -59,6 +59,9 @@ export default {
 
         await authStore.login(this.loginForm.email, this.loginForm.password);
 
+        const user = authStore.user; // Pastikan store menyimpan user info
+        localStorage.setItem("user", JSON.stringify(user));
+
         // Jika berhasil
         this.$emit("notify", {
           message: "Login berhasil!",

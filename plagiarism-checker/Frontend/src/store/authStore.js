@@ -3,9 +3,10 @@ import axios from "../components/lib/axios";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    user: null,
+    user: JSON.parse(localStorage.getItem("user")) || null, // Ambil dari localStorage juga
     token: localStorage.getItem("token") || "",
   }),
+
   actions: {
     async login(email, password) {
       try {
@@ -13,14 +14,17 @@ export const useAuthStore = defineStore("auth", {
 
         console.log("Login response:", data);
 
-        // Pastikan struktur response benar
+        // Validasi respons
         if (!data.token || !data.user) {
           throw new Error("Invalid response structure");
         }
 
         this.user = data.user;
         this.token = data.token;
+
+        // Simpan ke localStorage
         localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user)); // Ini yang bikin username muncul
 
         return true;
       } catch (error) {
@@ -41,6 +45,7 @@ export const useAuthStore = defineStore("auth", {
       const user = await signInWithGoogle();
       if (user) {
         this.user = { name: user.displayName, email: user.email };
+        localStorage.setItem("user", JSON.stringify(this.user)); // Tambahkan ini juga
       }
     },
 
@@ -48,6 +53,7 @@ export const useAuthStore = defineStore("auth", {
       this.user = null;
       this.token = "";
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
   },
 });

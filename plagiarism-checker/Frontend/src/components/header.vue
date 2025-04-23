@@ -19,24 +19,37 @@
 
         <div class="user d-flex align-items-center ms-auto">
           <div
-            v-if="isAuthenticated"
+            v-if="isAuthenticated || displayUser"
             class="user-profile d-flex align-items-center"
             :class="{ active: showDropdown }"
             @click="toggleDropdown"
           >
-            <img
-              :src="user.avatar"
-              alt="User Avatar"
-              class="rounded-circle me-2"
-              style="width: 40px; height: 40px"
-            />
-            <span class="me-2">{{ user.username }}</span>
+            <!-- Avatar fallback -->
+            <template v-if="displayUser.avatar">
+              <img
+                :src="displayUser.avatar"
+                alt="User Avatar"
+                class="rounded-circle me-2"
+                style="width: 40px; height: 40px"
+              />
+            </template>
+            <template v-else>
+              <div class="avatar-fallback rounded-circle me-2">
+                {{ fallbackInitial }}
+              </div>
+            </template>
+
+            <span class="me-2">{{
+              displayUser.username || displayUser.name || "User"
+            }}</span>
+
             <div v-if="showDropdown" class="dropdown-menu">
               <button class="btn btn-outline-danger" @click.stop="logout">
                 Logout
               </button>
             </div>
           </div>
+
           <router-link
             v-else
             to="/auth"
@@ -102,7 +115,25 @@ export default {
   data() {
     return {
       showDropdown: false,
+      localUser: null,
     };
+  },
+
+  computed: {
+    displayUser() {
+      return this.user || this.localUser;
+    },
+    fallbackInitial() {
+      const name = this.displayUser?.username || this.displayUser?.name || "U";
+      return name.charAt(0).toUpperCase();
+    },
+  },
+
+  mounted() {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      this.localUser = JSON.parse(storedUser);
+    }
   },
 
   methods: {
