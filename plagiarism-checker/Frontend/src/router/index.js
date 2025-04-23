@@ -2,8 +2,8 @@ import {
   createRouter,
   createWebHistory,
 } from "vue-router/dist/vue-router.esm-bundler.js";
-import Home from "../components/home.vue";
-import Auth from "../components/auth.vue";
+import Home from "../components/pages/home.vue";
+import Auth from "../components/pages/auth.vue";
 
 const routes = [
   { path: "/auth", component: Auth },
