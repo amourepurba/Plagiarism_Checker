@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import axios from "../axios";
+import axios from "../components/lib/axios";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -12,23 +12,23 @@ export const useAuthStore = defineStore("auth", {
         const { data } = await axios.post("/auth/login", { email, password });
 
         console.log("Login response:", data);
-        
+
         // Pastikan struktur response benar
         if (!data.token || !data.user) {
           throw new Error("Invalid response structure");
         }
-        
+
         this.user = data.user;
         this.token = data.token;
         localStorage.setItem("token", data.token);
-        
+
         return true;
       } catch (error) {
         console.error("Login error details:", {
           message: error.message,
-          response: error.response?.data
+          response: error.response?.data,
         });
-        
+
         throw error;
       }
     },
@@ -48,6 +48,6 @@ export const useAuthStore = defineStore("auth", {
       this.user = null;
       this.token = "";
       localStorage.removeItem("token");
-    }
+    },
   },
 });

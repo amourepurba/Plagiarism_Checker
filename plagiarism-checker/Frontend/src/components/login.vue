@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import { useAuthStore } from '../store/authStore';
+import { useAuthStore } from "../store/authStore";
 
 export default {
   data() {
@@ -53,42 +53,37 @@ export default {
 
   methods: {
     async login() {
-    try {
-      this.loading = true;
-      const authStore = useAuthStore();
-      
-      await authStore.login(
-        this.loginForm.email,
-        this.loginForm.password
-      );
-      
-      // Jika berhasil
-      this.$emit("notify", {
-        message: "Login berhasil!",
-        type: "success"
-      });
-      this.$router.push("/");
-      
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message;
-      
-      // Handle error spesifik
-      if (error.response?.status === 401) {
+      try {
+        this.loading = true;
+        const authStore = useAuthStore();
+
+        await authStore.login(this.loginForm.email, this.loginForm.password);
+
+        // Jika berhasil
         this.$emit("notify", {
-          message: "Email atau password salah!",
-          type: "error"
+          message: "Login berhasil!",
+          type: "success",
         });
-      } else {
-        this.$emit("notify", {
-          message: `Login gagal: ${errorMessage}`,
-          type: "error"
-        });
+        this.$router.push("/");
+      } catch (error) {
+        const errorMessage = error.response?.data?.message || error.message;
+
+        // Handle error spesifik
+        if (error.response?.status === 401) {
+          this.$emit("notify", {
+            message: "Email atau password salah!",
+            type: "error",
+          });
+        } else {
+          this.$emit("notify", {
+            message: `Login gagal: ${errorMessage}`,
+            type: "error",
+          });
+        }
+      } finally {
+        this.loading = false;
       }
-      
-    } finally {
-      this.loading = false;
-    }
-  }
-  }
+    },
+  },
 };
 </script>
